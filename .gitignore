@@ -1,0 +1,7 @@
+*.iml
+*.ipr
+*.iws
+.gradle
+build
+tools/cytoscape/framework/instances/instance.properties
+tools/cytoscape/work/*

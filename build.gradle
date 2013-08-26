@@ -1,0 +1,322 @@
+// vim: ts=2 sw=2:
+apply plugin: 'idea'
+defaultTasks 'compileGroovy', 'jar'
+
+
+subprojects {
+  apply plugin: 'groovy'
+  apply plugin: 'osgi'
+  apply plugin: 'idea'
+  project.ext {
+    sourceDir = 'src'
+    testDir   = 'test'
+    buildDir  = 'build'
+  }
+  configurations {
+    provided
+  }
+  sourceSets {
+    main { compileClasspath += configurations.provided }
+  }
+  idea {
+    module {
+      scopes.PROVIDED.plus += configurations.provided
+    }
+  }
+  sourceSets {
+    main {
+      groovy { srcDirs = [project.ext.sourceDir] }
+      resources { srcDir 'resources' }
+      output.classesDir = "$project.ext.buildDir/classes"
+      output.resourcesDir = "$project.ext.buildDir/resources"
+    }
+    test {
+      groovy { srcDirs = [project.ext.testDir] }
+      resources { srcDir 'test-resources' }
+      output.classesDir = "$project.ext.buildDir/test-classes"
+    }
+  }
+  dependencies {
+    provided fileTree(dir: "$System.env.PLUGIN_CY3_LIBS_DIR/org/cytoscape", include: '**/*.jar')
+    provided fileTree(dir: "$System.env.PLUGIN_CY3_LIBS_DIR/org/eclipse/osgi", include: '**/*.jar')
+  }
+}
+
+project('modules/common') {
+  idea {
+    module {
+      name = 'common'
+    }
+  }
+
+  dependencies {
+    compile files(
+      "$rootDir/libs/compile/antlr-runtime-3.3.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/compile/org.openbel.framework.common-3.0.0.jar")
+    testCompile files(
+      "$rootDir/libs/test/junit-4.11.jar")
+  }
+
+  jar {
+    baseName = 'model-builder-common'
+    version = '1.0.0'
+    manifest {
+      classesDir = sourceSets.main.output.classesDir
+      classpath = sourceSets.main.runtimeClasspath
+      version = '1.0.0'
+      name = 'Model Builder - Common'
+      symbolicName = 'model.builder.common'
+      instruction 'Import-Package', '''
+        groovy.lang;version="[2.1,3)",
+        groovy.transform;version="[2.1,3)",
+        groovy.util.slurpersupport;version="[2.1,3)",
+        org.codehaus.groovy.reflection;version="[2.1,3)",
+        org.codehaus.groovy.runtime;version="[2.1,3)",
+        org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
+        org.cytoscape.model;version="[3,4)",
+        org.openbel.framework.common;version="[3,4)",
+        org.openbel.framework.common.bel.parser;version="[3,4)",
+        org.openbel.framework.common.enums;version="[3,4)",
+        org.openbel.framework.common.model;version="[3,4)",
+        org.slf4j;version="[1,2)",
+        sun.reflect
+      '''
+      instruction 'Export-Package', '''
+        model.builder.common,
+        model.builder.common.extensions,
+        model.builder.common.model,
+        model.builder.common.util
+      '''
+    }
+  }
+}
+
+project('modules/core') {
+  idea {
+    module {
+      name = 'core'
+    }
+  }
+
+  dependencies {
+    compile project(':modules/web')
+    compile files(
+      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
+    testCompile files(
+      "$rootDir/libs/test/junit-4.11.jar")
+  }
+
+  jar {
+    baseName = 'model-builder-core'
+    version = '1.0.0'
+    manifest {
+      classesDir = sourceSets.main.output.classesDir
+      classpath = sourceSets.main.runtimeClasspath
+      version = '1.0.0'
+      name = 'Model Builder - Core'
+      symbolicName = 'model.builder.core'
+      instruction 'Import-Package', '''
+        groovy.lang;version="[2.1,3)",
+        groovy.transform;version="[2.1,3)",
+        org.codehaus.groovy.reflection;version="[2.1,3)",
+        org.codehaus.groovy.runtime;version="[2.1,3)",
+        org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
+        org.cytoscape.application;version="[3,4)",
+        org.cytoscape.event;version="[3,4)",
+        org.cytoscape.model;version="[3,4)",
+        org.cytoscape.property;version="[3,4)",
+        org.cytoscape.service.util;version="[3,4)",
+        org.cytoscape.task;version="[3,4)",
+        org.cytoscape.task.read;version="[3,4)",
+        org.cytoscape.task.visualize;version="[3,4)",
+        org.cytoscape.view.layout;version="[3,4)",
+        org.cytoscape.view.model;version="[3,4)",
+        org.cytoscape.view.vizmap;version="[3,4)",
+        org.cytoscape.work;version="[3,4)",
+        org.cytoscape.work.util;version="[3,4)",
+        org.openbel.framework.common.enums;version="[3,4)",
+        org.openbel.framework.ws.model;version="[3,4)",
+        model.builder.common.model,
+        model.builder.common.util,
+        model.builder.web.api,
+        org.osgi.framework,
+        org.slf4j;version="[1,2)",
+        javax.swing,
+        sun.reflect
+      '''
+      instruction 'Bundle-Activator', 'model.builder.core.Activator'
+      instruction 'Export-Package', 'model.builder.core'
+    }
+  }
+}
+
+project('modules/main') {
+  idea {
+    module {
+      name = 'main'
+    }
+  }
+
+  dependencies {
+    compile files(
+      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
+    testCompile files(
+      "$rootDir/libs/test/junit-4.11.jar")
+  }
+
+  jar {
+    baseName = 'model-builder-main'
+    version = '1.0.0'
+    manifest {
+      classesDir = sourceSets.main.output.classesDir
+      classpath = sourceSets.main.runtimeClasspath
+      version = '1.0.0'
+      name = 'Model Builder - Main'
+      symbolicName = 'model.builder.main'
+      instruction 'Import-Package', '''
+        groovy.lang;version="[2.1,3)",
+        groovy.swing;version="[2.1,3)",
+        groovy.util;version="[2.1,3)",
+        javax.accessibility,
+        javax.swing,
+        javax.swing.border,
+        javax.swing.event,
+        javax.swing.plaf,
+        org.codehaus.groovy.reflection;version="[2.1,3)",
+        org.codehaus.groovy.runtime;version="[2.1,3)",
+        org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.wrappers;version="[2.1,3)",
+        org.cytoscape.application.swing;version="[3,4)",
+        org.cytoscape.service.util;version="[3,4)",
+        org.osgi.framework,
+        org.slf4j;version="[1,2)",
+        sun.awt,
+        sun.java2d.pipe,
+        sun.reflect
+      '''
+      instruction 'Bundle-Activator', 'model.builder.main.Activator'
+      instruction 'Export-Package', ''
+    }
+  }
+}
+
+project('modules/ui') {
+  idea {
+    module {
+      name = 'ui'
+    }
+  }
+
+  dependencies {
+    compile files(
+      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
+    testCompile files(
+      "$rootDir/libs/test/junit-4.11.jar")
+  }
+
+  jar {
+    baseName = 'model-builder-ui'
+    version = '1.0.0'
+    manifest {
+      classesDir = sourceSets.main.output.classesDir
+      classpath = sourceSets.main.runtimeClasspath
+      version = '1.0.0'
+      name = 'Model Builder - UI'
+      symbolicName = 'model.builder.ui'
+      instruction 'Import-Package', '''
+        groovy.lang;version="[2.1,3)",
+        groovy.swing;version="[2.1,3)",
+        groovy.util;version="[2.1,3)",
+        javax.accessibility,
+        javax.swing,
+        javax.swing.border,
+        javax.swing.event,
+        javax.swing.plaf,
+        org.codehaus.groovy.reflection;version="[2.1,3)",
+        org.codehaus.groovy.runtime;version="[2.1,3)",
+        org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.wrappers;version="[2.1,3)",
+        org.cytoscape.application.swing;version="[3,4)",
+        org.slf4j;version="[1,2)",
+        sun.awt,
+        sun.java2d.pipe,
+        sun.reflect
+      '''
+      instruction 'Export-Package', 'model.builder.ui'
+    }
+  }
+}
+
+project('modules/web') {
+  idea {
+    module {
+      name = 'web'
+    }
+  }
+
+  dependencies {
+    compile project(':modules/common')
+    compile files(
+      "$rootDir/libs/compile/antlr-runtime-3.3.jar",
+      "$rootDir/libs/compile/commons-codec-1.8.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-common-extensions-0.5.jar",
+      "$rootDir/libs/compile/groovy-wslite-0.8.0.jar",
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/compile/org.openbel.framework.common-3.0.0.jar",
+      "$rootDir/libs/compile/org.openbel.framework.ws.model-3.0.0.jar")
+    testCompile files(
+      "$rootDir/libs/test/junit-4.11.jar")
+  }
+
+  jar {
+    baseName = 'model-builder-web'
+    version = '1.0.0'
+    manifest {
+      classesDir = sourceSets.main.output.classesDir
+      classpath = sourceSets.main.runtimeClasspath
+      version = '1.0.0'
+      name = 'Model Builder - Web'
+      symbolicName = 'model.builder.web'
+      instruction 'Import-Package', '''
+        groovy.lang;version="[2.1,3)",
+        org.codehaus.groovy.reflection;version="[2.1,3)",
+        org.codehaus.groovy.runtime;version="[2.1,3)",
+        org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
+        org.cytoscape.model;version="[3,4)",
+        org.cytoscape.service.util;version="[3,4)",
+        org.openbel.framework.common.enums;version="[3,4)",
+        org.openbel.framework.ws.model;version="[3,4)",
+        model.builder.common.model,
+        model.builder.common.util,
+        model.builder.web.api,
+        org.osgi.framework,
+        org.slf4j;version="[1,2)",
+        wslite.soap,
+        sun.reflect
+      '''
+      instruction 'Bundle-Activator', 'model.builder.web.Activator'
+      instruction 'Export-Package', 'model.builder.web.api'
+    }
+  }
+}
+
+// gradle wrapper, included in project tree
+task wrapper(type: Wrapper) {
+  gradleVersion = '1.7'
+  archiveBase = Wrapper.PathBase.PROJECT
+  archivePath = "tools/gradle-wrapper"
+  distributionBase = Wrapper.PathBase.PROJECT
+  distributionPath = "tools/gradle-1.7"
+  distributionUrl = "gradle-1.7-bin.zip"
+  scriptFile = "$System.env.PLUGIN_SCRIPTS_DIR/gradlew"
+  jarFile = "$System.env.PLUGIN_TOOLS_DIR/gradle-wrapper/wrapper.jar"
+}
