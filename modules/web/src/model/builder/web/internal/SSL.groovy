@@ -1,4 +1,4 @@
-package org.openbel.ws.internal
+package model.builder.web.internal
 
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager

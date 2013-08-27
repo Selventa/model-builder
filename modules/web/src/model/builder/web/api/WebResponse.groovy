@@ -1,4 +1,4 @@
-package org.openbel.ws.api
+package model.builder.web.api
 
 import groovy.transform.TupleConstructor
 

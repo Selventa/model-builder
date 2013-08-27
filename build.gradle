@@ -102,6 +102,7 @@ project('modules/core') {
   }
 
   dependencies {
+    compile project(':modules/ui')
     compile project(':modules/web')
     compile files(
       "$rootDir/libs/compile/groovy-all-2.1.6.jar",
@@ -127,26 +128,39 @@ project('modules/core') {
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
         org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
         org.cytoscape.application;version="[3,4)",
+        org.cytoscape.application.swing;version="[3,4)",
         org.cytoscape.event;version="[3,4)",
+        org.cytoscape.io.webservice;version="[3,4)",
+        org.cytoscape.io.webservice.client;version="[3,4)",
+        org.cytoscape.io.webservice.swing;version="[3,4)",
         org.cytoscape.model;version="[3,4)",
         org.cytoscape.property;version="[3,4)",
         org.cytoscape.service.util;version="[3,4)",
         org.cytoscape.task;version="[3,4)",
         org.cytoscape.task.read;version="[3,4)",
         org.cytoscape.task.visualize;version="[3,4)",
+        org.cytoscape.util.swing;version="[3,4)",
         org.cytoscape.view.layout;version="[3,4)",
         org.cytoscape.view.model;version="[3,4)",
         org.cytoscape.view.vizmap;version="[3,4)",
         org.cytoscape.work;version="[3,4)",
+        org.cytoscape.work.swing;version="[3,4)",
         org.cytoscape.work.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
         model.builder.common.model,
         model.builder.common.util,
+        model.builder.ui,
         model.builder.web.api,
         org.osgi.framework,
         org.slf4j;version="[1,2)",
+        javax.accessibility,
         javax.swing,
+        javax.swing.border,
+        javax.swing.event,
+        javax.swing.plaf,
+        sun.awt,
+        sun.java2d.pipe,
         sun.reflect
       '''
       instruction 'Bundle-Activator', 'model.builder.core.Activator'
@@ -300,7 +314,10 @@ project('modules/web') {
         model.builder.web.api,
         org.osgi.framework,
         org.slf4j;version="[1,2)",
+        wslite.http,
+        wslite.rest,
         wslite.soap,
+        javax.net.ssl,
         sun.reflect
       '''
       instruction 'Bundle-Activator', 'model.builder.web.Activator'

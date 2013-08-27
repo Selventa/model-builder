@@ -1,4 +1,4 @@
-package org.openbel.kamnav.core
+package model.builder.core
 
 /**
  * Provides read-only constant values.

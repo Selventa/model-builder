@@ -1,7 +1,7 @@
-package org.openbel.ws.internal
+package model.builder.web.internal
 
 import static java.lang.System.currentTimeMillis
-import static org.openbel.ws.internal.Constant.HMAC
+import static model.builder.web.internal.Constant.HMAC
 
 import org.apache.commons.codec.binary.Hex
 

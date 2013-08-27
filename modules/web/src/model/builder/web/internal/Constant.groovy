@@ -1,4 +1,4 @@
-package org.openbel.ws.internal
+package model.builder.web.internal
 
 /**
  * Provides constants for web implementation.

@@ -1,8 +1,8 @@
-package org.openbel.ws.internal
+package model.builder.web.internal
 
 import groovy.json.JsonOutput
-import org.openbel.ws.api.API
-import org.openbel.ws.api.WebResponse
+import model.builder.web.api.API
+import model.builder.web.api.WebResponse
 import wslite.rest.RESTClient
 import wslite.rest.Response
 

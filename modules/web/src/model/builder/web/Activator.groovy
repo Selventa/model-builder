@@ -1,8 +1,8 @@
-package org.openbel.ws
+package model.builder.web
 
+import model.builder.web.api.API
+import model.builder.web.internal.SdpAPI
 import org.cytoscape.service.util.AbstractCyActivator
-import org.openbel.ws.api.API
-import org.openbel.ws.internal.SdpAPI
 import org.osgi.framework.BundleContext
 
 class Activator extends AbstractCyActivator {
