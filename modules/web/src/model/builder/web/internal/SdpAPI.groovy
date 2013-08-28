@@ -69,7 +69,6 @@ class SdpAPI implements API {
             params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        println params.toMapString()
         client.get(path: '/search', query: params) as WebResponse
     }
 
