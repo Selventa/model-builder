@@ -6,5 +6,5 @@ interface API {
 
     WebResponse models()
 
-    WebResponse models(String name, String... tags)
+    WebResponse searchModels(Map data)
 }

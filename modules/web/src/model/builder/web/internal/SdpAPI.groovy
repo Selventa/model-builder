@@ -3,6 +3,7 @@ package model.builder.web.internal
 import groovy.json.JsonOutput
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
+import wslite.http.HTTPClientException
 import wslite.rest.RESTClient
 import wslite.rest.Response
 
@@ -42,22 +43,47 @@ class SdpAPI implements API {
 
     @Override
     WebResponse model(String id) {
-        client.get(path: "/models/$id") as WebResponse
+        client.get(path: "/api/models/$id") as WebResponse
     }
 
     @Override
     WebResponse models() {
-        client.get(path: '/models') as WebResponse
+        client.get(path: '/api/models') as WebResponse
     }
 
     @Override
-    WebResponse models(String name, String... tags) {
-        return null
+    WebResponse searchModels(Map data = [:]) {
+        def params = [:]
+        params.q = "type:model AND name:${data.name ?: '*'}"
+        params.start = data.start ?: 0
+        params.rows = data.rows ?: 100
+        if (data.tags)
+            params.q += " AND (${data.tags.collect {"tags:$it"}.join(' OR ')})"
+        if (data.species)
+            params.q += " AND (${data.species.collect {"species:$it"}.join(' OR ')})"
+        if (data.sort) params.sort = data.sort
+
+        client.get(path: '/search', query: params) as WebResponse
     }
 
     static void main(String[] args) {
-        API api = new SdpAPI('https://sdpdemo.selventa.com/api')
-        println JsonOutput.prettyPrint(JsonOutput.toJson(api.models().data))
-        println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('51d9832442bc1d0619a4c44c').data))
+
+        def proxy = ProxyMetaClass.getInstance(SdpAPI.class)
+        proxy.interceptor = new BenchmarkInterceptor()
+        proxy.use {
+            API api = new SdpAPI('https://sdpdemo.selventa.com')
+            try {
+                println JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data)
+                println JsonOutput.toJson(api.models().data)
+                println api.searchModels(rows: 500).data.response.numFound
+                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound
+                println api.searchModels(tags: ['NetworkKnitting', 'SDPmigration'], species: ['9606']).data.response.numFound
+                println api.searchModels(name: 'Angiogenesis*').data.response.numFound
+                println JsonOutput.prettyPrint(JsonOutput.toJson(api.searchModels(name: 'Angiogenesis*', start: 5, rows: 1).data.response.docs))
+            } catch (HTTPClientException e) {
+                println "${e.response.statusCode}: ${e.response.statusMessage}"
+            }
+        }
+        println proxy.interceptor.statistic()
     }
 }
