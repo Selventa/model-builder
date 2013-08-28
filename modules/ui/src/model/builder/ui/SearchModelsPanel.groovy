@@ -1,5 +1,10 @@
 package model.builder.ui
 
+import javax.swing.JList
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
+
 import static javax.swing.SwingConstants.RIGHT
 
 import model.builder.common.Model
@@ -37,7 +42,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
     private final JCheckBox ratChk
     private final SearchResultsModel searchModel
     private final JTable models
-    private final JComboBox<String> tagsBox
+    private final JList<String> tagsBox
     private final JButton open
     private final JButton search
     private final JButton cancel
@@ -66,11 +71,8 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
         speciesLbl.setHorizontalAlignment(RIGHT)
         speciesLbl.setPreferredSize(new Dimension(60, 20))
         humanChk = new JCheckBox('Human')
-        humanChk.addActionListener(this)
         mouseChk = new JCheckBox('Mouse')
-        mouseChk.addActionListener(this)
         ratChk = new JCheckBox('Rat')
-        ratChk.addActionListener(this)
         JPanel species = new JPanel(new FlowLayout(FlowLayout.LEFT))
         species.add(humanChk)
         species.add(mouseChk)
@@ -79,29 +81,28 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
         speciesPanel.add(species, BorderLayout.CENTER)
 
         // create and populate tags combo box
-        JComboBox<String> tcmb = new JComboBox<>(new String[0])
-        //String[] modelTags = client.tagsWithModels()
-        String[] modelTags = []
-        tcmb = new JComboBox<>(modelTags)
-        this.tagsBox = tcmb
+        WebResponse res = client.modelTags()
+        def facetTags = res.data.facet_counts.facet_fields.tags
+        String[] tags = facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
+        JScrollPane tagsScroll = new JScrollPane(this.tagsBox = new JList<>(tags))
+        this.tagsBox.visibleRowCount = 5
 
         JPanel tagsPanel = new JPanel(new BorderLayout(10, 0))
         JLabel tagsLbl = new JLabel('Tags')
         tagsLbl.setHorizontalAlignment(RIGHT)
         tagsLbl.setPreferredSize(new Dimension(60, 20))
-        tagsBox.addActionListener(this)
         tagsPanel.add(tagsLbl, BorderLayout.WEST)
-        tagsPanel.add(tagsBox, BorderLayout.CENTER)
+        tagsPanel.add(tagsScroll, BorderLayout.CENTER)
 
-        JPanel fields = new JPanel(new GridLayout(3, 1))
+        JPanel fields = new JPanel(new GridBagLayout())
         fields.setBorder(new TitledBorder('Search Fields'))
-        fields.add(namePanel, BorderLayout.CENTER)
-        fields.add(speciesPanel, BorderLayout.CENTER)
-        fields.add(tagsPanel, BorderLayout.CENTER)
+        fields.add(namePanel, new GridBagConstraints(0,0,1,1,1,0.25, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0))
+        fields.add(speciesPanel, new GridBagConstraints(0,1,1,1,1,0.25, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0))
+        fields.add(tagsPanel, new GridBagConstraints(0,2,1,1,1,0.50, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0))
         add(fields, BorderLayout.NORTH)
 
         JScrollPane scroll = new JScrollPane(models)
-        models.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        models.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
         models.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -150,9 +151,11 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
             if (ratChk.selected) species << '10116'
             WebResponse res = client.searchModels(
                     currentSearch = [
-                            name: "*${name.text}*",
+                            name: name.text ? "*${name.text}*" : "",
                             species: species,
+                            tags: tagsBox.selectedValuesList as String[],
                             rows: 100])
+
             def solr = res.data.response
             def models = solr.docs.collect {
                 new Model(client.uri(it.id), it.name)
