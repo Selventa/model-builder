@@ -105,6 +105,9 @@ project('modules/core') {
     compile project(':modules/ui')
     compile project(':modules/web')
     compile files(
+      "$rootDir/libs/compile/kamnav-core-1.0.0.jar",
+      "$rootDir/libs/compile/kamnav-common-1.0.0.jar",
+      "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
       "$rootDir/libs/compile/groovy-all-2.1.6.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
     testCompile files(
@@ -134,6 +137,7 @@ project('modules/core') {
         org.cytoscape.io.webservice.client;version="[3,4)",
         org.cytoscape.io.webservice.swing;version="[3,4)",
         org.cytoscape.model;version="[3,4)",
+        org.cytoscape.model.subnetwork;version="[3,4)",
         org.cytoscape.property;version="[3,4)",
         org.cytoscape.service.util;version="[3,4)",
         org.cytoscape.task;version="[3,4)",
@@ -148,8 +152,7 @@ project('modules/core') {
         org.cytoscape.work.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
-        model.builder.common.model,
-        model.builder.common.util,
+        model.builder.common,
         model.builder.ui,
         model.builder.web.api,
         org.osgi.framework,
@@ -161,7 +164,8 @@ project('modules/core') {
         javax.swing.plaf,
         sun.awt,
         sun.java2d.pipe,
-        sun.reflect
+        sun.reflect,
+        wslite.rest
       '''
       instruction 'Bundle-Activator', 'model.builder.core.Activator'
       instruction 'Export-Package', 'model.builder.core'

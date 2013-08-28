@@ -1,5 +1,9 @@
 package model.builder.ui
 
+import org.cytoscape.io.webservice.WebServiceClient
+import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient
+import org.cytoscape.work.TaskManager
+
 import javax.swing.JList
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -16,13 +20,11 @@ import java.awt.Window
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
-import java.awt.GridLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
 import javax.swing.JButton
 import javax.swing.JCheckBox
-import javax.swing.JComboBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -47,10 +49,14 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
     private final JButton search
     private final JButton cancel
     private final API client
+    private final WebServiceClient cyWsClient
+    private final TaskManager taskMgr
     private Map currentSearch
 
-    SearchModelsPanel(API client) {
+    SearchModelsPanel(API client, WebServiceClient cyWsClient, TaskManager taskMgr) {
         this.client = client
+        this.cyWsClient = cyWsClient
+        this.taskMgr = taskMgr
 
         setSize(650, 400)
 
@@ -143,7 +149,10 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
                 }
             }
         } else if (src == open) {
-            int[] rows = models.selectedRows
+            models.selectedRows.
+                collect {models.convertRowIndexToModel(it)}.
+                collect {searchModel.data[it]}.
+                each { taskMgr.execute(cyWsClient.createTaskIterator(it))}
         } else if (src == search) {
             def species = []
             if (humanChk.selected) species << '9606'
@@ -158,7 +167,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
 
             def solr = res.data.response
             def models = solr.docs.collect {
-                new Model(client.uri(it.id), it.name)
+                new Model(client.id(it.id), it.name)
             }.sort {it.name}
             searchModel.setData(solr.numFound, models)
         }

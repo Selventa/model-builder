@@ -5,7 +5,7 @@ import groovy.transform.TupleConstructor
 @TupleConstructor
 class Model {
 
-    final String uri
+    final String id
     final String name
 
     def String toString() { name }
