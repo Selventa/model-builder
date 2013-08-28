@@ -42,6 +42,12 @@ class SdpAPI implements API {
     }
 
     @Override
+    String uri(String idKey) {
+        def (type, id) = idKey.split(/:/)
+        "${client.url}/api/$type/$id"
+    }
+
+    @Override
     WebResponse model(String id) {
         client.get(path: "/api/models/$id") as WebResponse
     }
