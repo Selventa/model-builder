@@ -12,7 +12,7 @@ class Activator extends AbstractCyActivator {
      */
     @Override
     void start(BundleContext bc) throws Exception {
-        API wsAPI = new SdpAPI('https://sdpdemo.selventa.com/api')
+        API wsAPI = new SdpAPI('https://sdpdemo.selventa.com')
         registerService(bc, wsAPI, API.class, [:].asType(Properties.class))
     }
 }

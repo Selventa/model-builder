@@ -1,5 +1,6 @@
 package model.builder.ui
 
+import static java.awt.Dialog.ModalityType.APPLICATION_MODAL
 import javax.swing.BorderFactory
 import java.awt.BorderLayout
 import java.awt.Color;
@@ -430,7 +431,7 @@ class SdpModelImportProvider<T> extends JDialog {
         final String clientName = wsc.getDisplayName();
         final String description = wsc.getDescription();
 
-        final AboutDialog aboutDialog = new AboutDialog(this, ModalityType.APPLICATION_MODAL, openBrowser);
+        final AboutDialog aboutDialog = new AboutDialog(this, APPLICATION_MODAL, openBrowser);
         aboutDialog.showDialog("About " + clientName, null, description);
     }
 

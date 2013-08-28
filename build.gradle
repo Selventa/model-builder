@@ -249,6 +249,7 @@ project('modules/ui') {
       instruction 'Import-Package', '''
         groovy.lang;version="[2.1,3)",
         groovy.swing;version="[2.1,3)",
+        groovy.transform;version="[2.1,3)",
         groovy.util;version="[2.1,3)",
         javax.accessibility,
         javax.swing,
@@ -314,6 +315,7 @@ project('modules/web') {
       symbolicName = 'model.builder.web'
       instruction 'Import-Package', '''
         groovy.lang;version="[2.1,3)",
+        org.apache.commons.codec.binary,
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
@@ -330,6 +332,8 @@ project('modules/web') {
         wslite.http,
         wslite.rest,
         wslite.soap,
+        javax.crypto,
+        javax.crypto.spec,
         javax.net.ssl,
         sun.reflect
       '''
