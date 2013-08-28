@@ -1,6 +1,7 @@
 package model.builder.core
 
 import model.builder.ui.SdpModelImportProvider
+import model.builder.web.api.API
 import org.cytoscape.application.swing.CyAction
 import org.cytoscape.application.swing.CySwingApplication
 import org.cytoscape.io.webservice.WebServiceClient
@@ -29,11 +30,12 @@ class Activator extends AbstractCyActivator {
         CySwingApplication cySwingApp = getService(bc, CySwingApplication.class)
         DialogTaskManager taskMgr = getService(bc, DialogTaskManager.class)
         OpenBrowser www = getService(bc, OpenBrowser.class)
+        API api = getService(bc, API.class)
 
         JPanel ui = new JPanel()
         ui.add(new JLabel("UI goes here, bleh."))
         registerAllServices(bc, ui, [:] as Properties)
-        registerAllServices(bc, new BasicSdpModelImport(), [:] as Properties)
+        registerAllServices(bc, new BasicSdpModelImport(api), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(
                     SdpModelImport.class, 'Import Model from SDP',

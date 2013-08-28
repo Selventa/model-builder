@@ -228,6 +228,8 @@ project('modules/ui') {
   }
 
   dependencies {
+    compile project(':modules/common')
+    compile project(':modules/web')
     compile files(
       "$rootDir/libs/compile/groovy-all-2.1.6.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
@@ -253,11 +255,22 @@ project('modules/ui') {
         javax.swing.border,
         javax.swing.event,
         javax.swing.plaf,
+        javax.print,
+        javax.print.attribute,
+        javax.swing.table,
+        javax.swing.text,
+        model.builder.common,
+        model.builder.web.api,
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
+        org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
         org.codehaus.groovy.runtime.wrappers;version="[2.1,3)",
         org.cytoscape.application.swing;version="[3,4)",
+        org.cytoscape.io.webservice;version="[3,4)",
+        org.cytoscape.io.webservice.swing;version="[3,4)",
+        org.cytoscape.util.swing;version="[3,4)",
+        org.cytoscape.work;version="[3,4)",
         org.slf4j;version="[1,2)",
         sun.awt,
         sun.java2d.pipe,

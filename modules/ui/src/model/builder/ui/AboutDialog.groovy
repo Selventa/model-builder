@@ -1,4 +1,4 @@
-package model.builder.core
+package model.builder.ui
 
 import java.awt.Color
 import java.awt.Dialog;

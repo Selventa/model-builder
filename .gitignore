@@ -3,5 +3,6 @@
 *.iws
 .gradle
 build
+out
 tools/cytoscape/framework/instances/instance.properties
 tools/cytoscape/work/*
