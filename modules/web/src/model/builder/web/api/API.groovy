@@ -9,4 +9,6 @@ interface API {
     WebResponse models()
 
     WebResponse searchModels(Map data)
+
+    WebResponse modelTags()
 }

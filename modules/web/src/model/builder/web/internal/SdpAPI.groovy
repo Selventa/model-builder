@@ -64,11 +64,18 @@ class SdpAPI implements API {
         params.start = data.start ?: 0
         params.rows = data.rows ?: 100
         if (data.tags)
-            params.q += " AND (${data.tags.collect {"tags:$it"}.join(' OR ')})"
+            params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.species)
-            params.q += " AND (${data.species.collect {"species:$it"}.join(' OR ')})"
+            params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
+        println params.toMapString()
+        client.get(path: '/search', query: params) as WebResponse
+    }
+
+    @Override
+    WebResponse modelTags() {
+        def params = [q: 'type:model', rows: '0', facet: 'on', 'facet.field': 'tags']
         client.get(path: '/search', query: params) as WebResponse
     }
 
