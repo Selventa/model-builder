@@ -144,8 +144,15 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
         } else if (src == open) {
             int[] rows = models.selectedRows
         } else if (src == search) {
+            def species = []
+            if (humanChk.selected) species << '9606'
+            if (mouseChk.selected) species << '10090'
+            if (ratChk.selected) species << '10116'
             WebResponse res = client.searchModels(
-                    currentSearch = [name: "*${name.text}*", rows: 100])
+                    currentSearch = [
+                            name: "*${name.text}*",
+                            species: species,
+                            rows: 100])
             def solr = res.data.response
             def models = solr.docs.collect {
                 new Model(client.uri(it.id), it.name)
