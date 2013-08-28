@@ -4,9 +4,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../
 cd "${DIR}" || exit 1
 . env.sh || exit 1
 
-# initial deploy
-. scripts/deploy.sh
-
 # loop
 while inotifywait -qq -r -e modify "$PLUGIN_MODULES_DIR"; do
     gradle -q compileGroovy jar
