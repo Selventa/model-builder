@@ -42,9 +42,14 @@ class SdpAPI implements API {
     }
 
     @Override
-    String uri(String idKey) {
-        def (type, id) = idKey.split(/:/)
+    String uri(String searchKey) {
+        def (type, id) = searchKey.split(/:/)
         "${client.url}/api/$type/$id"
+    }
+
+    @Override
+    String id(String searchKey) {
+        searchKey.split(/:/)[1]
     }
 
     @Override
