@@ -64,24 +64,12 @@ class SdpAPI implements API {
 
     @Override
     WebResponse model(String id) {
-        WebResponse res = client.get(path: "/api/models/$id") as WebResponse
-        if (res.data) {
-            def map = res.data
-            map.model.id = this.id(map.model.uri as String)
-        }
-        res
+        addModelData(client.get(path: "/api/models/$id") as WebResponse)
     }
 
     @Override
     WebResponse models() {
-        WebResponse res = client.get(path: '/api/models') as WebResponse
-        if (res.data) {
-            def map = res.data
-            map.models.each {
-                it.id = this.id(it.uri as String)
-            }
-        }
-        res
+        addModelData(client.get(path: '/api/models') as WebResponse)
     }
 
     @Override
@@ -105,6 +93,22 @@ class SdpAPI implements API {
         client.get(path: '/search', query: params) as WebResponse
     }
 
+    @Override
+    WebResponse[] modelRevisions(id, revision) {
+        [revision].flatten().collect {
+            String path = "/api/models/$id/revisions/$revision"
+            client.get(path: path) as WebResponse
+        } as WebResponse[]
+    }
+
+    def WebResponse addModelData(WebResponse response) {
+        if (response.data) {
+            def map = response.data
+            map.model.id = this.id(map.model.uri as String)
+        }
+        response
+    }
+
     static void main(String[] args) {
 
         def proxy = ProxyMetaClass.getInstance(SdpAPI.class)
@@ -113,6 +117,7 @@ class SdpAPI implements API {
             API api = new SdpAPI('https://sdpdemo.selventa.com')
             try {
                 println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
+                println JsonOutput.prettyPrint(JsonOutput.toJson(api.modelRevisions('519695ea42bc1d34b1757f5a', 0).data))
 //                println JsonOutput.toJson(api.models().data)
 //                println api.searchModels(rows: 500).data.response.numFound
 //                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound
