@@ -48,18 +48,40 @@ class SdpAPI implements API {
     }
 
     @Override
-    String id(String searchKey) {
-        searchKey.split(/:/)[1]
+    String id(String str) {
+        // try as uri
+        try {
+            def uri = new URI(str)
+            def match = uri =~ /\/api\/models\/(.+)/
+            if (match.matches()) return match[0][1]
+        } catch (URISyntaxException e) {
+            // don't fail hard; not a uri
+        }
+
+        // try as solr id (type:id)
+        str.split(/:/)[1]
     }
 
     @Override
     WebResponse model(String id) {
-        client.get(path: "/api/models/$id") as WebResponse
+        WebResponse res = client.get(path: "/api/models/$id") as WebResponse
+        if (res.data) {
+            def map = res.data
+            map.model.id = this.id(map.model.uri as String)
+        }
+        res
     }
 
     @Override
     WebResponse models() {
-        client.get(path: '/api/models') as WebResponse
+        WebResponse res = client.get(path: '/api/models') as WebResponse
+        if (res.data) {
+            def map = res.data
+            map.models.each {
+                it.id = this.id(it.uri as String)
+            }
+        }
+        res
     }
 
     @Override
@@ -90,13 +112,13 @@ class SdpAPI implements API {
         proxy.use {
             API api = new SdpAPI('https://sdpdemo.selventa.com')
             try {
-                println JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data)
-                println JsonOutput.toJson(api.models().data)
-                println api.searchModels(rows: 500).data.response.numFound
-                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound
-                println api.searchModels(tags: ['NetworkKnitting', 'SDPmigration'], species: ['9606']).data.response.numFound
-                println api.searchModels(name: 'Angiogenesis*').data.response.numFound
-                println JsonOutput.prettyPrint(JsonOutput.toJson(api.searchModels(name: 'Angiogenesis*', start: 5, rows: 1).data.response.docs))
+                println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
+//                println JsonOutput.toJson(api.models().data)
+//                println api.searchModels(rows: 500).data.response.numFound
+//                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound
+//                println api.searchModels(tags: ['NetworkKnitting', 'SDPmigration'], species: ['9606']).data.response.numFound
+//                println api.searchModels(name: 'Angiogenesis*').data.response.numFound
+//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.searchModels(name: 'Angiogenesis*', start: 5, rows: 1).data.response.docs))
             } catch (HTTPClientException e) {
                 println "${e.response.statusCode}: ${e.response.statusMessage}"
             }

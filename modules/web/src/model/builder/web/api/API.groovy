@@ -4,7 +4,7 @@ interface API {
 
     String uri(String id)
 
-    String id(String searchId)
+    String id(String str)
 
     WebResponse model(String id)
 

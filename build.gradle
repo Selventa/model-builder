@@ -152,6 +152,7 @@ project('modules/core') {
         org.cytoscape.work.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
+        org.openbel.kamnav.core;version="[1,2)",
         model.builder.common,
         model.builder.ui,
         model.builder.web.api,

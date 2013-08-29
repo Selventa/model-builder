@@ -1,12 +1,7 @@
 package model.builder.core
 
 import groovy.transform.TupleConstructor
-import model.builder.common.Model
 import model.builder.web.api.API
-import model.builder.web.api.WebResponse
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import wslite.rest.RESTClientException
 
 import static org.cytoscape.model.CyNetwork.NAME
 import org.cytoscape.application.CyApplicationManager
@@ -21,9 +16,7 @@ import org.cytoscape.work.TaskMonitor
 @TupleConstructor
 class CreateCyNetwork extends AbstractTask {
 
-    private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
-
-    final Model model
+    final Map model
     final API api
     final CyApplicationManager appMgr
     final CyNetworkFactory cynFac
@@ -40,12 +33,31 @@ class CreateCyNetwork extends AbstractTask {
         monitor.progress = 0.0d
         monitor.statusMessage = "Retrieving ${model.name}"
 
-        try {
-            api.model(model.id)
-        } catch (RESTClientException e) {
-            msg.error("Error retrieving ${model.name}")
-            throw new RuntimeException('Failed to create network for model', e)
-        }
+        /*
+        {
+    "model": {
+        "species": 9606,
+        "name": "Network",
+        "links": [
+            {
+                "rel": "next_revision",
+                "uri": "https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1"
+            }
+        ],
+        "_created_at": "2013-05-17T20:41:14Z",
+        "revisions": [
+            {
+                "when": "2013-05-17T20:41:14Z",
+                "comment": "new model; set to homo sapiens",
+                "network": "https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/0",
+                "who": "test@sdpdemo.selventa.com"
+            }
+        ],
+        "uri": "https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a"
+    }
+}
+         */
+
         monitor.progress = 1.0d
         CyNetwork network = cynFac.createNetwork()
         network.getRow(network).set(NAME, this.model.name)

@@ -16,6 +16,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory
 import org.cytoscape.view.model.CyNetworkViewManager
 import org.cytoscape.view.vizmap.VisualMappingManager
 import org.cytoscape.work.swing.DialogTaskManager
+import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 
 import static java.awt.event.KeyEvent.*
 import static java.awt.event.InputEvent.*
@@ -47,6 +48,7 @@ class Activator extends AbstractCyActivator {
         VisualMappingManager visMgr = getService(bc, VisualMappingManager.class)
         CyEventHelper evtHelper = getService(bc, CyEventHelper.class)
         ApplyPreferredLayoutTaskFactory aplFac = getService(bc, ApplyPreferredLayoutTaskFactory.class)
+        AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
 
         OpenBrowser www = getService(bc, OpenBrowser.class)
         API api = getService(bc, API.class)
@@ -54,7 +56,7 @@ class Activator extends AbstractCyActivator {
         JPanel ui = new JPanel()
         ui.add(new JLabel("UI goes here, bleh."))
         registerAllServices(bc, ui, [:] as Properties)
-        registerAllServices(bc, new BasicSdpModelImport(api, taskMgr, appMgr, cynFac, cynvFac, cynMgr, cynvMgr), [:] as Properties)
+        registerAllServices(bc, new BasicSdpModelImport(api, taskMgr, appMgr, cynFac, cynvFac, cynMgr, cynvMgr, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(
                     SdpModelImport.class, 'Import Model from SDP',
