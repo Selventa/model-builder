@@ -52,8 +52,8 @@ class SdpAPI implements API {
         // try as uri
         try {
             def uri = new URI(str)
-            def match = uri =~ /\/api\/models\/(.+)/
-            if (match.matches()) return match[0][1]
+            def match = (uri as String) =~ /\/api\/models\/(.+)/
+            if (match.find()) return match[0][1]
         } catch (URISyntaxException e) {
             // don't fail hard; not a uri
         }
