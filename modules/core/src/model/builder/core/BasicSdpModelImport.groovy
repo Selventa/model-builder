@@ -54,9 +54,12 @@ class BasicSdpModelImport extends AbstractWebServiceGUIClient implements SdpMode
                 WebResponse res = api.model(m.id)
                 def model = res.data.model
                 def tasks = new TaskIterator(
+                        // TODO update to create CyNetwork, add nodes/edges
                         new CreateCyNetwork(model as Map, api, appMgr, cynFac, cynvFac, cynMgr, cynvMgr)
                 )
                 tasks.append(addBelFac.createTaskIterator())
+                // TODO add task to create revisions table (keyed on network)
+                // TODO add task to create evidence table (keyed on edge)
                 return tasks
             } catch (RESTClientException e) {
                 msg.error("Error retrieving ${m.name}", e)

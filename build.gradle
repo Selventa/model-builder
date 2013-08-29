@@ -146,6 +146,7 @@ project('modules/core') {
         org.cytoscape.util.swing;version="[3,4)",
         org.cytoscape.view.layout;version="[3,4)",
         org.cytoscape.view.model;version="[3,4)",
+        org.cytoscape.view.presentation.property;version="[3,4)",
         org.cytoscape.view.vizmap;version="[3,4)",
         org.cytoscape.work;version="[3,4)",
         org.cytoscape.work.swing;version="[3,4)",
@@ -166,6 +167,7 @@ project('modules/core') {
         sun.awt,
         sun.java2d.pipe,
         sun.reflect,
+        wslite.json,
         wslite.rest
       '''
       instruction 'Bundle-Activator', 'model.builder.core.Activator'
