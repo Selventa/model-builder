@@ -80,7 +80,7 @@ class CreateCyNetwork extends AbstractTask {
 ]
 
          */
-        WebResponse rev = api.modelRevisions(model.id, 'current').first()
+        WebResponse rev = api.modelRevisions(model.id, 'latest').first()
         def revObj = rev.data.revision
 
         monitor.progress = 1.0d
