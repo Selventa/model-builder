@@ -1,5 +1,6 @@
 package model.builder.core
 
+import static model.builder.core.Util.*
 import model.builder.ui.SdpModelImportProvider
 import model.builder.web.api.API
 import org.cytoscape.application.CyApplicationManager
@@ -9,6 +10,8 @@ import org.cytoscape.event.CyEventHelper
 import org.cytoscape.io.webservice.WebServiceClient
 import org.cytoscape.model.CyNetworkFactory
 import org.cytoscape.model.CyNetworkManager
+import org.cytoscape.model.CyNetworkTableManager
+import org.cytoscape.model.CyTableFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager
@@ -37,30 +40,25 @@ class Activator extends AbstractCyActivator {
      */
     @Override
     void start(BundleContext bc) {
-        CySwingApplication cySwingApp = getService(bc, CySwingApplication.class)
-        DialogTaskManager taskMgr = getService(bc, DialogTaskManager.class)
-        CyApplicationManager appMgr = getService(bc, CyApplicationManager.class)
-        CyNetworkFactory cynFac = getService(bc, CyNetworkFactory.class)
-        CyNetworkManager cynMgr = getService(bc, CyNetworkManager.class)
-        CyNetworkViewFactory cynvFac = getService(bc, CyNetworkViewFactory.class)
-        CyNetworkViewManager cynvMgr = getService(bc, CyNetworkViewManager.class)
-        CyLayoutAlgorithmManager cylMgr = getService(bc, CyLayoutAlgorithmManager.class)
-        VisualMappingManager visMgr = getService(bc, VisualMappingManager.class)
-        CyEventHelper evtHelper = getService(bc, CyEventHelper.class)
-        ApplyPreferredLayoutTaskFactory aplFac = getService(bc, ApplyPreferredLayoutTaskFactory.class)
-        AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
+        def cyr = cyReference(bc, this.&getService,
+                CySwingApplication.class, DialogTaskManager.class, CyApplicationManager.class,
+                CyNetworkFactory.class, CyNetworkManager.class, CyNetworkViewFactory.class,
+                CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
+                VisualMappingManager.class, CyEventHelper.class, CyTableFactory.class,
+                CyNetworkTableManager.class, ApplyPreferredLayoutTaskFactory.class,
+                OpenBrowser.class)
 
-        OpenBrowser www = getService(bc, OpenBrowser.class)
+        AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
 
-        JPanel ui = new JPanel()
-        ui.add(new JLabel("UI goes here, bleh."))
-        registerAllServices(bc, ui, [:] as Properties)
-        registerAllServices(bc, new BasicSdpModelImport(api, taskMgr, appMgr, cynFac, cynvFac, cynMgr, cynvMgr, addBelFac), [:] as Properties)
+        registerAllServices(bc, new BasicSdpModelImport(api, cyr.dialogTaskManager,
+                cyr.cyApplicationManager, cyr.cyNetworkFactory, cyr.cyNetworkViewFactory,
+                cyr.cyNetworkManager, cyr.cyNetworkViewManager, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(
                     SdpModelImport.class, 'Import Model from SDP',
-                    cySwingApp, taskMgr, www)
+                    cyr.cySwingApplication, cyr.dialogTaskManager,
+                    cyr.openBrowser)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
                 WebServiceClient.class)
 
@@ -69,7 +67,7 @@ class Activator extends AbstractCyActivator {
             @Override
             void actionPerformed(ActionEvent e) {
                 sdpNetworks.prepareForDisplay()
-                sdpNetworks.locationRelativeTo = cySwingApp.JFrame
+                sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame
                 sdpNetworks.visible = true
             }
         }

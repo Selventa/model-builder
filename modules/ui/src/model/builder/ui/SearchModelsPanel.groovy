@@ -1,7 +1,6 @@
 package model.builder.ui
 
 import org.cytoscape.io.webservice.WebServiceClient
-import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient
 import org.cytoscape.work.TaskManager
 
 import javax.swing.JList
