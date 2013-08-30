@@ -82,6 +82,7 @@ class CreateCyNetwork extends AbstractTask {
          */
         WebResponse rev = api.modelRevisions(model.id, 'latest').first()
         def revObj = rev.data.revision
+        def network = revObj.network
 
         monitor.progress = 1.0d
         CyNetwork cyN = cynFac.createNetwork()
@@ -91,12 +92,10 @@ class CreateCyNetwork extends AbstractTask {
             cyN.defaultNetworkTable.createColumn('when', String.class, true)
         cyN.defaultNetworkTable.getColumn('comment') ?:
             cyN.defaultNetworkTable.createColumn('comment', String.class, true)
-        cyN.getRow(cyN).set(NAME, this.model.name)
+        cyN.getRow(cyN).set(NAME, network.name)
         cyN.getRow(cyN).set('who', revObj.who)
         cyN.getRow(cyN).set('when', revObj.when)
         cyN.getRow(cyN).set('comment', revObj.comment)
-
-        def network = revObj.network
 
         def Map<String, CyNode> nodes = [:]
         def edgeWithXY = network.edges.collect { JSONArray edge ->
@@ -116,11 +115,11 @@ class CreateCyNetwork extends AbstractTask {
             view.getNodeView(cyEdge.target).setVisualProperty(NODE_X_LOCATION, tgtXY.getInt(0))
             view.getNodeView(cyEdge.target).setVisualProperty(NODE_Y_LOCATION, tgtXY.getInt(1))
         }
-        view.fitContent()
-        view.updateView()
         cynMgr.addNetwork(cyN)
         cynvMgr.addNetworkView(view)
         appMgr.currentNetwork = cyN
         appMgr.currentNetworkView = view
+        view.updateView()
+        view.fitContent()
     }
 }

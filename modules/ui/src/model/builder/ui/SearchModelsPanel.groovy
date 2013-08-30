@@ -149,10 +149,10 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
                 }
             }
         } else if (src == open) {
-            models.selectedRows.
-                collect {models.convertRowIndexToModel(it)}.
-                collect {searchModel.data[it]}.
-                each { taskMgr.execute(cyWsClient.createTaskIterator(it))}
+            taskMgr.execute(cyWsClient.createTaskIterator(
+                models.selectedRows.
+                    collect {models.convertRowIndexToModel(it)}.
+                    collect {searchModel.data[it]}))
         } else if (src == search) {
             def species = []
             if (humanChk.selected) species << '9606'
@@ -226,7 +226,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
                 WebResponse res = client.searchModels(currentSearch + [start: models.size()])
                 def solr = res.data.response
                 def models = solr.docs.collect {
-                    new Model(client.uri(it.id), it.name)
+                    new Model(client.id(it.id), it.name)
                 }
                 models = this.models + models
                 models.sort {it.name}
