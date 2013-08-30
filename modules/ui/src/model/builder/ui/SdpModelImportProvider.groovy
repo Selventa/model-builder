@@ -1,36 +1,19 @@
 package model.builder.ui
 
-import static java.awt.Dialog.ModalityType.APPLICATION_MODAL
-import javax.swing.BorderFactory
-import java.awt.BorderLayout
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container
-import java.awt.Font
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
-import javax.swing.LayoutStyle;
-
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.webservice.WebServiceClient;
-import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.TaskManager;
-import org.slf4j.Logger;
+import org.cytoscape.application.swing.CySwingApplication
+import org.cytoscape.io.webservice.WebServiceClient
+import org.cytoscape.io.webservice.swing.WebServiceGUIClient
+import org.cytoscape.util.swing.OpenBrowser
+import org.cytoscape.work.TaskManager
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.awt.event.ActionListener;
+import javax.swing.*
+import java.awt.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+
+import static java.awt.Dialog.ModalityType.APPLICATION_MODAL
 
 class SdpModelImportProvider<T> extends JDialog {
 

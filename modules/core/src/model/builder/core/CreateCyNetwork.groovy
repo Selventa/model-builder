@@ -1,17 +1,17 @@
 package model.builder.core
 
-import wslite.json.JSONArray
-
-import static org.cytoscape.model.CyNetwork.NAME
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*
 import groovy.transform.TupleConstructor
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
-import org.cytoscape.model.CyNode
-
 import org.cytoscape.model.CyNetwork
+import org.cytoscape.model.CyNode
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
+import wslite.json.JSONArray
+
+import static org.cytoscape.model.CyNetwork.NAME
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION
 
 @TupleConstructor
 class CreateCyNetwork extends AbstractTask {

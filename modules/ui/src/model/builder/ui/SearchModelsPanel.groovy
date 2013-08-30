@@ -1,39 +1,22 @@
 package model.builder.ui
 
-import org.cytoscape.io.webservice.WebServiceClient
-import org.cytoscape.work.TaskManager
-
-import javax.swing.JList
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
-
-import static javax.swing.SwingConstants.RIGHT
-
 import model.builder.common.Model
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
+import org.cytoscape.io.webservice.WebServiceClient
+import org.cytoscape.work.TaskManager
 
-import javax.swing.RootPaneContainer
-import java.awt.Window
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTable
-import javax.swing.JTextField
-import javax.swing.ListSelectionModel
+import javax.swing.*
 import javax.swing.border.TitledBorder
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 import javax.swing.table.AbstractTableModel
+import java.awt.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.util.List
+
+import static javax.swing.SwingConstants.RIGHT
 
 final class SearchModelsPanel extends JPanel implements ActionListener {
 

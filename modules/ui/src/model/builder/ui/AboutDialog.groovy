@@ -1,26 +1,13 @@
 package model.builder.ui
 
-import java.awt.Color
-import java.awt.Dialog;
-import java.awt.Dimension
-import java.awt.Font;
-import java.awt.Window;
+import org.cytoscape.util.swing.OpenBrowser
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import javax.swing.GroupLayout;
-import javax.swing.Icon;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-
-import org.cytoscape.util.swing.OpenBrowser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.swing.*
+import javax.swing.event.HyperlinkEvent
+import javax.swing.event.HyperlinkListener
+import java.awt.*
 
 /**
  * About page for web service clients or other plugins. Accepts HTML as the

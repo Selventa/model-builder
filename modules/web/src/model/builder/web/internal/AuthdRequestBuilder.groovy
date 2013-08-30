@@ -1,17 +1,16 @@
 package model.builder.web.internal
 
-import static java.lang.System.currentTimeMillis
-import static model.builder.web.internal.Constant.HMAC
-
+import groovy.transform.TupleConstructor
 import org.apache.commons.codec.binary.Hex
+import wslite.http.HTTPMethod
+import wslite.http.HTTPRequest
+import wslite.rest.RequestBuilder
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-import groovy.transform.TupleConstructor
-import wslite.http.HTTPMethod
-import wslite.http.HTTPRequest
-import wslite.rest.RequestBuilder
+import static java.lang.System.currentTimeMillis
+import static model.builder.web.internal.Constant.HMAC
 
 @TupleConstructor
 class AuthdRequestBuilder extends RequestBuilder {
