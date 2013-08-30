@@ -149,7 +149,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
 
             def solr = res.data.response
             def models = solr.docs.collect {
-                new Model(client.id(it.id), it.name)
+                new Model(client.id(searchKey: it.id), it.name)
             }.sort {it.name}
             searchModel.setData(solr.numFound, models)
         }
@@ -208,7 +208,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
                 WebResponse res = client.searchModels(currentSearch + [start: models.size()])
                 def solr = res.data.response
                 def models = solr.docs.collect {
-                    new Model(client.id(it.id), it.name)
+                    new Model(client.id(searchKey: it.id), it.name)
                 }
                 models = this.models + models
                 models.sort {it.name}

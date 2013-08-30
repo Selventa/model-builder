@@ -14,6 +14,7 @@ import org.cytoscape.model.CyNetworkTableManager
 import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
+import org.cytoscape.task.TableCellTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager
@@ -67,5 +68,8 @@ class Activator extends AbstractCyActivator {
 
         registerService(bc, showModelImport, CyAction.class,
                 [id: 'showSDPModelImport'] as Properties)
+        registerService(bc, new OpenRevisionFactory(api, cyr, addBelFac),
+                TableCellTaskFactory.class,
+                [title: 'Open Model'] as Properties)
     }
 }

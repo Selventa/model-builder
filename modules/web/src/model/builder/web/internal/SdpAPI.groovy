@@ -1,6 +1,5 @@
 package model.builder.web.internal
 
-import groovy.json.JsonOutput
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
 import wslite.http.HTTPClientException
@@ -42,24 +41,33 @@ class SdpAPI implements API {
     }
 
     @Override
-    String uri(String searchKey) {
-        def (type, id) = searchKey.split(/:/)
-        "${client.url}/api/$type/$id"
+    String uri(Map data) {
+        if (data.searchKey) {
+            def (type, id) = data.searchKey.split(/:/)
+            return "${client.url}/api/$type/$id"
+        }
+
+        if (data.path) {
+            return client.url + data.path
+        }
+
+        def msg = "data map should contain either \"searchKey\" or \"path\""
+        throw new IllegalArgumentException(msg)
     }
 
     @Override
-    String id(String str) {
-        // try as uri
-        try {
-            def uri = new URI(str)
-            def match = (uri as String) =~ /\/api\/models\/(.+)/
-            if (match.find()) return match[0][1]
-        } catch (URISyntaxException e) {
-            // don't fail hard; not a uri
+    String id(Map data) {
+        if (data.searchKey) {
+            return data.searchKey.split(/:/)[1]
         }
 
-        // try as solr id (type:id)
-        str.split(/:/)[1]
+        if (data.uri) {
+            def uri = new URI(data.uri)
+            def match = (uri as String) =~ /\/api\/models\/\w+\/revisions\/(\d+|latest)/
+            if (match.find()) return match[0][1]
+            match = (uri as String) =~ /\/api\/models\/(.+)/
+            if (match.find()) return match[0][1]
+        }
     }
 
     @Override
@@ -94,7 +102,14 @@ class SdpAPI implements API {
     }
 
     @Override
-    WebResponse[] modelRevisions(id, revision) {
+    WebResponse[] modelRevisions(id, revision, uri = '') {
+        if (uri) {
+            def tokens = "$uri".split(/\/api\//)
+            if (tokens.length != 2)
+                throw new IllegalArgumentException("uri is an invalid model revision uri: $uri")
+            return client.get(path: "/api/${tokens[1]}") as WebResponse
+        }
+
         [revision].flatten().collect {
             String path = "/api/models/$id/revisions/$revision"
             client.get(path: path) as WebResponse
@@ -104,7 +119,7 @@ class SdpAPI implements API {
     def WebResponse addModelData(WebResponse response) {
         if (response.data) {
             def map = response.data
-            map.model.id = this.id(map.model.uri as String)
+            map.model.id = this.id(uri: map.model.uri as String)
         }
         response
     }
@@ -116,8 +131,11 @@ class SdpAPI implements API {
         proxy.use {
             API api = new SdpAPI('https://sdpdemo.selventa.com')
             try {
-                println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
-                println JsonOutput.prettyPrint(JsonOutput.toJson(api.modelRevisions('519695ea42bc1d34b1757f5a', 0).data))
+                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')
+                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/latest')
+                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a')
+//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
+//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.modelRevisions('519695ea42bc1d34b1757f5a', 0).data))
 //                println JsonOutput.toJson(api.models().data)
 //                println api.searchModels(rows: 500).data.response.numFound
 //                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound

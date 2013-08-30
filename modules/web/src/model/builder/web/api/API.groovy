@@ -2,9 +2,9 @@ package model.builder.web.api
 
 interface API {
 
-    String uri(String id)
+    String uri(Map data)
 
-    String id(String str)
+    String id(Map data)
 
     WebResponse model(String id)
 
@@ -14,5 +14,5 @@ interface API {
 
     WebResponse modelTags()
 
-    WebResponse[] modelRevisions(id, revision)
+    WebResponse[] modelRevisions(id, revision, uri)
 }

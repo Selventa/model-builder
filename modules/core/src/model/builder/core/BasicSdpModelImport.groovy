@@ -34,10 +34,11 @@ class BasicSdpModelImport extends AbstractWebServiceGUIClient implements SdpMode
             try {
                 WebResponse res = api.model(it.id)
                 def model = res.data.model
-                tasks.append(new CreateCyNetwork(model as Map, api, cyRef))
+                def revisionNumber = model.revisions.length() - 1 as Integer
+                WebResponse rev = api.modelRevisions(it.id, revisionNumber, '').first()
+                tasks.append(new CreateCyNetworkForModelRevision(revisionNumber, rev.data.revision as Map, cyRef))
                 tasks.append(addBelFac.createTaskIterator())
-                tasks.append(new AddRevisionsTable(model as Map, cyRef))
-                // TODO add task to create revisions table (keyed on network)
+                tasks.append(new AddRevisionsTable(model as Map, api, cyRef))
             } catch (RESTClientException e) {
                 msg.error("Error retrieving ${m.name}", e)
             }
