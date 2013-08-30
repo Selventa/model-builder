@@ -12,6 +12,7 @@ import org.cytoscape.model.CyNetworkFactory
 import org.cytoscape.model.CyNetworkManager
 import org.cytoscape.model.CyNetworkTableManager
 import org.cytoscape.model.CyTableFactory
+import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
@@ -42,24 +43,19 @@ class Activator extends AbstractCyActivator {
                 CyNetworkFactory.class, CyNetworkManager.class, CyNetworkViewFactory.class,
                 CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
                 VisualMappingManager.class, CyEventHelper.class, CyTableFactory.class,
-                CyNetworkTableManager.class, ApplyPreferredLayoutTaskFactory.class,
-                OpenBrowser.class)
+                CyTableManager.class, CyNetworkTableManager.class,
+                ApplyPreferredLayoutTaskFactory.class, OpenBrowser.class)
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
 
         registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
-            new SdpModelImportProvider<>(
-                    SdpModelImport.class, 'Import Model from SDP',
-                    cyr.cySwingApplication, cyr.dialogTaskManager,
-                    cyr.openBrowser)
+            new SdpModelImportProvider<>(SdpModelImport.class, 'Import Model', cyr)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
                 WebServiceClient.class)
 
         AbstractCyAction showModelImport = new AbstractCyAction('SDP...') {
-
-            @Override
             void actionPerformed(ActionEvent e) {
                 sdpNetworks.prepareForDisplay()
                 sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame

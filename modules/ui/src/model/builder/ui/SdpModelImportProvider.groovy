@@ -1,10 +1,7 @@
 package model.builder.ui
 
-import org.cytoscape.application.swing.CySwingApplication
 import org.cytoscape.io.webservice.WebServiceClient
 import org.cytoscape.io.webservice.swing.WebServiceGUIClient
-import org.cytoscape.util.swing.OpenBrowser
-import org.cytoscape.work.TaskManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -17,60 +14,56 @@ import static java.awt.Dialog.ModalityType.APPLICATION_MODAL
 
 class SdpModelImportProvider<T> extends JDialog {
 
-    private static final Logger logger = LoggerFactory.getLogger(SdpModelImportProvider.class);
-    private static final String NO_CLIENT = "No Service Client";
+    private static final Logger logger = LoggerFactory.getLogger(SdpModelImportProvider.class)
+    private static final String NO_CLIENT = "No Service Client"
 
-    private JButton cancelButton;
-    private JComboBox datasourceComboBox;
-    private JLabel datasourceLabel;
-    private JTabbedPane mainTabbedPane;
-    private JPanel propertyPanel;
-    private JScrollPane propertyScrollPane;
-    private JButton searchButton;
-    private JScrollPane searchTermScrollPane;
-    private JTextPane queryTextPane;
-    private JButton aboutButton;
-    private JPanel buttonPanel;
-    private JPanel queryPanel;
-    private JButton clearButton;
-    private JPanel dataQueryPanel;
-    private JPanel datasourcePanel;
-    private JLabel titleIconLabel;
-    private JPanel titlePanel;
+    private JButton cancelButton
+    private JComboBox datasourceComboBox
+    private JLabel datasourceLabel
+    private JTabbedPane mainTabbedPane
+    private JPanel propertyPanel
+    private JScrollPane propertyScrollPane
+    private JButton searchButton
+    private JScrollPane searchTermScrollPane
+    private JTextPane queryTextPane
+    private JButton aboutButton
+    private JPanel buttonPanel
+    private JPanel queryPanel
+    private JButton clearButton
+    private JPanel dataQueryPanel
+    private JPanel datasourcePanel
+    private JLabel titleIconLabel
+    private JPanel titlePanel
 
     // Registered web service clients
-    private Set<WebServiceClient> clients;
+    private Set<WebServiceClient> clients
 
     // Client-Dependent GUI panels
-    private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<WebServiceClient, Container>();
-    private int numClients;
+    private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<WebServiceClient, Container>()
+    private int numClients
 
-    private final TaskManager<?, ?> taskManager;
+    private final Class<T> type
+    private final Expando cyRef
 
-    private final Class<T> type;
+    boolean readyToShow
 
-    private final OpenBrowser openBrowser;
+    public SdpModelImportProvider(final Class<T> type, final String title, final Expando cyRef) {
+        super(cyRef.cySwingApplication.JFrame, true)
+        if (cyRef == null)
+            throw new NullPointerException("TaskManager is null.")
 
-    boolean readyToShow;
+        this.type = type
+        this.cyRef = cyRef
 
-    public SdpModelImportProvider(final Class<T> type, final String title, final CySwingApplication cySwingApplicationServiceRef, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
-        super(cySwingApplicationServiceRef.getJFrame(), true);
-        if (taskManager == null)
-            throw new NullPointerException("TaskManager is null.");
+        numClients = 0
+        this.clients = new HashSet<WebServiceClient>()
 
-        this.type = type;
-        this.taskManager = taskManager;
-        this.openBrowser = openBrowser;
+        initGUI()
 
-        numClients = 0;
-        this.clients = new HashSet<WebServiceClient>();
+        datasourceComboBox.addItem(NO_CLIENT)
+        setComponentsEnabled(false)
 
-        initGUI();
-
-        datasourceComboBox.addItem(NO_CLIENT);
-        setComponentsEnabled(false);
-
-        this.setTitle(title);
+        this.setTitle(title)
     }
 
 
@@ -78,23 +71,23 @@ class SdpModelImportProvider<T> extends JDialog {
             final WebServiceClient client, @SuppressWarnings("rawtypes") Map props) {
 
         if(!typeCheck(client))
-            return;
+            return
 
         if(this.numClients == 0)
-            this.datasourceComboBox.removeAllItems();
+            this.datasourceComboBox.removeAllItems()
 
-        datasourceComboBox.addItem(client);
-        this.clients.add((WebServiceClient) client);
-        numClients++;
-        setComponentsEnabled(true);
+        datasourceComboBox.addItem(client)
+        this.clients.add((WebServiceClient) client)
+        numClients++
+        setComponentsEnabled(true)
 
         if (client instanceof WebServiceGUIClient) {
-            serviceUIPanels.put((WebServiceClient) client, null);
+            serviceUIPanels.put((WebServiceClient) client, null)
         }
         if(datasourceComboBox.getModel().getSize() != 0)
-            datasourceComboBox.setSelectedIndex(0);
-        datasourceComboBoxActionPerformed(null);
-        logger.info("New network import client registered: " + client);
+            datasourceComboBox.setSelectedIndex(0)
+        datasourceComboBoxActionPerformed(null)
+        logger.info("New network import client registered: " + client)
     }
 
 
@@ -102,131 +95,131 @@ class SdpModelImportProvider<T> extends JDialog {
             final WebServiceClient client, @SuppressWarnings("rawtypes") Map props) {
 
         if(!typeCheck(client))
-            return;
+            return
 
-        datasourceComboBox.removeItem(client);
-        this.clients.remove(client);
-        serviceUIPanels.remove(client);
-        numClients--;
+        datasourceComboBox.removeItem(client)
+        this.clients.remove(client)
+        serviceUIPanels.remove(client)
+        numClients--
 
         if(numClients == 0) {
-            this.datasourceComboBox.removeAllItems();
-            this.datasourceComboBox.addItem(NO_CLIENT);
-            setComponentsEnabled(false);
+            this.datasourceComboBox.removeAllItems()
+            this.datasourceComboBox.addItem(NO_CLIENT)
+            setComponentsEnabled(false)
         }
     }
 
 
     private boolean typeCheck(final WebServiceClient client) {
-        final Class<?>[] interfaces = client.getClass().getInterfaces();
-        boolean found = false;
+        final Class<?>[] interfaces = client.getClass().getInterfaces()
+        boolean found = false
         for(final Class<?> inf: interfaces) {
             if(inf.equals(type)) {
-                found = true;
-                break;
+                found = true
+                break
             }
         }
-        return found;
+        return found
     }
 
 
     private void initGUI() {
 
-        initComponents();
+        initComponents()
 
         // If we have no data sources, show the install panel
-        getContentPane().setLayout(new BorderLayout());
-        this.getContentPane().add(queryPanel, BorderLayout.CENTER);
-        this.pack();
+        getContentPane().setLayout(new BorderLayout())
+        this.getContentPane().add(queryPanel, BorderLayout.CENTER)
+        this.pack()
 
         // Initialize GUI panel.
-        datasourceComboBoxActionPerformed(null);
+        datasourceComboBoxActionPerformed(null)
     }
 
     private void setComponentsEnabled(boolean enable) {
-        datasourceComboBox.setEnabled(enable);
-        this.searchButton.setEnabled(enable);
-        this.aboutButton.setEnabled(enable);
-        this.cancelButton.setEnabled(enable);
+        datasourceComboBox.setEnabled(enable)
+        this.searchButton.setEnabled(enable)
+        this.aboutButton.setEnabled(enable)
+        this.cancelButton.setEnabled(enable)
     }
 
 
 
     private void initComponents() {
-        mainTabbedPane = new JTabbedPane();
-        searchTermScrollPane = new JScrollPane();
-        queryTextPane = new JTextPane();
-        propertyPanel = new JPanel();
+        mainTabbedPane = new JTabbedPane()
+        searchTermScrollPane = new JScrollPane()
+        queryTextPane = new JTextPane()
+        propertyPanel = new JPanel()
 
-        queryTextPane.setFont(new Font("SansSerif", 0, 12));
-        queryTextPane.setText("Please enter search terms...");
-        searchTermScrollPane.setViewportView(queryTextPane);
+        queryTextPane.setFont(new Font("SansSerif", 0, 12))
+        queryTextPane.setText("Please enter search terms...")
+        searchTermScrollPane.setViewportView(queryTextPane)
 
-        mainTabbedPane.addTab("Query", searchTermScrollPane);
+        mainTabbedPane.addTab("Query", searchTermScrollPane)
 
-        GroupLayout propertyPanelLayout = new GroupLayout(propertyPanel);
-        propertyPanel.setLayout(propertyPanelLayout);
+        GroupLayout propertyPanelLayout = new GroupLayout(propertyPanel)
+        propertyPanel.setLayout(propertyPanelLayout)
         propertyPanelLayout.setHorizontalGroup(propertyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGap(0, 408, Short.MAX_VALUE));
+                .addGap(0, 408, Short.MAX_VALUE))
         propertyPanelLayout.setVerticalGroup(propertyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGap(0, 303, Short.MAX_VALUE));
+                .addGap(0, 303, Short.MAX_VALUE))
 
-        propertyScrollPane = new JScrollPane();
-        propertyScrollPane.setViewportView(propertyPanel);
-        mainTabbedPane.addTab("Search Property", propertyScrollPane);
+        propertyScrollPane = new JScrollPane()
+        propertyScrollPane.setViewportView(propertyPanel)
+        mainTabbedPane.addTab("Search Property", propertyScrollPane)
 
-        titlePanel = new JPanel();
-        titleIconLabel = new JLabel();
-        datasourcePanel = new JPanel();
-        datasourceLabel = new JLabel();
-        datasourceComboBox = new JComboBox();
-        datasourceComboBox.setRenderer(new ClientComboBoxCellRenderer());
-        aboutButton = new JButton();
-        buttonPanel = new JPanel();
-        searchButton = new JButton();
-        cancelButton = new JButton();
-        clearButton = new JButton();
-        dataQueryPanel = new JPanel();
+        titlePanel = new JPanel()
+        titleIconLabel = new JLabel()
+        datasourcePanel = new JPanel()
+        datasourceLabel = new JLabel()
+        datasourceComboBox = new JComboBox()
+        datasourceComboBox.setRenderer(new ClientComboBoxCellRenderer())
+        aboutButton = new JButton()
+        buttonPanel = new JPanel()
+        searchButton = new JButton()
+        cancelButton = new JButton()
+        clearButton = new JButton()
+        dataQueryPanel = new JPanel()
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE)
 
-        titlePanel.setBackground(new Color(0, 0, 0));
+        titlePanel.setBackground(new Color(0, 0, 0))
 
-//		titleIconLabel.setIcon(NETWORK_IMPORT_ICON);
+//		titleIconLabel.setIcon(NETWORK_IMPORT_ICON)
 
-        GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-        titlePanel.setLayout(titlePanelLayout);
+        GroupLayout titlePanelLayout = new GroupLayout(titlePanel)
+        titlePanel.setLayout(titlePanelLayout)
         titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(titleIconLabel, GroupLayout.PREFERRED_SIZE, 461, GroupLayout.PREFERRED_SIZE));
+                .addComponent(titleIconLabel, GroupLayout.PREFERRED_SIZE, 461, GroupLayout.PREFERRED_SIZE))
         titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(titleIconLabel));
+                .addComponent(titleIconLabel))
 
-        datasourceLabel.setFont(new Font("SansSerif", 0, 12));
-        datasourceLabel.setText("Data Source");
+        datasourceLabel.setFont(new Font("SansSerif", 0, 12))
+        datasourceLabel.setText("Data Source")
 
         datasourceComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                datasourceComboBoxActionPerformed(evt);
+                datasourceComboBoxActionPerformed(evt)
             }
-        });
+        })
 
-        aboutButton.setText("About");
-        aboutButton.setMargin(new Insets(2, 5, 2, 5));
+        aboutButton.setText("About")
+        aboutButton.setMargin(new Insets(2, 5, 2, 5))
         aboutButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                aboutButtonActionPerformed(evt);
+                aboutButtonActionPerformed(evt)
             }
-        });
+        })
 
-        GroupLayout datasourcePanelLayout = new GroupLayout(datasourcePanel);
-        datasourcePanel.setLayout(datasourcePanelLayout);
+        GroupLayout datasourcePanelLayout = new GroupLayout(datasourcePanel)
+        datasourcePanel.setLayout(datasourcePanelLayout)
         datasourcePanelLayout.setHorizontalGroup(datasourcePanelLayout.createParallelGroup(
                 GroupLayout.Alignment.LEADING).addGroup(
                 datasourcePanelLayout.createSequentialGroup().addContainerGap().addComponent(datasourceLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(datasourceComboBox, 0, 301, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(aboutButton)
-                        .addContainerGap()));
+                        .addContainerGap()))
         datasourcePanelLayout.setVerticalGroup(datasourcePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(
                 datasourcePanelLayout
@@ -239,40 +232,40 @@ class SdpModelImportProvider<T> extends JDialog {
                                 .addComponent(aboutButton)
                                 .addComponent(datasourceComboBox, GroupLayout.PREFERRED_SIZE,
                                 GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
 
-        buttonPanel.setBorder(BorderFactory.createEtchedBorder());
+        buttonPanel.setBorder(BorderFactory.createEtchedBorder())
 
-        searchButton.setText("Search");
+        searchButton.setText("Search")
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                searchButtonActionPerformed();
+                searchButtonActionPerformed()
             }
-        });
+        })
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText("Cancel")
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
+                cancelButtonActionPerformed(evt)
             }
-        });
+        })
 
-        clearButton.setText("Clear");
+        clearButton.setText("Clear")
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                clearButtonActionPerformed(evt);
+                clearButtonActionPerformed(evt)
             }
-        });
+        })
 
-        GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
-        buttonPanel.setLayout(buttonPanelLayout);
+        GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel)
+        buttonPanel.setLayout(buttonPanelLayout)
         buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(
                 GroupLayout.Alignment.TRAILING,
                 buttonPanelLayout.createSequentialGroup().addContainerGap().addComponent(clearButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 225, Short.MAX_VALUE)
                         .addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(searchButton).addContainerGap()));
+                        .addComponent(searchButton).addContainerGap()))
         buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(
                 GroupLayout.Alignment.TRAILING,
@@ -282,23 +275,23 @@ class SdpModelImportProvider<T> extends JDialog {
                         .addGroup(
                         buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(searchButton).addComponent(cancelButton)
-                                .addComponent(clearButton)).addContainerGap()));
+                                .addComponent(clearButton)).addContainerGap()))
 
-        GroupLayout dataQueryPanelLayout = new GroupLayout(dataQueryPanel);
-        dataQueryPanel.setLayout(dataQueryPanelLayout);
+        GroupLayout dataQueryPanelLayout = new GroupLayout(dataQueryPanel)
+        dataQueryPanel.setLayout(dataQueryPanelLayout)
         dataQueryPanelLayout.setHorizontalGroup(dataQueryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGap(0, 461, Short.MAX_VALUE));
+                .addGap(0, 461, Short.MAX_VALUE))
         dataQueryPanelLayout.setVerticalGroup(dataQueryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGap(0, 247, Short.MAX_VALUE));
+                .addGap(0, 247, Short.MAX_VALUE))
 
-        queryPanel = new JPanel();
-        GroupLayout layout = new GroupLayout(queryPanel);
-        queryPanel.setLayout(layout);
+        queryPanel = new JPanel()
+        GroupLayout layout = new GroupLayout(queryPanel)
+        queryPanel.setLayout(layout)
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addComponent(titlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(datasourcePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(dataQueryPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+                .addComponent(dataQueryPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
                 layout.createSequentialGroup()
                         .addComponent(titlePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
@@ -311,33 +304,33 @@ class SdpModelImportProvider<T> extends JDialog {
                         Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-                        GroupLayout.PREFERRED_SIZE)));
+                        GroupLayout.PREFERRED_SIZE)))
 
-        dataQueryPanel.setLayout(new BorderLayout());
+        dataQueryPanel.setLayout(new BorderLayout())
     }
 
     public void prepareForDisplay() {
         // Initialize the selected client GUI here so that we can compute the
         // proper initial bounds of the dialog when it's first displayed.
-        readyToShow = true;
-        datasourceComboBoxActionPerformed(null);
+        readyToShow = true
+        datasourceComboBoxActionPerformed(null)
     }
 
     private void searchButtonActionPerformed() {
-        final Object selected = datasourceComboBox.getSelectedItem();
+        final Object selected = datasourceComboBox.getSelectedItem()
         if (selected == null)
-            return;
+            return
 
-        WebServiceClient client = null;
+        WebServiceClient client = null
         if (selected instanceof WebServiceClient) {
-            client = (WebServiceClient) selected;
+            client = (WebServiceClient) selected
         } else {
-            throw new IllegalStateException("Selected cleint is not a compatible client.");
+            throw new IllegalStateException("Selected cleint is not a compatible client.")
         }
 
         // Set query. Just pass the text in the panel.
-        taskManager.execute(client.createTaskIterator(this.queryTextPane.getText()));
-
+        cyRef.dialogTaskManager.execute(
+                client.createTaskIterator(this.queryTextPane.getText()))
     }
 
     /**
@@ -345,13 +338,13 @@ class SdpModelImportProvider<T> extends JDialog {
      */
     private void clearButtonActionPerformed(ActionEvent evt) {
         // Just set empty string for the field.
-        queryTextPane.setText("");
+        queryTextPane.setText("")
     }
 
     private void cancelButtonActionPerformed(ActionEvent evt) {
         // Do nothing. Just hide this window.
-        queryTextPane.setText("");
-        dispose();
+        queryTextPane.setText("")
+        dispose()
     }
 
     private void datasourceComboBoxActionPerformed(ActionEvent evt) {
@@ -359,63 +352,63 @@ class SdpModelImportProvider<T> extends JDialog {
         // we don't want to initialize the GUI until we're actually ready to
         // show the dialog.
         if (!readyToShow) {
-            return;
+            return
         }
 
-        Object selected = datasourceComboBox.getSelectedItem();
+        Object selected = datasourceComboBox.getSelectedItem()
         if (selected == null) {
-            selected = datasourceComboBox.getItemAt(0);
+            selected = datasourceComboBox.getItemAt(0)
             if (selected == null)
-                return;
+                return
         }
 
-        queryTextPane.setText("");
+        queryTextPane.setText("")
 
-        if (!(selected instanceof WebServiceClient)) return;
+        if (!(selected instanceof WebServiceClient)) return
 
-        final WebServiceClient client = (WebServiceClient) selected;
+        final WebServiceClient client = (WebServiceClient) selected
 
         // Update Panel
-        dataQueryPanel.removeAll();
+        dataQueryPanel.removeAll()
 
-        Container gui = getUIPanel(client);
+        Container gui = getUIPanel(client)
 
         if (gui != null) {
             // This service has custom panel.
-            dataQueryPanel.add(gui, BorderLayout.CENTER);
+            dataQueryPanel.add(gui, BorderLayout.CENTER)
             // Hide button panel.
-            buttonPanel.setVisible(false);
+            buttonPanel.setVisible(false)
         } else {
             // Otherwise, use the default panel.
-            dataQueryPanel.add(mainTabbedPane, BorderLayout.CENTER);
-            buttonPanel.setVisible(true);
+            dataQueryPanel.add(mainTabbedPane, BorderLayout.CENTER)
+            buttonPanel.setVisible(true)
         }
 
-        pack();
-        repaint();
+        pack()
+        repaint()
     }
 
     private Container getUIPanel(WebServiceClient client) {
-        Container container = serviceUIPanels.get(client);
+        Container container = serviceUIPanels.get(client)
         if (container == null && client instanceof WebServiceGUIClient) {
-            container = ((WebServiceGUIClient) client).getQueryBuilderGUI();
+            container = ((WebServiceGUIClient) client).getQueryBuilderGUI()
             if (container != null) {
-                serviceUIPanels.put(client, container);
+                serviceUIPanels.put(client, container)
             }
         }
-        return container;
+        return container
     }
 
 
     private void aboutButtonActionPerformed(ActionEvent evt) {
 
-        final WebServiceClient wsc = (WebServiceClient) datasourceComboBox.getSelectedItem();
+        final WebServiceClient wsc = (WebServiceClient) datasourceComboBox.getSelectedItem()
 
-        final String clientName = wsc.getDisplayName();
-        final String description = wsc.getDescription();
+        final String clientName = wsc.getDisplayName()
+        final String description = wsc.getDescription()
 
-        final AboutDialog aboutDialog = new AboutDialog(this, APPLICATION_MODAL, openBrowser);
-        aboutDialog.showDialog("About " + clientName, null, description);
+        final AboutDialog aboutDialog = new AboutDialog(this, APPLICATION_MODAL, cyRef.openBrowser)
+        aboutDialog.showDialog("About " + clientName, null, description)
     }
 
     private final class ClientComboBoxCellRenderer extends DefaultListCellRenderer {
@@ -423,15 +416,14 @@ class SdpModelImportProvider<T> extends JDialog {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                                                       boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
 
             if (value instanceof WebServiceClient) {
-                String displayName = ((WebServiceClient) value).getDisplayName();
-                this.setText(displayName);
+                String displayName = ((WebServiceClient) value).getDisplayName()
+                this.setText(displayName)
             }
 
-            return this;
-
+            return this
         }
     }
 }
