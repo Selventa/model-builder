@@ -51,9 +51,7 @@ class Activator extends AbstractCyActivator {
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
 
-        registerAllServices(bc, new BasicSdpModelImport(api, cyr.dialogTaskManager,
-                cyr.cyApplicationManager, cyr.cyNetworkFactory, cyr.cyNetworkViewFactory,
-                cyr.cyNetworkManager, cyr.cyNetworkViewManager, addBelFac), [:] as Properties)
+        registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(
                     SdpModelImport.class, 'Import Model from SDP',

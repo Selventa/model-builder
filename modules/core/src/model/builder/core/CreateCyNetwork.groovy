@@ -1,6 +1,5 @@
 package model.builder.core
 
-import org.cytoscape.model.CyEdge
 import wslite.json.JSONArray
 
 import static org.cytoscape.model.CyNetwork.NAME
@@ -10,12 +9,7 @@ import model.builder.web.api.API
 import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyNode
 
-import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNetworkFactory
-import org.cytoscape.model.CyNetworkManager
-import org.cytoscape.view.model.CyNetworkViewFactory
-import org.cytoscape.view.model.CyNetworkViewManager
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
@@ -24,11 +18,7 @@ class CreateCyNetwork extends AbstractTask {
 
     final Map model
     final API api
-    final CyApplicationManager appMgr
-    final CyNetworkFactory cynFac
-    final CyNetworkViewFactory cynvFac
-    final CyNetworkManager cynMgr
-    final CyNetworkViewManager cynvMgr
+    final Expando cyRef
 
     /**
      * {@inheritDoc}
@@ -85,7 +75,7 @@ class CreateCyNetwork extends AbstractTask {
         def network = revObj.network
 
         monitor.progress = 1.0d
-        CyNetwork cyN = cynFac.createNetwork()
+        CyNetwork cyN = cyRef.cyNetworkFactory.createNetwork()
         cyN.defaultNetworkTable.getColumn('who') ?:
             cyN.defaultNetworkTable.createColumn('who', String.class, true)
         cyN.defaultNetworkTable.getColumn('when') ?:
@@ -107,7 +97,7 @@ class CreateCyNetwork extends AbstractTask {
             nodes[edge] = [cySrc, cyTgt]
             [cyN.addEdge(cySrc, cyTgt, true), edge[3], edge[4]]
         }
-        def view = cynvFac.createNetworkView(cyN)
+        def view = cyRef.cyNetworkViewFactory.createNetworkView(cyN)
         edgeWithXY.each {
             def (cyEdge, srcXY, tgtXY) = it
             view.getNodeView(cyEdge.source).setVisualProperty(NODE_X_LOCATION, srcXY.getInt(0))
@@ -115,10 +105,10 @@ class CreateCyNetwork extends AbstractTask {
             view.getNodeView(cyEdge.target).setVisualProperty(NODE_X_LOCATION, tgtXY.getInt(0))
             view.getNodeView(cyEdge.target).setVisualProperty(NODE_Y_LOCATION, tgtXY.getInt(1))
         }
-        cynMgr.addNetwork(cyN)
-        cynvMgr.addNetworkView(view)
-        appMgr.currentNetwork = cyN
-        appMgr.currentNetworkView = view
+        cyRef.cyNetworkManager.addNetwork(cyN)
+        cyRef.cyNetworkViewManager.addNetworkView(view)
+        cyRef.cyApplicationManager.currentNetwork = cyN
+        cyRef.cyApplicationManager.currentNetworkView = view
         view.updateView()
         view.fitContent()
     }
