@@ -9,7 +9,7 @@ import org.cytoscape.work.TaskIterator
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 
 @TupleConstructor
-class OpenRevisionFactory implements TableCellTaskFactory {
+class ImportRevisionFromTableFactory implements TableCellTaskFactory {
 
     final API api
     final Expando cyRef

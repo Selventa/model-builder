@@ -47,8 +47,8 @@ class SdpModelImportProvider<T> extends JDialog {
 
     boolean readyToShow
 
-    public SdpModelImportProvider(final Class<T> type, final String title, final Expando cyRef) {
-        super(cyRef.cySwingApplication.JFrame, true)
+    public SdpModelImportProvider(final Class<T> type, final Expando cyRef) {
+        super(cyRef.cySwingApplication.JFrame, 'Import Model', false)
         if (cyRef == null)
             throw new NullPointerException("TaskManager is null.")
 
@@ -62,8 +62,6 @@ class SdpModelImportProvider<T> extends JDialog {
 
         datasourceComboBox.addItem(NO_CLIENT)
         setComponentsEnabled(false)
-
-        this.setTitle(title)
     }
 
 

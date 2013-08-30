@@ -14,6 +14,7 @@ import org.cytoscape.model.CyNetworkTableManager
 import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
+import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.TableCellTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
@@ -52,10 +53,11 @@ class Activator extends AbstractCyActivator {
 
         registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
-            new SdpModelImportProvider<>(SdpModelImport.class, 'Import Model', cyr)
+            new SdpModelImportProvider<>(SdpModelImport.class, cyr)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
                 WebServiceClient.class)
 
+        // Import Model - in import menu
         AbstractCyAction showModelImport = new AbstractCyAction('SDP...') {
             void actionPerformed(ActionEvent e) {
                 sdpNetworks.prepareForDisplay()
@@ -65,11 +67,31 @@ class Activator extends AbstractCyActivator {
         }
         showModelImport.preferredMenu = 'File.Import.Network'
         showModelImport.acceleratorKeyStroke = getKeyStroke(VK_P, ALT_DOWN_MASK)
+        registerService(bc, showModelImport, CyAction.class, [
+            id: 'import_network.import_model'
+        ] as Properties)
 
-        registerService(bc, showModelImport, CyAction.class,
-                [id: 'showSDPModelImport'] as Properties)
-        registerService(bc, new OpenRevisionFactory(api, cyr, addBelFac),
-                TableCellTaskFactory.class,
-                [title: 'Open Model'] as Properties)
+        // Import Model - in SDP menu
+        AbstractCyAction importModel = new AbstractCyAction('Import Model') {
+            void actionPerformed(ActionEvent e) {
+                sdpNetworks.prepareForDisplay()
+                sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame
+                sdpNetworks.visible = true
+            }
+        }
+        importModel.preferredMenu = 'Apps.SDP'
+        registerService(bc, importModel, CyAction.class, [
+            id: 'apps_sdp.import_model'
+        ] as Properties)
+
+        registerService(bc, new ImportRevisionFromMenuFactory(), NetworkTaskFactory.class, [
+            preferredMenu: 'Apps.SDP',
+            menuGravity: 11.0,
+            title: 'Import Revision'
+        ] as Properties)
+        registerService(bc, new ImportRevisionFromTableFactory(api, cyr, addBelFac),
+                TableCellTaskFactory.class, [
+            title: 'Import Revision'
+        ] as Properties)
     }
 }

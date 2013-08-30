@@ -26,6 +26,7 @@ class AddRevisionsTable extends AbstractTask {
         createColumn(revTable, 'when', String.class, true)
         createColumn(revTable, 'comment', String.class, true)
         createColumn(revTable, 'uri', String.class, true)
+        createColumn(revTable, 'selected', Boolean.class, false)
 
         def rev = model.revisions.length() - 1
         model.revisions.each {

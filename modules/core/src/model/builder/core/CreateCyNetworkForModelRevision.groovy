@@ -3,7 +3,6 @@ package model.builder.core
 import groovy.transform.TupleConstructor
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
-import org.cytoscape.model.subnetwork.CyRootNetwork
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import wslite.json.JSONArray
