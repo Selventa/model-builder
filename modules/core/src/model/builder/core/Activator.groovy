@@ -84,7 +84,8 @@ class Activator extends AbstractCyActivator {
             id: 'apps_sdp.import_model'
         ] as Properties)
 
-        registerService(bc, new ImportRevisionFromMenuFactory(), NetworkTaskFactory.class, [
+        registerService(bc, new ImportRevisionFromMenuFactory(api, cyr, addBelFac),
+                NetworkTaskFactory.class, [
             preferredMenu: 'Apps.SDP',
             menuGravity: 11.0,
             title: 'Import Revision'
