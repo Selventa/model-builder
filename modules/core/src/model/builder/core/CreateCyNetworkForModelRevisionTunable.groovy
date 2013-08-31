@@ -105,15 +105,4 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         view.fitContent()
         monitor.progress = 1.0d
     }
-
-    @TupleConstructor
-    private final class ModelRev {
-        final String uri
-        final int revision
-        final String when
-        final String comment
-
-        def String toString() {
-        }
-    }
 }
