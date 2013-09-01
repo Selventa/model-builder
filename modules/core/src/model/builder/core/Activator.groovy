@@ -1,6 +1,7 @@
 package model.builder.core
 
 import model.builder.ui.SdpModelImportProvider
+import model.builder.ui.UI
 import model.builder.web.api.API
 import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
@@ -93,6 +94,17 @@ class Activator extends AbstractCyActivator {
         registerService(bc, new ImportRevisionFromTableFactory(api, cyr, addBelFac),
                 TableCellTaskFactory.class, [
             title: 'Import Revision'
+        ] as Properties)
+
+        // Import RCR Result - in SDP menu
+        AbstractCyAction importRCR = new AbstractCyAction('Import RCR Result') {
+            void actionPerformed(ActionEvent e) {
+                UI.toImportRCR()
+            }
+        }
+        importRCR.preferredMenu = 'Apps.SDP'
+        registerService(bc, importRCR, CyAction.class, [
+                id: 'apps_sdp.import_rcr'
         ] as Properties)
     }
 }
