@@ -96,8 +96,9 @@ class SdpAPI implements API {
     }
 
     @Override
-    WebResponse modelTags() {
-        def params = [q: 'type:model', rows: '0', facet: 'on', 'facet.field': 'tags']
+    WebResponse tags(types = ['*']) {
+        def params = [q: types.collect {"type:$it"}.join(' OR '),
+                      rows: '0', facet: 'on', 'facet.field': 'tags']
         client.get(path: '/search', query: params) as WebResponse
     }
 
@@ -131,9 +132,10 @@ class SdpAPI implements API {
         proxy.use {
             API api = new SdpAPI('https://sdpdemo.selventa.com')
             try {
-                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')
-                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/latest')
-                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a')
+                println api.tags().data.facet_counts.facet_fields.tags
+//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')
+//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/latest')
+//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a')
 //                println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
 //                println JsonOutput.prettyPrint(JsonOutput.toJson(api.modelRevisions('519695ea42bc1d34b1757f5a', 0).data))
 //                println JsonOutput.toJson(api.models().data)

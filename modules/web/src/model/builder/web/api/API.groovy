@@ -12,7 +12,7 @@ interface API {
 
     WebResponse searchModels(Map data)
 
-    WebResponse modelTags()
+    WebResponse tags(types)
 
     WebResponse[] modelRevisions(id, revision, uri)
 }

@@ -69,7 +69,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
         speciesPanel.add(species, BorderLayout.CENTER)
 
         // create and populate tags combo box
-        WebResponse res = client.modelTags()
+        WebResponse res = client.tags(['model'])
         def facetTags = res.data.facet_counts.facet_fields.tags
         String[] tags = facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
         JScrollPane tagsScroll = new JScrollPane(this.tagsBox = new JList<>(tags))
