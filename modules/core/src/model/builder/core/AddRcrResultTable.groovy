@@ -1,6 +1,8 @@
 package model.builder.core
 
+import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import wslite.json.JSONObject
 
 import static org.cytoscape.model.CyNetwork.NAME
@@ -17,6 +19,8 @@ class AddRcrResultTable extends AbstractTask {
 
     final Map rcrResult
     final Expando cyRef
+    final VisualMappingFunctionFactory cMapFac
+    final VisualMappingFunctionFactory dMapFac
 
     @Override
     void run(TaskMonitor monitor) throws Exception {
@@ -52,8 +56,13 @@ class AddRcrResultTable extends AbstractTask {
              'ambiguous', 'observed', 'possible'].each(it.defaultNodeTable.&deleteColumn)
         }
 
+        selected.each {
+            cyRef.cyNetworkTableManager.setTable(it, CyNode.class, 'sdp.rcr', rcrTable)
+        }
+
         def mapTblFactory = cyRef.mapTableToNetworkTablesTaskFactory
         super.insertTasksAfterCurrentTask(mapTblFactory.createTaskIterator(
                 rcrTable, true, selected, CyNode.class))
+        super.insertTasksAfterCurrentTask(new ApplyRcrResultStyle(cyRef, cMapFac, dMapFac))
     }
 }

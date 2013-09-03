@@ -100,7 +100,7 @@ class UI {
                     gridx: 0, gridy: 2, gridwidth: 2, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
                     fill: BOTH)) {
-                resultsTable = table(id: 'resTable', selectionMode: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION) {
+                resultsTable = table(id: 'resTable', selectionMode: ListSelectionModel.SINGLE_SELECTION) {
                     tableModel {
                         propertyColumn(header: "Name" ,propertyName: 'name', editable: false)
                         propertyColumn(header: "Tags" ,propertyName: 'tags', editable: false)

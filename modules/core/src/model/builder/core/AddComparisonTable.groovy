@@ -41,6 +41,10 @@ class AddComparisonTable extends AbstractTask {
             ['abundance', 'fold_change', 'p_value'].each(it.defaultNodeTable.&deleteColumn)
         }
 
+        selected.each {
+            cyRef.cyNetworkTableManager.setTable(it, CyNode.class, 'sdp.comparison', cmpTable)
+        }
+
         def mapTblFactory = cyRef.mapTableToNetworkTablesTaskFactory
         super.insertTasksAfterCurrentTask(mapTblFactory.createTaskIterator(
                 cmpTable, true, selected, CyNode.class))

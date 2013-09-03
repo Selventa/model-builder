@@ -124,6 +124,7 @@ project('modules/core') {
       version = '1.0.0'
       name = 'Model Builder - Core'
       symbolicName = 'model.builder.core'
+      instruction 'DynamicImport-Package', '*'
       instruction 'Import-Package', '''
         groovy.lang;version="[2.1,3)",
         groovy.transform;version="[2.1,3)",
@@ -151,6 +152,7 @@ project('modules/core') {
         org.cytoscape.view.model;version="[3,4)",
         org.cytoscape.view.presentation.property;version="[3,4)",
         org.cytoscape.view.vizmap;version="[3,4)",
+        org.cytoscape.view.vizmap.mappings;version="[3,4)",
         org.cytoscape.work;version="[3,4)",
         org.cytoscape.work.swing;version="[3,4)",
         org.cytoscape.work.util;version="[3,4)",
