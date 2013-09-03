@@ -1,13 +1,10 @@
 package model.builder.core
 
 import org.cytoscape.model.CyNode
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
 import wslite.json.JSONObject
 
 import static org.cytoscape.model.CyNetwork.NAME
 import groovy.transform.TupleConstructor
-import model.builder.web.api.API
-import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyTable
 import org.cytoscape.model.CyTableFactory
 import org.cytoscape.work.AbstractTask
@@ -27,7 +24,6 @@ class AddRcrResultTable extends AbstractTask {
         CyTable rcrTable = tableFac.createTable(
                 "RCR Scores - ${rcrResult.name}", NAME, String.class, true, false)
 
-        cyRef.cyTableManager.addTable(rcrTable)
         createColumn(rcrTable, 'direction', String.class, true)
         createColumn(rcrTable, 'richness', Double.class, true)
         createColumn(rcrTable, 'concordance', Double.class, true)
@@ -36,6 +32,7 @@ class AddRcrResultTable extends AbstractTask {
         createColumn(rcrTable, 'ambiguous', Integer.class, true)
         createColumn(rcrTable, 'observed', Integer.class, true)
         createColumn(rcrTable, 'possible', Integer.class, true)
+        cyRef.cyTableManager.addTable(rcrTable)
 
         rcrResult.scores.each { JSONObject it ->
             def cyRow = rcrTable.getRow(it.getString('mechanism'))
@@ -49,17 +46,14 @@ class AddRcrResultTable extends AbstractTask {
             cyRow.set('possible', it.getInt('possible'))
         }
 
-        def network = cyRef.cyApplicationManager.currentNetwork
-        cyRef.cyNetworkTableManager.setTable(network, CyNetwork.class, "sdp.rcr_scores", rcrTable)
-
-        cyRef.cyNetworkManager.networkSet.each {
+        def selected = cyRef.cyApplicationManager.selectedNetworks
+        selected.each {
             ['direction', 'richness', 'concordance', 'correct', 'contra',
              'ambiguous', 'observed', 'possible'].each(it.defaultNodeTable.&deleteColumn)
         }
 
         def mapTblFactory = cyRef.mapTableToNetworkTablesTaskFactory
         super.insertTasksAfterCurrentTask(mapTblFactory.createTaskIterator(
-                rcrTable, false, cyRef.cyNetworkManager.networkSet as List,
-                CyNode.class))
+                rcrTable, true, selected, CyNode.class))
     }
 }

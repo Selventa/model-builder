@@ -1,7 +1,6 @@
 package model.builder.core
 
 import groovy.transform.TupleConstructor
-import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
 import org.cytoscape.model.CyTableFactory
@@ -25,10 +24,10 @@ class AddComparisonTable extends AbstractTask {
                 "Comparison Measurements - ${comparison.name}",
                 NAME, String.class, true, false)
 
-        cyRef.cyTableManager.addTable(cmpTable)
         createColumn(cmpTable, 'abundance', Double.class, true)
         createColumn(cmpTable, 'fold_change', Double.class, true)
         createColumn(cmpTable, 'p_value', Double.class, true)
+        cyRef.cyTableManager.addTable(cmpTable)
 
         comparison.measurements.each { JSONObject it ->
             def cyRow = cmpTable.getRow(it.getString('id'))
@@ -37,16 +36,13 @@ class AddComparisonTable extends AbstractTask {
             cyRow.set('p_value', it.getDouble('p_value'))
         }
 
-        def network = cyRef.cyApplicationManager.currentNetwork
-        cyRef.cyNetworkTableManager.setTable(network, CyNetwork.class, "sdp.comparisons", cmpTable)
-
-        cyRef.cyNetworkManager.networkSet.each {
+        def selected = cyRef.cyApplicationManager.selectedNetworks
+        selected.each {
             ['abundance', 'fold_change', 'p_value'].each(it.defaultNodeTable.&deleteColumn)
         }
 
         def mapTblFactory = cyRef.mapTableToNetworkTablesTaskFactory
         super.insertTasksAfterCurrentTask(mapTblFactory.createTaskIterator(
-                cmpTable, false, cyRef.cyNetworkManager.networkSet as List,
-                CyNode.class))
+                cmpTable, true, selected, CyNode.class))
     }
 }

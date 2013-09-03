@@ -1,6 +1,5 @@
 package model.builder.core
 
-import groovy.transform.TupleConstructor
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyNetwork

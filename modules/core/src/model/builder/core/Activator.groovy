@@ -137,6 +137,5 @@ class Activator extends AbstractCyActivator {
         registerService(bc, importRCR, CyAction.class, [
                 id: 'apps_sdp.import_rcr'
         ] as Properties)
-
     }
 }
