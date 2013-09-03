@@ -54,10 +54,10 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
         def view = cyRef.cyNetworkViewFactory.createNetworkView(cyN)
         edgeWithXY.each {
             def (cyEdge, srcXY, tgtXY) = it
-            view.getNodeView(cyEdge.source).setVisualProperty(NODE_X_LOCATION, srcXY.getInt(0))
-            view.getNodeView(cyEdge.source).setVisualProperty(NODE_Y_LOCATION, srcXY.getInt(1))
-            view.getNodeView(cyEdge.target).setVisualProperty(NODE_X_LOCATION, tgtXY.getInt(0))
-            view.getNodeView(cyEdge.target).setVisualProperty(NODE_Y_LOCATION, tgtXY.getInt(1))
+            view.getNodeView(cyEdge.source).setVisualProperty(NODE_X_LOCATION, srcXY.getDouble(0))
+            view.getNodeView(cyEdge.source).setVisualProperty(NODE_Y_LOCATION, srcXY.getDouble(1))
+            view.getNodeView(cyEdge.target).setVisualProperty(NODE_X_LOCATION, tgtXY.getDouble(0))
+            view.getNodeView(cyEdge.target).setVisualProperty(NODE_Y_LOCATION, tgtXY.getDouble(1))
         }
 
         monitor.statusMessage = 'Creating view'
