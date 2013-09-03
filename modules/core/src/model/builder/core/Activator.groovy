@@ -3,6 +3,7 @@ package model.builder.core
 import model.builder.ui.SdpModelImportProvider
 import model.builder.ui.UI
 import model.builder.web.api.API
+import model.builder.web.api.WebResponse
 import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
@@ -17,6 +18,7 @@ import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.TableCellTaskFactory
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager
@@ -27,7 +29,6 @@ import org.cytoscape.work.swing.DialogTaskManager
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 import org.osgi.framework.BundleContext
 
-import javax.swing.JDialog
 import java.awt.event.ActionEvent
 
 import static java.awt.event.InputEvent.ALT_DOWN_MASK
@@ -48,7 +49,8 @@ class Activator extends AbstractCyActivator {
                 CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
                 VisualMappingManager.class, CyEventHelper.class, CyTableFactory.class,
                 CyTableManager.class, CyNetworkTableManager.class,
-                ApplyPreferredLayoutTaskFactory.class, OpenBrowser.class)
+                ApplyPreferredLayoutTaskFactory.class, OpenBrowser.class,
+                MapTableToNetworkTablesTaskFactory.class)
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
@@ -83,7 +85,12 @@ class Activator extends AbstractCyActivator {
         // ... Import Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Import Comparisons') {
             void actionPerformed(ActionEvent e) {
-                UI.toImportComparison(api)
+                def importData = { id ->
+                    WebResponse res = api.comparison(id)
+                    cyr.dialogTaskManager.execute(
+                            new AddComparisonTableFactory(res.data.comparison, cyr).createTaskIterator())
+                }
+                UI.toImportComparison(api, cyr, importData)
             }
         }
         importComparison.menuGravity = 100.0
@@ -117,7 +124,12 @@ class Activator extends AbstractCyActivator {
         // ... Import RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Import RCR Results') {
             void actionPerformed(ActionEvent e) {
-                UI.toImportRcr(api)
+                def importData = { id ->
+                    WebResponse res = api.rcrResult(id)
+                    cyr.dialogTaskManager.execute(
+                            new AddRcrResultTableFactory(res.data.rcr_result, cyr).createTaskIterator())
+                }
+                UI.toImportRcr(api, cyr, importData)
             }
         }
         importRCR.menuGravity = 103.0

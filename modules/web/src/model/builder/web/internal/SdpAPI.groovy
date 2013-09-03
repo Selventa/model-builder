@@ -73,6 +73,11 @@ class SdpAPI implements API {
     }
 
     @Override
+    WebResponse comparison(String id) {
+        client.get(path: "/api/comparisons/$id") as WebResponse
+    }
+
+    @Override
     WebResponse model(String id) {
         addModelData(client.get(path: "/api/models/$id") as WebResponse)
     }
@@ -80,6 +85,11 @@ class SdpAPI implements API {
     @Override
     WebResponse models() {
         addModelData(client.get(path: '/api/models') as WebResponse)
+    }
+
+    @Override
+    WebResponse rcrResult(String id) {
+        client.get(path: "/api/rcr_results/$id") as WebResponse
     }
 
     @Override

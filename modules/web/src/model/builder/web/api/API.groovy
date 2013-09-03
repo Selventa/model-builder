@@ -6,9 +6,13 @@ interface API {
 
     String id(Map data)
 
+    WebResponse comparison(String id)
+
     WebResponse model(String id)
 
     WebResponse models()
+
+    WebResponse rcrResult(String id)
 
     WebResponse searchComparisons(Map data)
 
