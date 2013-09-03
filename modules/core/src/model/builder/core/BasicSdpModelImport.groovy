@@ -20,7 +20,9 @@ class BasicSdpModelImport extends AbstractWebServiceGUIClient implements SdpMode
 
     BasicSdpModelImport(API api, Expando cyRef,
                         AddBelColumnsToCurrentFactory addBelFac) {
-        super('https://sdptest.selventa.com/api', 'Selventa Development Platform (sdptest.selventa.com)', 'This is a description.')
+        super('https://janssen-sdp.selventa.com/api',
+              'Janssen-SDP (janssen-sdp.selventa.com)',
+              'The SDP server for Janssen.')
         this.api = api
         this.cyRef = cyRef
         this.addBelFac = addBelFac

@@ -16,7 +16,7 @@ class SdpAPI implements API {
         SSLContext.default = SSL.context
 
         client = new RESTClient(uri)
-        client.requestBuilder = new AuthdRequestBuilder('test@sdpdemo.selventa.com', 'test')
+        client.requestBuilder = new AuthdRequestBuilder('api:abargnesi@selventa.com', 'superman')
         client.defaultAcceptHeader = 'application/json'
         client.defaultContentTypeHeader = 'application/json'
         client.defaultCharset = 'UTF-8'
