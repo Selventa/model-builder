@@ -27,6 +27,7 @@ import org.cytoscape.work.swing.DialogTaskManager
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 import org.osgi.framework.BundleContext
 
+import javax.swing.JDialog
 import java.awt.event.ActionEvent
 
 import static java.awt.event.InputEvent.ALT_DOWN_MASK
@@ -51,14 +52,13 @@ class Activator extends AbstractCyActivator {
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
-
-        registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(SdpModelImport.class, cyr)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
                 WebServiceClient.class)
 
-        // Import Model - in import menu
+        // ... File > Import Actions ...
+        registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
         AbstractCyAction showModelImport = new AbstractCyAction('SDP...') {
             void actionPerformed(ActionEvent e) {
                 sdpNetworks.prepareForDisplay()
@@ -72,39 +72,59 @@ class Activator extends AbstractCyActivator {
             id: 'import_network.import_model'
         ] as Properties)
 
-        // Import Model - in SDP menu
-        AbstractCyAction importModel = new AbstractCyAction('Import Model') {
+        // ... Table Actions ...
+        registerService(bc, new ImportRevisionFromTableFactory(api, cyr, addBelFac),
+                TableCellTaskFactory.class, [
+                title: 'Import Revision'
+        ] as Properties)
+
+        // ... Apps > SDP Menu Actions ...
+
+        // ... Import Comparison
+        AbstractCyAction importComparison = new AbstractCyAction('Import Comparisons') {
+            void actionPerformed(ActionEvent e) {
+                UI.toImportComparison(api)
+            }
+        }
+        importComparison.menuGravity = 100.0
+        importComparison.preferredMenu = 'Apps.SDP.Data'
+        registerService(bc, importComparison, CyAction.class, [
+                id: 'apps_sdp.import_comparison'
+        ] as Properties)
+
+        // ... Import Model
+        AbstractCyAction importModel = new AbstractCyAction('Import Models') {
             void actionPerformed(ActionEvent e) {
                 sdpNetworks.prepareForDisplay()
                 sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame
                 sdpNetworks.visible = true
             }
         }
-        importModel.preferredMenu = 'Apps.SDP'
+        importModel.preferredMenu = 'Apps.SDP.Models'
+        importModel.menuGravity = 101.0
         registerService(bc, importModel, CyAction.class, [
             id: 'apps_sdp.import_model'
         ] as Properties)
 
+        // ... Import Model Revision
         registerService(bc, new ImportRevisionFromMenuFactory(api, cyr, addBelFac),
                 NetworkTaskFactory.class, [
-            preferredMenu: 'Apps.SDP',
-            menuGravity: 11.0,
-            title: 'Import Revision'
-        ] as Properties)
-        registerService(bc, new ImportRevisionFromTableFactory(api, cyr, addBelFac),
-                TableCellTaskFactory.class, [
-            title: 'Import Revision'
+                preferredMenu: 'Apps.SDP.Models',
+                menuGravity: 102.0,
+                title: 'Import Model Revision'
         ] as Properties)
 
-        // Import RCR Result - in SDP menu
-        AbstractCyAction importRCR = new AbstractCyAction('Import RCR Result') {
+        // ... Import RCR Result
+        AbstractCyAction importRCR = new AbstractCyAction('Import RCR Results') {
             void actionPerformed(ActionEvent e) {
-                UI.toImportRCR()
+                UI.toImportRcr(api)
             }
         }
-        importRCR.preferredMenu = 'Apps.SDP'
+        importRCR.menuGravity = 103.0
+        importRCR.preferredMenu = 'Apps.SDP.Data'
         registerService(bc, importRCR, CyAction.class, [
                 id: 'apps_sdp.import_rcr'
         ] as Properties)
+
     }
 }

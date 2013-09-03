@@ -1,6 +1,6 @@
 package model.builder.ui
 
-import model.builder.common.Model
+import model.builder.common.SearchResult
 import model.builder.web.api.API
 import model.builder.web.api.WebResponse
 import org.cytoscape.io.webservice.WebServiceClient
@@ -149,7 +149,7 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
 
             def solr = res.data.response
             def models = solr.docs.collect {
-                new Model(client.id(searchKey: it.id), it.name)
+                new SearchResult(client.id(searchKey: it.id), it.name)
             }.sort {it.name}
             searchModel.setData(solr.numFound, models)
         }
@@ -158,14 +158,14 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
     private final class SearchResultsModel extends AbstractTableModel {
 
         private final String[] headers = ['Name']
-        private final List<Model> models = new ArrayList<>()
+        private final List<SearchResult> models = new ArrayList<>()
         private int total
 
-        List<Model> getData() {
+        List<SearchResult> getData() {
             return this.models
         }
 
-        void setData(final int total, final List<Model> models) {
+        void setData(final int total, final List<SearchResult> models) {
             this.total = total
             this.models.clear()
             this.models.addAll(models)
@@ -201,14 +201,14 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
          */
         @Override
         public Object getValueAt(int ri, int ci) {
-            Model entry
+            SearchResult entry
             try {
                 entry = models.get(ri)
             } catch (IndexOutOfBoundsException) {
                 WebResponse res = client.searchModels(currentSearch + [start: models.size()])
                 def solr = res.data.response
                 def models = solr.docs.collect {
-                    new Model(client.id(searchKey: it.id), it.name)
+                    new SearchResult(client.id(searchKey: it.id), it.name)
                 }
                 models = this.models + models
                 models.sort {it.name}

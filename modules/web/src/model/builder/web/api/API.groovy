@@ -10,7 +10,11 @@ interface API {
 
     WebResponse models()
 
+    WebResponse searchComparisons(Map data)
+
     WebResponse searchModels(Map data)
+
+    WebResponse searchRcrResults(Map data)
 
     WebResponse tags(types)
 

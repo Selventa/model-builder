@@ -67,6 +67,8 @@ class SdpAPI implements API {
             if (match.find()) return match[0][1]
             match = (uri as String) =~ /\/api\/models\/(.+)/
             if (match.find()) return match[0][1]
+            match = (uri as String) =~ /\/api\/rcr_results\/(.+)/
+            if (match.find()) return match[0][1]
         }
     }
 
@@ -81,6 +83,19 @@ class SdpAPI implements API {
     }
 
     @Override
+    WebResponse searchComparisons(Map data) {
+        def params = [:]
+        params.q = "type:comparison AND name:${data.name ?: '*'}"
+        params.start = data.start ?: 0
+        params.rows = data.rows ?: 100
+        if (data.tags)
+            params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
+        if (data.sort) params.sort = data.sort
+
+        client.get(path: '/search', query: params) as WebResponse
+    }
+
+    @Override
     WebResponse searchModels(Map data = [:]) {
         def params = [:]
         params.q = "type:model AND name:${data.name ?: '*'}"
@@ -90,6 +105,19 @@ class SdpAPI implements API {
             params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.species)
             params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
+        if (data.sort) params.sort = data.sort
+
+        client.get(path: '/search', query: params) as WebResponse
+    }
+
+    @Override
+    WebResponse searchRcrResults(Map data) {
+        def params = [:]
+        params.q = "type:rcr_result AND name:${data.name ?: '*'}"
+        params.start = data.start ?: 0
+        params.rows = data.rows ?: 100
+        if (data.tags)
+            params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
         client.get(path: '/search', query: params) as WebResponse
