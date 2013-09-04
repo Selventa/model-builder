@@ -8,7 +8,7 @@ import org.cytoscape.work.TaskMonitor
 import wslite.json.JSONArray
 
 import static model.builder.core.Util.createColumn
-import static org.cytoscape.model.CyNetwork.NAME
+import static org.cytoscape.model.CyNetwork.*
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION
 
@@ -31,13 +31,14 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
         monitor.statusMessage = 'Adding network'
 
         CyNetwork cyN = cyRef.cyNetworkFactory.createNetwork()
-        createColumn(cyN.defaultNetworkTable, 'who', String.class, true)
-        createColumn(cyN.defaultNetworkTable, 'when', String.class, true)
-        createColumn(cyN.defaultNetworkTable, 'comment', String.class, true)
-        cyN.getRow(cyN).set(NAME, "${network.name} (Revision $number)" as String)
-        cyN.getRow(cyN).set('who', revision.who)
-        cyN.getRow(cyN).set('when', revision.when)
-        cyN.getRow(cyN).set('comment', revision.comment)
+        def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
+        createColumn(locals, 'who', String.class, true)
+        createColumn(locals, 'when', String.class, true)
+        createColumn(locals, 'comment', String.class, true)
+        cyN.getRow(cyN, LOCAL_ATTRS).set(NAME, "${network.name} (Revision $number)" as String)
+        cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
+        cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
+        cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
 
         def Map<String, CyNode> nodes = [:]
         def edgeWithXY = network.edges.collect { JSONArray edge ->
