@@ -40,7 +40,7 @@ class BasicSdpModelImport extends AbstractWebServiceGUIClient implements SdpMode
                 WebResponse rev = api.modelRevisions(it.id, revisionNumber, '').first()
                 tasks.append(new CreateCyNetworkForModelRevision(revisionNumber, rev.data.revision as Map, cyRef))
                 tasks.append(addBelFac.createTaskIterator())
-                tasks.append(new AddRevisionsTable(model as Map, api, cyRef))
+                tasks.append(new AddRevisionsTable(model as Map, cyRef))
             } catch (RESTClientException e) {
                 msg.error("Error retrieving ${m.name}", e)
             }

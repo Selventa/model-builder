@@ -33,11 +33,18 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
     // Called by cytoscape
     @Tunable(description = "Revision")
     public ListSingleSelection<Expando> getRevSelection() {
-        def table = network.getTable(CyNetwork.class, 'sdp.revisions')
-        List<Expando> modelRevs = table.getAllRows().collect {
+        def mgr = cyRef.cyTableManager
+        def revTable = mgr.globalTables.find {it.title == 'SDP.Revisions'}
+        if (!revTable)
+            throw new IllegalStateException('table SDP.Revisions does not exist')
+        List<Expando> modelRevs = revTable.getAllRows().
+        findAll {
+            it.getList('networks.SUID', Long.class, []).contains(network.SUID)
+        }.
+        collect {
             new Expando(
                     uri: it.get('uri', String.class),
-                    revision: it.get('REVISION', Integer.class),
+                    revision: it.get('revision', Integer.class),
                     when: it.get('when', String.class),
                     comment: it.get('comment', String.class),
                     toString: {
@@ -70,7 +77,7 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         createColumn(locals, 'who', String.class, true, null)
         createColumn(locals, 'when', String.class, true, null)
         createColumn(locals, 'comment', String.class, true, null)
-        cyN.getRow(cyN, LOCAL_ATTRS).set(NAME, "${network.name} (Revision $number)" as String)
+        cyN.getRow(cyN, LOCAL_ATTRS).set(NAME, "${network.name} (Revision ${modelRev.revision})" as String)
         cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)

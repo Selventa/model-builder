@@ -28,6 +28,7 @@ class ImportRevisionFromMenuFactory implements NetworkTaskFactory {
 
     @Override
     boolean isReady(CyNetwork cyN) {
-        cyN && cyN.getTable(CyNetwork.class, 'sdp.revisions')
+        def mgr = cyRef.cyTableManager
+        cyN && mgr.globalTables.any{it.title == 'SDP.Revisions'}
     }
 }

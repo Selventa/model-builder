@@ -17,7 +17,6 @@ import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.cytoscape.task.NetworkTaskFactory
-import org.cytoscape.task.TableCellTaskFactory
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
@@ -63,6 +62,7 @@ class Activator extends AbstractCyActivator {
             new SdpModelImportProvider<>(SdpModelImport.class, cyr)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
                 WebServiceClient.class)
+        registerAllServices(bc, new Listener(cyr), [:] as Properties)
 
         // ... File > Import Actions ...
         registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
@@ -77,12 +77,6 @@ class Activator extends AbstractCyActivator {
         showModelImport.acceleratorKeyStroke = getKeyStroke(VK_P, ALT_DOWN_MASK)
         registerService(bc, showModelImport, CyAction.class, [
             id: 'import_network.import_model'
-        ] as Properties)
-
-        // ... Table Actions ...
-        registerService(bc, new ImportRevisionFromTableFactory(api, cyr, addBelFac),
-                TableCellTaskFactory.class, [
-                title: 'Import Revision'
         ] as Properties)
 
         // ... Apps > SDP Menu Actions ...
