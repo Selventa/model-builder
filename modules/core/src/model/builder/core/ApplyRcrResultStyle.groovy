@@ -1,7 +1,5 @@
 package model.builder.core
 
-import org.cytoscape.model.CyNode
-import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping
