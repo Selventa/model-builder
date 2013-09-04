@@ -47,7 +47,9 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
             CyNode cyTgt = nodes[tgt] ?: (nodes[tgt] = cyN.addNode())
             cyN.getRow(cyTgt).set(NAME, tgt)
             nodes[edge] = [cySrc, cyTgt]
-            [cyN.addEdge(cySrc, cyTgt, true), edge[3], edge[4]]
+            def cyE = cyN.addEdge(cySrc, cyTgt, true)
+            cyN.getRow(cyE).set('interaction', rel)
+            [cyE, edge[3], edge[4]]
         }
         monitor.progress = 0.5d
 
