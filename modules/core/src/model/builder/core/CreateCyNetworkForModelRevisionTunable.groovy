@@ -67,9 +67,9 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
 
         CyNetwork cyN = cyRef.cyNetworkFactory.createNetwork()
         def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
-        createColumn(locals, 'who', String.class, true)
-        createColumn(locals, 'when', String.class, true)
-        createColumn(locals, 'comment', String.class, true)
+        createColumn(locals, 'who', String.class, true, null)
+        createColumn(locals, 'when', String.class, true, null)
+        createColumn(locals, 'comment', String.class, true, null)
         cyN.getRow(cyN, LOCAL_ATTRS).set(NAME, "${network.name} (Revision $number)" as String)
         cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)

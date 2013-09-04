@@ -25,7 +25,7 @@ class ApplyRcrResultStyle extends AbstractTask {
         def networks = cyRef.cyApplicationManager.selectedNetworks
         networks.collect {
             def table = it.defaultNodeTable
-            createColumn(table, 'rcr.concordance.fill', String.class, false)
+            createColumn(table, 'rcr.concordance.fill', String.class, false, null)
             table
         }.collect {it.allRows}.flatten().each { row ->
             def dir = row.get('direction', String.class)

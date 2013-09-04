@@ -1,15 +1,37 @@
 package model.builder.core
 
 import org.cytoscape.model.CyColumn
+import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
 import org.osgi.framework.BundleContext
 
 class Util {
 
     static CyColumn createColumn(CyTable table, String name, Class<?> type,
-                                 boolean immutable) {
-        table.getColumn(name) ?: (table.createColumn(name, type, immutable))
+                                 boolean immutable, Object defaultValue) {
+        table.getColumn(name) ?: (table.createColumn(name, type, immutable, defaultValue))
         table.getColumn(name)
+    }
+
+    static CyColumn createListColumn(CyTable table, String name,
+                                     Class<?> listElementType, boolean immutable,
+                                     List defaultValue) {
+        table.getColumn(name) ?: (table.createListColumn(name, listElementType, immutable, defaultValue))
+        table.getColumn(name)
+    }
+
+    static <T> void setAdd(CyRow row, String name, Class<T> type, T element) {
+        def list = row.getList(name, type, [])
+        if (!list.contains(element)) {
+            list.add(element)
+            row.set(name, list)
+        }
+    }
+
+    static <T> void listAdd(CyRow row, String name, Class<T> type, T element) {
+        def list = row.getList(name, type, [])
+        list.add(element)
+        row.set(name, list)
     }
 
     static def concordanceColor(String direction, Double concordance) {

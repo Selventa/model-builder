@@ -19,14 +19,14 @@ class AddRcrResultTable extends AbstractTask {
 
     @Override
     void run(TaskMonitor monitor) throws Exception {
-        createColumn(rcrTable, 'direction', String.class, true)
-        createColumn(rcrTable, 'richness', Double.class, true)
-        createColumn(rcrTable, 'concordance', Double.class, true)
-        createColumn(rcrTable, 'correct', Integer.class, true)
-        createColumn(rcrTable, 'contra', Integer.class, true)
-        createColumn(rcrTable, 'ambiguous', Integer.class, true)
-        createColumn(rcrTable, 'observed', Integer.class, true)
-        createColumn(rcrTable, 'possible', Integer.class, true)
+        createColumn(rcrTable, 'direction', String.class, true, null)
+        createColumn(rcrTable, 'richness', Double.class, true, null)
+        createColumn(rcrTable, 'concordance', Double.class, true, null)
+        createColumn(rcrTable, 'correct', Integer.class, true, null)
+        createColumn(rcrTable, 'contra', Integer.class, true, null)
+        createColumn(rcrTable, 'ambiguous', Integer.class, true, null)
+        createColumn(rcrTable, 'observed', Integer.class, true, null)
+        createColumn(rcrTable, 'possible', Integer.class, true, null)
         cyRef.cyTableManager.addTable(rcrTable)
 
         rcrResult.scores.each { JSONObject it ->

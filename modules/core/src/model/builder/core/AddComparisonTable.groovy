@@ -24,9 +24,9 @@ class AddComparisonTable extends AbstractTask {
                 "Comparison Measurements - ${comparison.name}",
                 NAME, String.class, true, false)
 
-        createColumn(cmpTable, 'abundance', Double.class, true)
-        createColumn(cmpTable, 'fold_change', Double.class, true)
-        createColumn(cmpTable, 'p_value', Double.class, true)
+        createColumn(cmpTable, 'abundance', Double.class, true, null)
+        createColumn(cmpTable, 'fold_change', Double.class, true, null)
+        createColumn(cmpTable, 'p_value', Double.class, true, null)
         cyRef.cyTableManager.addTable(cmpTable)
 
         comparison.measurements.each { JSONObject it ->
