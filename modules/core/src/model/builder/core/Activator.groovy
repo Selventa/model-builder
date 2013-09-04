@@ -55,6 +55,7 @@ class Activator extends AbstractCyActivator {
                 MapTableToNetworkTablesTaskFactory.class, VisualMappingManager.class,
                 VisualStyleFactory.class)
 
+        VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
@@ -131,7 +132,7 @@ class Activator extends AbstractCyActivator {
                 def importData = { id ->
                     WebResponse res = api.rcrResult(id)
                     cyr.dialogTaskManager.execute(
-                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, pMapFac).createTaskIterator())
+                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, dMapFac, pMapFac).createTaskIterator())
                 }
                 UI.toAddRcr(api, cyr, importData)
             }

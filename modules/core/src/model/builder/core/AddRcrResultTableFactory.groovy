@@ -16,6 +16,7 @@ class AddRcrResultTableFactory implements TaskFactory {
 
     final Map rcrResult
     final Expando cyRef
+    final VisualMappingFunctionFactory dMapFac
     final VisualMappingFunctionFactory pMapFac
 
     @Override
@@ -30,7 +31,7 @@ class AddRcrResultTableFactory implements TaskFactory {
             new AddRcrResultTable(rcrResult, rcrTable, cyRef))
         tasks.append(mapTblFactory.createTaskIterator(
                 rcrTable, true, selected, CyNode.class))
-        tasks.append(new ApplyRcrResultStyle(cyRef, pMapFac))
+        tasks.append(new ApplyRcrResultStyle(cyRef, dMapFac, pMapFac))
         tasks.append(new AbstractTask() {
             @Override
             void run(TaskMonitor monitor) throws Exception {

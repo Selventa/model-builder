@@ -3,7 +3,10 @@ package model.builder.core
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.presentation.property.BasicVisualLexicon
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping
+
+import java.awt.Color
 
 import static model.builder.core.Util.concordanceColor
 import static model.builder.core.Util.createColumn
@@ -16,6 +19,7 @@ import org.cytoscape.work.TaskMonitor
 class ApplyRcrResultStyle extends AbstractTask {
 
     Expando cyRef
+    VisualMappingFunctionFactory dMapFac
     VisualMappingFunctionFactory pMapFac
 
     @Override
@@ -41,6 +45,11 @@ class ApplyRcrResultStyle extends AbstractTask {
         }.each(cyRef.visualMappingManager.&removeVisualStyle)
         def rcrVs = cyRef.visualStyleFactory.createVisualStyle(kamVs)
         rcrVs.title = 'RCR Mechanisms - By Concordance'
+
+        DiscreteMapping selectColorMapping = dMapFac.createVisualMappingFunction(
+                'selected', Boolean.class, NODE_SELECTED_PAINT) as DiscreteMapping
+        selectColorMapping.putMapValue(Boolean.TRUE, new Color(0x00CCCC))
+        rcrVs.addVisualMappingFunction(selectColorMapping)
 
         PassthroughMapping concordancePassthrough = pMapFac.createVisualMappingFunction(
                 'rcr.concordance.fill', String.class, NODE_FILL_COLOR) as PassthroughMapping
