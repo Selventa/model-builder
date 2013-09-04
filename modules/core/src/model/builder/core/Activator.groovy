@@ -55,8 +55,7 @@ class Activator extends AbstractCyActivator {
                 MapTableToNetworkTablesTaskFactory.class, VisualMappingManager.class,
                 VisualStyleFactory.class)
 
-        VisualMappingFunctionFactory cMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
-        VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+        VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         API api = getService(bc, API.class)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
@@ -95,7 +94,7 @@ class Activator extends AbstractCyActivator {
                     cyr.dialogTaskManager.execute(
                             new AddComparisonTableFactory(res.data.comparison, cyr).createTaskIterator())
                 }
-                UI.toImportComparison(api, cyr, importData)
+                UI.toAddComparison(api, cyr, importData)
             }
         }
         importComparison.menuGravity = 100.0
@@ -132,9 +131,9 @@ class Activator extends AbstractCyActivator {
                 def importData = { id ->
                     WebResponse res = api.rcrResult(id)
                     cyr.dialogTaskManager.execute(
-                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, cMapFac, dMapFac).createTaskIterator())
+                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, pMapFac).createTaskIterator())
                 }
-                UI.toImportRcr(api, cyr, importData)
+                UI.toAddRcr(api, cyr, importData)
             }
         }
         importRCR.menuGravity = 103.0

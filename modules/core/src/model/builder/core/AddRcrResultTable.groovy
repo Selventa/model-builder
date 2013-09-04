@@ -1,14 +1,11 @@
 package model.builder.core
 
-import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import wslite.json.JSONObject
 
-import static org.cytoscape.model.CyNetwork.NAME
 import groovy.transform.TupleConstructor
 import org.cytoscape.model.CyTable
-import org.cytoscape.model.CyTableFactory
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
@@ -18,16 +15,11 @@ import static model.builder.core.Util.createColumn
 class AddRcrResultTable extends AbstractTask {
 
     final Map rcrResult
+    final CyTable rcrTable
     final Expando cyRef
-    final VisualMappingFunctionFactory cMapFac
-    final VisualMappingFunctionFactory dMapFac
 
     @Override
     void run(TaskMonitor monitor) throws Exception {
-        CyTableFactory tableFac = cyRef.cyTableFactory
-        CyTable rcrTable = tableFac.createTable(
-                "RCR Scores - ${rcrResult.name}", NAME, String.class, true, false)
-
         createColumn(rcrTable, 'direction', String.class, true)
         createColumn(rcrTable, 'richness', Double.class, true)
         createColumn(rcrTable, 'concordance', Double.class, true)
@@ -53,16 +45,9 @@ class AddRcrResultTable extends AbstractTask {
         def selected = cyRef.cyApplicationManager.selectedNetworks
         selected.each {
             ['direction', 'richness', 'concordance', 'correct', 'contra',
-             'ambiguous', 'observed', 'possible'].each(it.defaultNodeTable.&deleteColumn)
-        }
-
-        selected.each {
+             'ambiguous', 'observed', 'possible', 'rcr.concordance.fill'].
+                    each(it.defaultNodeTable.&deleteColumn)
             cyRef.cyNetworkTableManager.setTable(it, CyNode.class, 'sdp.rcr', rcrTable)
         }
-
-        def mapTblFactory = cyRef.mapTableToNetworkTablesTaskFactory
-        super.insertTasksAfterCurrentTask(mapTblFactory.createTaskIterator(
-                rcrTable, true, selected, CyNode.class))
-        super.insertTasksAfterCurrentTask(new ApplyRcrResultStyle(cyRef, cMapFac, dMapFac))
     }
 }

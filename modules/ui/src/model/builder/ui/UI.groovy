@@ -20,7 +20,7 @@ import static java.awt.GridBagConstraints.*
 
 class UI {
 
-    static JDialog toImportComparison(API api, Expando cyRef, Closure importData) {
+    static JDialog toAddComparison(API api, Expando cyRef, Closure importData) {
         def tags = {
             WebResponse res = api.tags(['comparison'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -35,7 +35,7 @@ class UI {
         }
 
         def swing = new SwingBuilder()
-        def dialog = swing.dialog(title: 'Import Comparison')
+        def dialog = swing.dialog(title: 'Add Comparison')
         dialog.contentPane.add(searchPanel(api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
@@ -44,7 +44,7 @@ class UI {
         dialog
     }
 
-    static JDialog toImportRcr(API api, Expando cyRef, Closure importData) {
+    static JDialog toAddRcr(API api, Expando cyRef, Closure importData) {
         def tags = {
             WebResponse res = api.tags(['rcr_result'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -59,7 +59,7 @@ class UI {
         }
 
         def swing = new SwingBuilder()
-        def dialog = swing.dialog(title: 'Import RCR Result')
+        def dialog = swing.dialog(title: 'Add RCR Result')
         dialog.contentPane.add(searchPanel(api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
@@ -74,7 +74,7 @@ class UI {
             def JTextField name
             def JList tags
             def JTable resultsTable
-            def JButton importButton
+            def JButton addButton
 
             gridBagLayout()
             label(text: 'Name',
@@ -107,7 +107,7 @@ class UI {
                         propertyColumn(header: "Created" ,propertyName: 'created', editable: false)
                     }
                     resTable.selectionModel.addListSelectionListener({ evt ->
-                        importButton.enabled = true
+                        addButton.enabled = true
                     } as ListSelectionListener)
                 }
             }
@@ -141,7 +141,7 @@ class UI {
                         propertyColumn(header: "Created" ,propertyName: 'created', editable: false)
                     }
                 })
-                importButton = button(text: 'Import', enabled: false, actionPerformed: {
+                addButton = button(text: 'Add', enabled: false, actionPerformed: {
                     def data = resultsTable.model.rowsModel.value
                     def selected = resultsTable.selectedRows.collect(data.&get)
                     selected.each { importClosure.call(it.id) }
