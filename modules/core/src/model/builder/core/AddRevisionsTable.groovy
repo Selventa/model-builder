@@ -20,6 +20,7 @@ class AddRevisionsTable extends AbstractTask {
         CyTableManager mgr = cyRef.cyTableManager
         def revTable = mgr.getAllTables(false).find{it.title == 'SDP.Revisions'} ?:
                        fac.createTable('SDP.Revisions', 'uri', String.class, true, true)
+
         revTable.savePolicy = SESSION_FILE
         createListColumn(revTable, 'networks.SUID', Long.class, true, [])
         createColumn(revTable, 'revision', Integer.class, true, null)
@@ -30,7 +31,7 @@ class AddRevisionsTable extends AbstractTask {
         cyRef.cyTableManager.addTable(revTable)
 
         def networkSUID = cyRef.cyApplicationManager.currentNetwork.SUID
-        model.revisions.sort{}each {
+        model.revisions.each {
             String uri = it.getString('network')
             def cyRow = revTable.getRow(uri)
             setAdd(cyRow, 'networks.SUID', Long.class, networkSUID)
