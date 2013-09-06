@@ -13,12 +13,108 @@ import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.ListSelectionListener
+import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Window
 
 import static java.awt.GridBagConstraints.*
 
 class UI {
+
+    static def configurationDialog() {
+        def swing = new SwingBuilder()
+        def dialog = swing.dialog(title: 'Configure SDP') {
+
+            borderLayout()
+            panel(border: titledBorder(title: 'SDP Access Information'),
+                  constraints: BorderLayout.NORTH) {
+
+                borderLayout()
+                panel(constraints: BorderLayout.CENTER) {
+                    gridBagLayout()
+
+                    label(text: 'Host', constraints: gbc(anchor: LINE_START,
+                                                         gridx: 0, gridy: 0,
+                                                         gridwidth: 1, gridheight: 1,
+                                                         weightx: 0.0, weighty: 0.1,
+                                                         insets: [10, 2, 0, 0]))
+                    textField(constraints: gbc(anchor: LINE_START,
+                                               gridx: 1, gridy: 0,
+                                               gridwidth: 1, gridheight: 1,
+                                               weightx: 0.2, weighty: 0.1,
+                                               fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+
+                    label(text: 'Email', constraints: gbc(anchor: LINE_START,
+                                                          gridx: 0, gridy: 1,
+                                                          gridwidth: 1, gridheight: 1,
+                                                          weightx: 0.0, weighty: 0.1,
+                                                          insets: [10, 2, 0, 0]))
+                    textField(constraints: gbc(anchor: LINE_START,
+                                               gridx: 1, gridy: 1,
+                                               gridwidth: 1, gridheight: 1,
+                                               weightx: 0.2, weighty: 0.1,
+                                               fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+
+                    label(text: 'Password', constraints: gbc(anchor: LINE_START,
+                                                             gridx: 2, gridy: 1,
+                                                             gridwidth: 1, gridheight: 1,
+                                                             weightx: 0.0, weighty: 0.1,
+                                                             insets: [10, 20, 0, 10]))
+                    passwordField(constraints: gbc(anchor: LINE_START,
+                                                   gridx: 3, gridy: 1,
+                                                   gridwidth: 1, gridheight: 1,
+                                                   weightx: 0.2, weighty: 0.1,
+                                                   fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+
+                    label(text: 'Default', constraints: gbc(anchor: LINE_START,
+                                                            gridx: 0, gridy: 2,
+                                                            gridwidth: 1, gridheight: 1,
+                                                            weightx: 0.0, weighty: 0.1,
+                                                            insets: [10, 2, 0, 0]))
+                    checkBox(selected: true, constraints: gbc(anchor: LINE_START,
+                                                              gridx: 1, gridy: 2,
+                                                              gridwidth: 1, gridheight: 1,
+                                                              weightx: 0.8, weighty: 0.1,
+                                                              fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+                    panel(constraints: gbc(anchor: LAST_LINE_END,
+                                           gridx: 3, gridy: 2, gridwidth: 1, gridheight: 1,
+                                           weightx: 0.3, weighty: 0.1, fill: HORIZONTAL,
+                                           insets: [10, 0, 0, 0])) {
+                        flowLayout(alignment: FlowLayout.RIGHT)
+                        button(text: 'Test', preferredSize: [85, 25])
+                        button(text: 'Add', preferredSize: [85, 25])
+                    }
+                }
+            }
+
+            panel(constraints: BorderLayout.CENTER) {
+
+                borderLayout()
+                scrollPane(constraints: BorderLayout.CENTER) {
+
+                    table(id: 'resTable', rowSelectionAllowed: false) {
+                        tableModel(list: []) {
+                            propertyColumn(header: 'Default', propertyName: 'default', editable: false)
+                            propertyColumn(header: 'Name',    propertyName: 'name',    editable: false)
+                            propertyColumn(header: 'Host' ,   propertyName: 'host',    editable: false)
+                            propertyColumn(header: 'Email' ,  propertyName: 'email',   editable: false)
+                        }
+                    }
+                }
+            }
+
+            panel(constraints: BorderLayout.SOUTH) {
+                flowLayout(alignment: FlowLayout.RIGHT)
+                button(text: 'Cancel', preferredSize: [85, 25])
+                button(text: 'Save', preferredSize: [85, 25])
+            }
+        }
+        dialog.pack()
+        dialog.size = [700, 300]
+        dialog.locationRelativeTo = null
+        dialog.visible = true
+        dialog
+    }
 
     static JDialog toAddComparison(API api, Expando cyRef, Closure importData) {
         def tags = {
@@ -147,6 +243,12 @@ class UI {
                     selected.each { importClosure.call(it.id) }
                 })
             }
+        }
+    }
+
+    public static void main(String[] args) {
+        new SwingBuilder().edt {
+            UI.configurationDialog()
         }
     }
 }
