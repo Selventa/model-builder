@@ -1,6 +1,7 @@
 package model.builder.web.internal
 
 import model.builder.web.api.API
+import model.builder.web.api.AccessInformation
 import model.builder.web.api.WebResponse
 import wslite.http.HTTPClientException
 import wslite.rest.RESTClient
@@ -12,8 +13,11 @@ class SdpAPI implements API {
 
     def RESTClient client
 
-    SdpAPI(String uri) {
+    SdpAPI(AccessInformation access) {
         SSLContext.default = SSL.context
+
+        String uri = "https://${access.host}"
+        new URI(uri).host
 
         client = new RESTClient(uri)
         client.requestBuilder = new AuthdRequestBuilder('api:abargnesi@selventa.com', 'superman')
@@ -38,6 +42,31 @@ class SdpAPI implements API {
                     oldAsType.invoke(delegate, c)
             }
         }
+    }
+
+    @Override
+    String getName() {
+        return null
+    }
+
+    @Override
+    String getHost() {
+        return null  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    String getEmail() {
+        return null  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    String getAPIKey() {
+        return null  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    String getPrivateKey() {
+        return null  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -168,7 +197,10 @@ class SdpAPI implements API {
         def proxy = ProxyMetaClass.getInstance(SdpAPI.class)
         proxy.interceptor = new BenchmarkInterceptor()
         proxy.use {
-            API api = new SdpAPI('https://sdpdemo.selventa.com')
+            def access = new AccessInformation('janssen-sdp.selventa.com',
+                    'abargnesi@selventa.com', 'api:abargnesi@selventa.com',
+                    'superman')
+            API api = new SdpAPI(access)
             try {
                 println api.tags().data.facet_counts.facet_fields.tags
 //                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')

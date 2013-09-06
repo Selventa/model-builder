@@ -1,7 +1,8 @@
 package model.builder.web
 
-import model.builder.web.api.API
-import model.builder.web.internal.SdpAPI
+import model.builder.web.api.APIManager
+import model.builder.web.api.AccessInformation
+import model.builder.web.internal.DefaultAPIManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.osgi.framework.BundleContext
 
@@ -12,7 +13,11 @@ class Activator extends AbstractCyActivator {
      */
     @Override
     void start(BundleContext bc) throws Exception {
-        API wsAPI = new SdpAPI('https://janssen-sdp.selventa.com')
-        registerService(bc, wsAPI, API.class, [:].asType(Properties.class))
+        def access = new AccessInformation('janssen-sdp.selventa.com',
+            'abargnesi@selventa.com', 'api:abargnesi@selventa.com', 'superman')
+        APIManager apiManager = new DefaultAPIManager()
+        apiManager.add(access)
+        apiManager.setDefault(access)
+        registerService(bc, apiManager, APIManager.class, [:] as Properties)
     }
 }

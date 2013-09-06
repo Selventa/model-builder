@@ -3,6 +3,7 @@ package model.builder.core
 import model.builder.ui.SdpModelImportProvider
 import model.builder.ui.UI
 import model.builder.web.api.API
+import model.builder.web.api.APIManager
 import model.builder.web.api.WebResponse
 import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
@@ -57,7 +58,8 @@ class Activator extends AbstractCyActivator {
         VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
-        API api = getService(bc, API.class)
+        APIManager apiManager = getService(bc, APIManager.class)
+        API api = apiManager.forAccess(apiManager.default)
         SdpModelImportProvider<SdpModelImport> sdpNetworks =
             new SdpModelImportProvider<>(SdpModelImport.class, cyr)
         registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
