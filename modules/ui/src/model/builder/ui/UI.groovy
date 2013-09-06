@@ -7,6 +7,7 @@ import model.builder.web.api.WebResponse
 
 import javax.swing.JButton
 import javax.swing.JDialog
+import javax.swing.JFrame
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JTable
@@ -23,8 +24,10 @@ class UI {
 
     static def configurationDialog() {
         def swing = new SwingBuilder()
-        def dialog = swing.dialog(title: 'Configure SDP') {
+        def dialog = swing.dialog(id: 'the_dialog', title: 'Configure SDP',
+                                  defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE) {
 
+            def dialog = the_dialog
             borderLayout()
             panel(border: titledBorder(title: 'SDP Access Information'),
                   constraints: BorderLayout.NORTH) {
@@ -105,12 +108,13 @@ class UI {
 
             panel(constraints: BorderLayout.SOUTH) {
                 flowLayout(alignment: FlowLayout.RIGHT)
-                button(text: 'Cancel', preferredSize: [85, 25])
+                button(text: 'Cancel', preferredSize: [85, 25],
+                       actionPerformed: {dialog.dispose()})
                 button(text: 'Save', preferredSize: [85, 25])
             }
         }
         dialog.pack()
-        dialog.size = [700, 300]
+        dialog.size = [700, 400]
         dialog.locationRelativeTo = null
         dialog.visible = true
         dialog

@@ -83,6 +83,17 @@ class Activator extends AbstractCyActivator {
 
         // ... Apps > SDP Menu Actions ...
 
+        // ... Add Configure
+        AbstractCyAction configure = new AbstractCyAction('Configure') {
+            void actionPerformed(ActionEvent e) {
+                UI.configurationDialog()
+            }
+        }
+        configure.preferredMenu = 'Apps.SDP'
+        registerService(bc, configure, CyAction.class, [
+                id: 'apps_sdp.configure'
+        ] as Properties)
+
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
