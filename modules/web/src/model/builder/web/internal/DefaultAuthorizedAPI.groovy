@@ -1,26 +1,27 @@
 package model.builder.web.internal
 
-import model.builder.web.api.API
 import model.builder.web.api.AccessInformation
+import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import wslite.http.HTTPClientException
+import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
 import wslite.rest.Response
 
 import javax.net.ssl.SSLContext
 
-class SdpAPI implements API {
+class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def RESTClient client
 
-    SdpAPI(AccessInformation access) {
+    DefaultAuthorizedAPI(AccessInformation access) {
         SSLContext.default = SSL.context
 
         String uri = "https://${access.host}"
         new URI(uri).host
 
         client = new RESTClient(uri)
-        client.requestBuilder = new AuthdRequestBuilder('api:abargnesi@selventa.com', 'superman')
+        client.requestBuilder = new AuthdRequestBuilder(access.apiKey, access.privateKey)
         client.defaultAcceptHeader = 'application/json'
         client.defaultContentTypeHeader = 'application/json'
         client.defaultCharset = 'UTF-8'
@@ -42,31 +43,21 @@ class SdpAPI implements API {
                     oldAsType.invoke(delegate, c)
             }
         }
-    }
-
-    @Override
-    String getName() {
-        return null
-    }
-
-    @Override
-    String getHost() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    String getEmail() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    String getAPIKey() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    String getPrivateKey() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
+        HTTPResponse.metaClass.define {
+            old = HTTPResponse.metaClass.getMetaMethod("asType", [Class] as Class[])
+            asType = { Class c ->
+                if (c == WebResponse)
+                    new WebResponse(
+                            delegate.statusCode,
+                            delegate.statusMessage,
+                            delegate.contentType,
+                            delegate.charset,
+                            delegate.headers
+                    )
+                else
+                    oldAsType.invoke(delegate, c)
+            }
+        }
     }
 
     @Override
@@ -102,23 +93,28 @@ class SdpAPI implements API {
     }
 
     @Override
+    WebResponse user(String email) {
+        get(path: "/api/users/$email")
+    }
+
+    @Override
     WebResponse comparison(String id) {
-        client.get(path: "/api/comparisons/$id") as WebResponse
+        get(path: "/api/comparisons/$id")
     }
 
     @Override
     WebResponse model(String id) {
-        addModelData(client.get(path: "/api/models/$id") as WebResponse)
+        addModelData(get(path: "/api/models/$id"))
     }
 
     @Override
     WebResponse models() {
-        addModelData(client.get(path: '/api/models') as WebResponse)
+        addModelData(get(path: '/api/models'))
     }
 
     @Override
     WebResponse rcrResult(String id) {
-        client.get(path: "/api/rcr_results/$id") as WebResponse
+        get(path: "/api/rcr_results/$id")
     }
 
     @Override
@@ -131,7 +127,7 @@ class SdpAPI implements API {
             params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        client.get(path: '/search', query: params) as WebResponse
+        get(path: '/search', query: params)
     }
 
     @Override
@@ -146,7 +142,7 @@ class SdpAPI implements API {
             params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        client.get(path: '/search', query: params) as WebResponse
+        get(path: '/search', query: params)
     }
 
     @Override
@@ -159,14 +155,14 @@ class SdpAPI implements API {
             params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        client.get(path: '/search', query: params) as WebResponse
+        get(path: '/search', query: params)
     }
 
     @Override
     WebResponse tags(types = ['*']) {
         def params = [q: types.collect {"type:$it"}.join(' OR '),
                       rows: '0', facet: 'on', 'facet.field': 'tags']
-        client.get(path: '/search', query: params) as WebResponse
+        get(path: '/search', query: params)
     }
 
     @Override
@@ -175,12 +171,12 @@ class SdpAPI implements API {
             def tokens = "$uri".split(/\/api\//)
             if (tokens.length != 2)
                 throw new IllegalArgumentException("uri is an invalid model revision uri: $uri")
-            return client.get(path: "/api/${tokens[1]}") as WebResponse
+            return get(path: "/api/${tokens[1]}")
         }
 
         [revision].flatten().collect {
             String path = "/api/models/$id/revisions/$revision"
-            client.get(path: path) as WebResponse
+            get(path: path)
         } as WebResponse[]
     }
 
@@ -192,15 +188,25 @@ class SdpAPI implements API {
         response
     }
 
+    def WebResponse get(Map params) {
+        try {
+            client.get(params) as WebResponse
+        } catch (HTTPClientException e) {
+            def res = e.response as WebResponse
+            if (res.statusCode == 500) throw e
+            res
+        }
+    }
+
     static void main(String[] args) {
 
-        def proxy = ProxyMetaClass.getInstance(SdpAPI.class)
+        def proxy = ProxyMetaClass.getInstance(DefaultAuthorizedAPI.class)
         proxy.interceptor = new BenchmarkInterceptor()
         proxy.use {
             def access = new AccessInformation('janssen-sdp.selventa.com',
                     'abargnesi@selventa.com', 'api:abargnesi@selventa.com',
                     'superman')
-            API api = new SdpAPI(access)
+            AuthorizedAPI api = new DefaultAuthorizedAPI(access)
             try {
                 println api.tags().data.facet_counts.facet_fields.tags
 //                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')

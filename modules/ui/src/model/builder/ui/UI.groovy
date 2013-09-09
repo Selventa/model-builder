@@ -2,7 +2,9 @@ package model.builder.ui
 
 import groovy.swing.SwingBuilder
 import model.builder.common.SearchResult
-import model.builder.web.api.API
+import model.builder.web.api.AccessInformation
+import model.builder.web.api.AuthorizedAPI
+import model.builder.web.api.APIManager
 import model.builder.web.api.WebResponse
 
 import javax.swing.JButton
@@ -10,6 +12,7 @@ import javax.swing.JDialog
 import javax.swing.JFrame
 import javax.swing.JList
 import javax.swing.JPanel
+import javax.swing.JPasswordField
 import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.ListSelectionModel
@@ -22,12 +25,15 @@ import static java.awt.GridBagConstraints.*
 
 class UI {
 
-    static def configurationDialog() {
+    static def configurationDialog(APIManager mgr,
+                                   Closure doAuthenticate, Closure onSave) {
         def swing = new SwingBuilder()
         def dialog = swing.dialog(id: 'the_dialog', title: 'Configure SDP',
                                   defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE) {
 
             def dialog = the_dialog
+            def JTextField host, email
+            def JPasswordField pass
             borderLayout()
             panel(border: titledBorder(title: 'SDP Access Information'),
                   constraints: BorderLayout.NORTH) {
@@ -41,51 +47,56 @@ class UI {
                                                          gridwidth: 1, gridheight: 1,
                                                          weightx: 0.0, weighty: 0.1,
                                                          insets: [10, 2, 0, 0]))
-                    textField(constraints: gbc(anchor: LINE_START,
-                                               gridx: 1, gridy: 0,
-                                               gridwidth: 1, gridheight: 1,
-                                               weightx: 0.2, weighty: 0.1,
-                                               fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+                    host = textField(constraints: gbc(anchor: LINE_START,
+                                                  gridx: 1, gridy: 0,
+                                                  gridwidth: 1, gridheight: 1,
+                                                  weightx: 0.2, weighty: 0.1,
+                                                  fill: HORIZONTAL, insets: [10, 0, 0, 0]))
 
                     label(text: 'Email', constraints: gbc(anchor: LINE_START,
                                                           gridx: 0, gridy: 1,
                                                           gridwidth: 1, gridheight: 1,
                                                           weightx: 0.0, weighty: 0.1,
                                                           insets: [10, 2, 0, 0]))
-                    textField(constraints: gbc(anchor: LINE_START,
-                                               gridx: 1, gridy: 1,
-                                               gridwidth: 1, gridheight: 1,
-                                               weightx: 0.2, weighty: 0.1,
-                                               fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+                    email = textField(constraints: gbc(anchor: LINE_START,
+                                                   gridx: 1, gridy: 1,
+                                                   gridwidth: 1, gridheight: 1,
+                                                   weightx: 0.2, weighty: 0.1,
+                                                   fill: HORIZONTAL, insets: [10, 0, 0, 0]))
 
                     label(text: 'Password', constraints: gbc(anchor: LINE_START,
                                                              gridx: 2, gridy: 1,
                                                              gridwidth: 1, gridheight: 1,
                                                              weightx: 0.0, weighty: 0.1,
                                                              insets: [10, 20, 0, 10]))
-                    passwordField(constraints: gbc(anchor: LINE_START,
-                                                   gridx: 3, gridy: 1,
-                                                   gridwidth: 1, gridheight: 1,
-                                                   weightx: 0.2, weighty: 0.1,
-                                                   fill: HORIZONTAL, insets: [10, 0, 0, 0]))
+                    pass = passwordField(constraints: gbc(anchor: LINE_START,
+                                                      gridx: 3, gridy: 1,
+                                                      gridwidth: 1, gridheight: 1,
+                                                      weightx: 0.2, weighty: 0.1,
+                                                      fill: HORIZONTAL, insets: [10, 0, 0, 0]))
 
-                    label(text: 'Default', constraints: gbc(anchor: LINE_START,
-                                                            gridx: 0, gridy: 2,
-                                                            gridwidth: 1, gridheight: 1,
-                                                            weightx: 0.0, weighty: 0.1,
-                                                            insets: [10, 2, 0, 0]))
-                    checkBox(selected: true, constraints: gbc(anchor: LINE_START,
-                                                              gridx: 1, gridy: 2,
-                                                              gridwidth: 1, gridheight: 1,
-                                                              weightx: 0.8, weighty: 0.1,
-                                                              fill: HORIZONTAL, insets: [10, 0, 0, 0]))
                     panel(constraints: gbc(anchor: LAST_LINE_END,
                                            gridx: 3, gridy: 2, gridwidth: 1, gridheight: 1,
                                            weightx: 0.3, weighty: 0.1, fill: HORIZONTAL,
                                            insets: [10, 0, 0, 0])) {
                         flowLayout(alignment: FlowLayout.RIGHT)
-                        button(text: 'Test', preferredSize: [85, 25])
-                        button(text: 'Add', preferredSize: [85, 25])
+                        button(text: 'Add', preferredSize: [85, 25], actionPerformed: {
+                            doOutside {
+                                def hostVal = host.text, emailVal = email.text, passVal = pass.password as String
+                                def String apiKey = doAuthenticate.call(hostVal, emailVal, passVal)
+                                if (apiKey) {
+                                    edt {
+                                        // add to table
+                                        resTable.model.with {
+                                            rowsModel.value.add(new AccessInformation(false, hostVal, emailVal, apiKey, passVal))
+                                            fireTableDataChanged()
+                                        }
+                                    }
+                                } else {
+                                    MessagePopups.errorConnectionAccess(host.text, email.text, pass.password as String)
+                                }
+                            }
+                        })
                     }
                 }
             }
@@ -95,12 +106,29 @@ class UI {
                 borderLayout()
                 scrollPane(constraints: BorderLayout.CENTER) {
 
-                    table(id: 'resTable', rowSelectionAllowed: false) {
-                        tableModel(list: []) {
-                            propertyColumn(header: 'Default', propertyName: 'default', editable: false)
-                            propertyColumn(header: 'Name',    propertyName: 'name',    editable: false)
+                    table(id: 'resTable') {
+                        tableModel {
+                            closureColumn(header:  'Default', type: Boolean.class,
+                                          read: {r -> r.defaultAccess},
+                                          write: {r, v ->
+                                              if (v) {
+                                                  resTable.model.with {
+                                                      rowsModel.value.each {
+                                                          it.defaultAccess = false
+                                                      }
+                                                      fireTableDataChanged()
+                                                  }
+                                              }
+                                              r.defaultAccess = v
+                                          })
+                            closureColumn(header:  'Name',    read: {it.toString()})
                             propertyColumn(header: 'Host' ,   propertyName: 'host',    editable: false)
                             propertyColumn(header: 'Email' ,  propertyName: 'email',   editable: false)
+                        }
+
+                        resTable.model.with {
+                            mgr.all().each(rowsModel.value.&add)
+                            fireTableDataChanged()
                         }
                     }
                 }
@@ -110,7 +138,8 @@ class UI {
                 flowLayout(alignment: FlowLayout.RIGHT)
                 button(text: 'Cancel', preferredSize: [85, 25],
                        actionPerformed: {dialog.dispose()})
-                button(text: 'Save', preferredSize: [85, 25])
+                button(text: 'Save', preferredSize: [85, 25],
+                       actionPerformed: onSave)
             }
         }
         dialog.pack()
@@ -120,7 +149,7 @@ class UI {
         dialog
     }
 
-    static JDialog toAddComparison(API api, Expando cyRef, Closure importData) {
+    static JDialog toAddComparison(AuthorizedAPI api, Expando cyRef, Closure importData) {
         def tags = {
             WebResponse res = api.tags(['comparison'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -144,7 +173,7 @@ class UI {
         dialog
     }
 
-    static JDialog toAddRcr(API api, Expando cyRef, Closure importData) {
+    static JDialog toAddRcr(AuthorizedAPI api, Expando cyRef, Closure importData) {
         def tags = {
             WebResponse res = api.tags(['rcr_result'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -168,7 +197,7 @@ class UI {
         dialog
     }
 
-    private static JPanel searchPanel(API api, Closure tagsClosure,
+    private static JPanel searchPanel(AuthorizedAPI api, Closure tagsClosure,
                                       Closure searchClosure, Closure importClosure) {
         new SwingBuilder().panel() {
             def JTextField name

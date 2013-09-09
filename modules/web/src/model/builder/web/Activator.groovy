@@ -13,7 +13,7 @@ class Activator extends AbstractCyActivator {
      */
     @Override
     void start(BundleContext bc) throws Exception {
-        def access = new AccessInformation('janssen-sdp.selventa.com',
+        def access = new AccessInformation(true, 'janssen-sdp.selventa.com',
             'abargnesi@selventa.com', 'api:abargnesi@selventa.com', 'superman')
         APIManager apiManager = new DefaultAPIManager()
         apiManager.add(access)

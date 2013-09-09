@@ -1,6 +1,6 @@
 package model.builder.core
 
-import model.builder.web.api.API
+import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
@@ -17,14 +17,14 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
 
-    final API api
+    final AuthorizedAPI api
     final Expando cyRef
 
     // tunable state
     private Expando modelRev
     private ListSingleSelection<Expando> revSelection
 
-    CreateCyNetworkForModelRevisionTunable(CyNetwork cyN, API api, Expando cyRef) {
+    CreateCyNetworkForModelRevisionTunable(CyNetwork cyN, AuthorizedAPI api, Expando cyRef) {
         super(cyN)
         this.api = api
         this.cyRef = cyRef

@@ -1,7 +1,7 @@
 package model.builder.core
 
 import model.builder.ui.SearchModelsPanel
-import model.builder.web.api.API
+import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient
 import org.cytoscape.work.TaskIterator
@@ -14,11 +14,11 @@ class BasicSdpModelImport extends AbstractWebServiceGUIClient implements SdpMode
 
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
-    private final API api
+    private final AuthorizedAPI api
     final Expando cyRef
     final AddBelColumnsToCurrentFactory addBelFac
 
-    BasicSdpModelImport(API api, Expando cyRef,
+    BasicSdpModelImport(AuthorizedAPI api, Expando cyRef,
                         AddBelColumnsToCurrentFactory addBelFac) {
         super('https://janssen-sdp.selventa.com/api',
               'Janssen-SDP (janssen-sdp.selventa.com)',

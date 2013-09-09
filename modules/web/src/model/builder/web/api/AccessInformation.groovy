@@ -7,6 +7,7 @@ import groovy.transform.TupleConstructor
 @EqualsAndHashCode(cache = true)
 class AccessInformation {
 
+    boolean defaultAccess
     final String host
     final String email
     final String apiKey

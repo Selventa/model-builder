@@ -6,11 +6,15 @@ interface APIManager {
 
     void setDefault(AccessInformation access)
 
-    AccessInformation forHost(String host)
+    AccessInformation authorizedAccess(String host)
 
-    API forAccess(AccessInformation access)
+    AuthorizedAPI authorizedAPI(AccessInformation access)
+
+    OpenAPI openAPI(String host)
 
     void add(AccessInformation access)
 
     void remove(AccessInformation access)
+
+    Set<AccessInformation> all()
 }

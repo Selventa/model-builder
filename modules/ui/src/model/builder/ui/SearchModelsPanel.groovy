@@ -1,7 +1,7 @@
 package model.builder.ui
 
 import model.builder.common.SearchResult
-import model.builder.web.api.API
+import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import org.cytoscape.io.webservice.WebServiceClient
 import org.cytoscape.work.TaskManager
@@ -30,12 +30,12 @@ final class SearchModelsPanel extends JPanel implements ActionListener {
     private final JButton open
     private final JButton search
     private final JButton cancel
-    private final API client
+    private final AuthorizedAPI client
     private final WebServiceClient cyWsClient
     private final TaskManager taskMgr
     private Map currentSearch
 
-    SearchModelsPanel(API client, WebServiceClient cyWsClient, TaskManager taskMgr) {
+    SearchModelsPanel(AuthorizedAPI client, WebServiceClient cyWsClient, TaskManager taskMgr) {
         this.client = client
         this.cyWsClient = cyWsClient
         this.taskMgr = taskMgr

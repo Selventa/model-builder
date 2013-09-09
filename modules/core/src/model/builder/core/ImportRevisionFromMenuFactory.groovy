@@ -1,6 +1,6 @@
 package model.builder.core
 
-import model.builder.web.api.API
+import model.builder.web.api.AuthorizedAPI
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.work.TaskIterator
@@ -8,11 +8,11 @@ import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 
 class ImportRevisionFromMenuFactory implements NetworkTaskFactory {
 
-    final API api
+    final AuthorizedAPI api
     final Expando cyRef
     final AddBelColumnsToCurrentFactory addBelFac
 
-    ImportRevisionFromMenuFactory(API api, Expando cyRef, AddBelColumnsToCurrentFactory addBelFac) {
+    ImportRevisionFromMenuFactory(AuthorizedAPI api, Expando cyRef, AddBelColumnsToCurrentFactory addBelFac) {
         this.api = api
         this.cyRef = cyRef
         this.addBelFac = addBelFac

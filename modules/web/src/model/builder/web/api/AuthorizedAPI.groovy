@@ -1,10 +1,12 @@
 package model.builder.web.api
 
-interface API {
+interface AuthorizedAPI {
 
     String uri(Map data)
 
     String id(Map data)
+
+    WebResponse user(String email)
 
     WebResponse comparison(String id)
 
