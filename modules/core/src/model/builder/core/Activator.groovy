@@ -105,7 +105,7 @@ class Activator extends AbstractCyActivator {
                                 return null
                         }
                     },
-                    {})
+                    apiManager.&saveConfiguration)
             }
         }
         configure.preferredMenu = 'Apps.SDP'

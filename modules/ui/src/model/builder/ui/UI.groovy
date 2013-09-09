@@ -85,10 +85,13 @@ class UI {
                                 def hostVal = host.text, emailVal = email.text, passVal = pass.password as String
                                 def String apiKey = doAuthenticate.call(hostVal, emailVal, passVal)
                                 if (apiKey) {
+                                    AccessInformation ai = new AccessInformation(false, hostVal, emailVal, apiKey, passVal)
+                                    mgr.add(ai)
+
                                     edt {
                                         // add to table
                                         resTable.model.with {
-                                            rowsModel.value.add(new AccessInformation(false, hostVal, emailVal, apiKey, passVal))
+                                            rowsModel.value.add(ai)
                                             fireTableDataChanged()
                                         }
                                     }
@@ -139,7 +142,7 @@ class UI {
                 button(text: 'Cancel', preferredSize: [85, 25],
                        actionPerformed: {dialog.dispose()})
                 button(text: 'Save', preferredSize: [85, 25],
-                       actionPerformed: onSave)
+                       actionPerformed: {onSave.call()})
             }
         }
         dialog.pack()

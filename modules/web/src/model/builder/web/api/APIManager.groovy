@@ -17,4 +17,6 @@ interface APIManager {
     void remove(AccessInformation access)
 
     Set<AccessInformation> all()
+
+    void saveConfiguration()
 }

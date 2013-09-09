@@ -13,6 +13,10 @@ class AccessInformation {
     final String apiKey
     final String privateKey
 
+    def String getConfigValue() {
+        "$defaultAccess,$host,$email,$apiKey,$privateKey"
+    }
+
     def String toString() {
         def m = ((host =~ /sdp(\w+)\.selventa\.com/) ?:
                  (host =~ /(\w+)-sdp\.selventa\.com/))
