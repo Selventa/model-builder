@@ -4,9 +4,7 @@ interface APIManager {
 
     AccessInformation getDefault()
 
-    void setDefault(AccessInformation access)
-
-    AccessInformation authorizedAccess(String host)
+    AuthorizedAPI authorizedAPI(String host)
 
     AuthorizedAPI authorizedAPI(AccessInformation access)
 
@@ -18,5 +16,5 @@ interface APIManager {
 
     Set<AccessInformation> all()
 
-    void saveConfiguration()
+    void saveConfiguration(Set<AccessInformation> accessSet)
 }

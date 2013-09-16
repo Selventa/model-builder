@@ -11,7 +11,6 @@ class DefaultAPIManager implements APIManager {
 
     def authorizedAccess = [] as Set<AccessInformation>
     def openMap = [:] as Map<String, OpenAPI>
-    def AccessInformation defaultAccess
 
     DefaultAPIManager(File configDir) {
         this.configDir = configDir
@@ -23,19 +22,13 @@ class DefaultAPIManager implements APIManager {
 
     @Override
     AccessInformation getDefault() {
-        defaultAccess
+        authorizedAccess.find {it.defaultAccess}
     }
 
     @Override
-    void setDefault(AccessInformation access) {
-        if (! access in authorizedAccess)
-            throw new IllegalStateException("$access must be added first")
-        defaultAccess = access
-    }
-
-    @Override
-    AccessInformation authorizedAccess(String host) {
-        authorizedAccess.find{it.host = host}
+    AuthorizedAPI authorizedAPI(String host) {
+        def access = authorizedAccess.find {it.host == host}
+        access ? new DefaultAuthorizedAPI(access) : null
     }
 
     @Override
@@ -63,7 +56,9 @@ class DefaultAPIManager implements APIManager {
         authorizedAccess
     }
 
-    public void saveConfiguration() {
+    @Override
+    public void saveConfiguration(Set<AccessInformation> accessSet) {
+        authorizedAccess = accessSet
         write(new File(configDir, 'config.props'))
     }
 
@@ -75,7 +70,6 @@ class DefaultAPIManager implements APIManager {
                 def (defaultAccess, host, email, apiKey, privateKey) = v.toString().split(/,/)
                 new AccessInformation(defaultAccess.toBoolean(), host, email, apiKey, privateKey)
             }
-            defaultAccess = authorizedAccess.findAll {it.defaultAccess}.last()
         }
     }
 

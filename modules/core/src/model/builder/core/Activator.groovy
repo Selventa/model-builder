@@ -1,6 +1,5 @@
 package model.builder.core
 
-import model.builder.ui.SdpModelImportProvider
 import model.builder.ui.UI
 import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
@@ -11,7 +10,6 @@ import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
 import org.cytoscape.application.swing.CySwingApplication
 import org.cytoscape.event.CyEventHelper
-import org.cytoscape.io.webservice.WebServiceClient
 import org.cytoscape.model.CyNetworkFactory
 import org.cytoscape.model.CyNetworkManager
 import org.cytoscape.model.CyNetworkTableManager
@@ -28,18 +26,21 @@ import org.cytoscape.view.model.CyNetworkViewManager
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import org.cytoscape.view.vizmap.VisualMappingManager
 import org.cytoscape.view.vizmap.VisualStyleFactory
+import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 import org.osgi.framework.BundleContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import wslite.rest.RESTClientException
 
 import java.awt.event.ActionEvent
 
-import static java.awt.event.InputEvent.ALT_DOWN_MASK
-import static java.awt.event.KeyEvent.VK_P
-import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.core.Util.cyReference
 
 class Activator extends AbstractCyActivator {
+
+    private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
     /**
      * {@inheritDoc}
@@ -60,34 +61,14 @@ class Activator extends AbstractCyActivator {
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)
-        AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
-        SdpModelImportProvider<SdpModelImport> sdpNetworks =
-            new SdpModelImportProvider<>(SdpModelImport.class, cyr)
-        registerServiceListener(bc, sdpNetworks, "addClient", "removeClient",
-                WebServiceClient.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
-
-        // ... File > Import Actions ...
-        registerAllServices(bc, new BasicSdpModelImport(api, cyr, addBelFac), [:] as Properties)
-        AbstractCyAction showModelImport = new AbstractCyAction('SDP...') {
-            void actionPerformed(ActionEvent e) {
-                sdpNetworks.prepareForDisplay()
-                sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame
-                sdpNetworks.visible = true
-            }
-        }
-        showModelImport.preferredMenu = 'File.Import.Network'
-        showModelImport.acceleratorKeyStroke = getKeyStroke(VK_P, ALT_DOWN_MASK)
-        registerService(bc, showModelImport, CyAction.class, [
-            id: 'import_network.import_model'
-        ] as Properties)
 
         // ... Apps > SDP Menu Actions ...
 
         // ... Add Configure
         AbstractCyAction configure = new AbstractCyAction('Configure') {
             void actionPerformed(ActionEvent e) {
-                UI.configurationDialog(apiManager,
+                UI.configuration(apiManager,
                     { host, email, pass ->
                         def res = apiManager.openAPI(host).apiKeys(email)
                         if (res.statusCode == 404) return null
@@ -116,12 +97,13 @@ class Activator extends AbstractCyActivator {
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
                 def importData = { id ->
                     WebResponse res = api.comparison(id)
                     cyr.dialogTaskManager.execute(
                             new AddComparisonTableFactory(res.data.comparison, cyr).createTaskIterator())
                 }
-                UI.toAddComparison(api, cyr, importData)
+                UI.addComparison(api, importData)
             }
         }
         importComparison.menuGravity = 100.0
@@ -132,10 +114,24 @@ class Activator extends AbstractCyActivator {
 
         // ... Import Model
         AbstractCyAction importModel = new AbstractCyAction('Import Models') {
-            void actionPerformed(ActionEvent e) {
-                sdpNetworks.prepareForDisplay()
-                sdpNetworks.locationRelativeTo = cyr.cySwingApplication.JFrame
-                sdpNetworks.visible = true
+            void actionPerformed(ActionEvent ev) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                def importModel = {
+                    def tasks = new TaskIterator()
+                    try {
+                        WebResponse res = api.model(it.id)
+                        def model = res.data.model
+                        def revisionNumber = model.revisions.length() - 1 as Integer
+                        WebResponse rev = api.modelRevisions(it.id, revisionNumber, '').first()
+                        tasks.append(new CreateCyNetworkForModelRevision(revisionNumber, rev.data.revision as Map, cyr))
+                        tasks.append(addBelFac.createTaskIterator())
+                        tasks.append(new AddRevisionsTable(model as Map, cyr))
+                        cyr.dialogTaskManager.execute(tasks)
+                    } catch (RESTClientException e) {
+                        msg.error("Error retrieving ${it.name}", e)
+                    }
+                }
+                UI.importModel(api, importModel)
             }
         }
         importModel.preferredMenu = 'Apps.SDP.Models'
@@ -145,7 +141,7 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Import Model Revision
-        registerService(bc, new ImportRevisionFromMenuFactory(api, cyr, addBelFac),
+        registerService(bc, new ImportRevisionFromMenuFactory(apiManager, cyr, addBelFac),
                 NetworkTaskFactory.class, [
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 102.0,
@@ -155,12 +151,13 @@ class Activator extends AbstractCyActivator {
         // ... Import RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
             void actionPerformed(ActionEvent e) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
                 def importData = { id ->
                     WebResponse res = api.rcrResult(id)
                     cyr.dialogTaskManager.execute(
                             new AddRcrResultTableFactory(res.data.rcr_result, cyr, dMapFac, pMapFac).createTaskIterator())
                 }
-                UI.toAddRcr(api, cyr, importData)
+                UI.addRcr(api, importData)
             }
         }
         importRCR.menuGravity = 103.0

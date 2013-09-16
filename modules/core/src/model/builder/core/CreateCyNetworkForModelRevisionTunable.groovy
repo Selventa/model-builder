@@ -1,6 +1,6 @@
 package model.builder.core
 
-import model.builder.web.api.AuthorizedAPI
+import model.builder.web.api.APIManager
 import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
@@ -8,6 +8,8 @@ import org.cytoscape.task.AbstractNetworkTask
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 import org.cytoscape.work.util.ListSingleSelection
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import wslite.json.JSONArray
 
 import static model.builder.core.Util.createColumn
@@ -17,16 +19,18 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
 
-    final AuthorizedAPI api
+    private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
+
+    final APIManager apiManager
     final Expando cyRef
 
     // tunable state
     private Expando modelRev
     private ListSingleSelection<Expando> revSelection
 
-    CreateCyNetworkForModelRevisionTunable(CyNetwork cyN, AuthorizedAPI api, Expando cyRef) {
+    CreateCyNetworkForModelRevisionTunable(CyNetwork cyN, APIManager apiManager, Expando cyRef) {
         super(cyN)
-        this.api = api
+        this.apiManager = apiManager
         this.cyRef = cyRef
     }
 
@@ -64,6 +68,14 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
      */
     @Override
     void run(TaskMonitor monitor) throws Exception {
+        def host = new URI(modelRev.uri as String).host
+        def api = apiManager.authorizedAPI(host)
+        if (!api) {
+            msg.error("Missing SDP Configuration for ${host}.  ")
+            throw new IllegalStateException("Missing SDP Configuration for ${host}.  " +
+                                            "Please configure SDP access (Apps -> SDP -> Configuration).")
+        }
+
         WebResponse res = api.modelRevisions(null, null, modelRev.uri).first()
         def revision = res.data.revision
         def network = revision.network
