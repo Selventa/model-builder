@@ -52,7 +52,7 @@ project('modules/common') {
   dependencies {
     compile files(
       "$rootDir/libs/compile/antlr-runtime-3.3.jar",
-      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.7.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/org.openbel.framework.common-3.0.0.jar")
     testCompile files(
@@ -109,7 +109,7 @@ project('modules/core') {
       "$rootDir/libs/compile/kamnav-core-1.0.0.jar",
       "$rootDir/libs/compile/kamnav-common-1.0.0.jar",
       "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
-      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.7.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar")
@@ -190,7 +190,7 @@ project('modules/main') {
 
   dependencies {
     compile files(
-      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.7.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar")
@@ -243,7 +243,7 @@ project('modules/ui') {
     compile project(':modules/common')
     compile project(':modules/web')
     compile files(
-      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.7.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar")
@@ -307,7 +307,7 @@ project('modules/web') {
     compile files(
       "$rootDir/libs/compile/antlr-runtime-3.3.jar",
       "$rootDir/libs/compile/commons-codec-1.8.jar",
-      "$rootDir/libs/compile/groovy-all-2.1.6.jar",
+      "$rootDir/libs/compile/groovy-all-2.1.7.jar",
       "$rootDir/libs/compile/groovy-common-extensions-0.5.jar",
       "$rootDir/libs/compile/groovy-wslite-0.8.0.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
