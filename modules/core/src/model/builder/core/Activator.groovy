@@ -48,14 +48,17 @@ class Activator extends AbstractCyActivator {
     @Override
     void start(BundleContext bc) {
         def cyr = cyReference(bc, this.&getService,
-                CySwingApplication.class, DialogTaskManager.class, CyApplicationManager.class,
-                CyNetworkFactory.class, CyNetworkManager.class, CyNetworkViewFactory.class,
+            [
+                CySwingApplication.class, DialogTaskManager.class,
+                CyApplicationManager.class, CyNetworkFactory.class,
+                CyNetworkManager.class, CyNetworkViewFactory.class,
                 CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
-                VisualMappingManager.class, CyEventHelper.class, CyTableFactory.class,
-                CyTableManager.class, CyNetworkTableManager.class,
-                ApplyPreferredLayoutTaskFactory.class, OpenBrowser.class,
-                MapTableToNetworkTablesTaskFactory.class, VisualMappingManager.class,
-                VisualStyleFactory.class)
+                VisualMappingManager.class, CyEventHelper.class,
+                CyTableFactory.class, CyTableManager.class,
+                CyNetworkTableManager.class, ApplyPreferredLayoutTaskFactory.class,
+                OpenBrowser.class, MapTableToNetworkTablesTaskFactory.class,
+                VisualMappingManager.class, VisualStyleFactory.class
+            ] as Class<?>[])
 
         VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");

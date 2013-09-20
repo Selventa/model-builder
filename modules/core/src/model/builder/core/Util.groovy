@@ -53,7 +53,7 @@ class Util {
         }
     }
 
-    static Expando cyReference(BundleContext bc, Closure cyAct, ... cyInterfaces) {
+    static Expando cyReference(BundleContext bc, Closure cyAct, Class<?>[] cyInterfaces) {
         Expando e = new Expando()
         cyInterfaces.each {
             def impl = cyAct.call(bc, it)
