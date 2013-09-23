@@ -17,8 +17,12 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     DefaultAuthorizedAPI(AccessInformation access) {
         SSLContext.default = SSL.context
 
-        String uri = "https://${access.host}"
-        new URI(uri).host
+        String uri
+        if (access.host == 'localhost') {
+            uri = "http://${access.host}:8080"
+        } else {
+            uri = "https://${access.host}"
+        }
 
         client = new RESTClient(uri)
         client.requestBuilder = new AuthdRequestBuilder(access.apiKey, access.privateKey)

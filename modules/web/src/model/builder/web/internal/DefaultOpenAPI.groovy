@@ -16,8 +16,12 @@ class DefaultOpenAPI implements OpenAPI {
     DefaultOpenAPI(String host) {
         SSLContext.default = SSL.context
 
-        String uri = "https://${host}"
-        new URI(uri).host
+        String uri
+        if (host == 'localhost') {
+            uri = "http://${host}:8080"
+        } else {
+            uri = "https://${host}"
+        }
 
         client = new RESTClient(uri)
         client.defaultAcceptHeader = 'application/json'
