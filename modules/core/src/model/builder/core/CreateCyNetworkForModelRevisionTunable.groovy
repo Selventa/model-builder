@@ -94,25 +94,32 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
 
-        def Map<String, CyNode> nodes = [:]
-        def edgeWithXY = network.edges.collect { JSONArray edge ->
-            def (src, rel, tgt) = edge
-            CyNode cySrc = nodes[src] ?: (nodes[src] = cyN.addNode())
-            cyN.getRow(cySrc).set(NAME, src)
-            CyNode cyTgt = nodes[tgt] ?: (nodes[tgt] = cyN.addNode())
-            cyN.getRow(cyTgt).set(NAME, tgt)
-            nodes[edge] = [cySrc, cyTgt]
-            [cyN.addEdge(cySrc, cyTgt, true), edge[3], edge[4]]
+        def Map<Integer, CyNode> nodes = [:]
+        network.nodes.collect { JSONArray node ->
+            def (Integer id, label) = node
+            CyNode cyNode = nodes[id] ?: (nodes[id] = cyN.addNode())
+            cyN.getRow(cyNode).set(NAME, label)
+            if (node[4]) {
+                // handle metadata
+            }
+            cyNode
         }
         monitor.progress = 0.5d
+        network.edges.collect { JSONArray edge ->
+            def (src, tgt, rel, meta, evidence) = edge
+            CyNode cySource = nodes[src] ?: (nodes[src] = cyN.addNode())
+            CyNode cyTarget = nodes[tgt] ?: (nodes[tgt] = cyN.addNode())
+            def cyEdge = cyN.addEdge(cySource, cyTarget, true)
+            cyN.getRow(cyEdge).set('interaction', rel)
+            cyEdge
+        }
 
         def view = cyRef.cyNetworkViewFactory.createNetworkView(cyN)
-        edgeWithXY.each {
-            def (cyEdge, srcXY, tgtXY) = it
-            view.getNodeView(cyEdge.source).setVisualProperty(NODE_X_LOCATION, srcXY.getDouble(0))
-            view.getNodeView(cyEdge.source).setVisualProperty(NODE_Y_LOCATION, srcXY.getDouble(1))
-            view.getNodeView(cyEdge.target).setVisualProperty(NODE_X_LOCATION, tgtXY.getDouble(0))
-            view.getNodeView(cyEdge.target).setVisualProperty(NODE_Y_LOCATION, tgtXY.getDouble(1))
+        network.nodes.each { JSONArray node ->
+            def (Integer id, _, x, y) = node
+            CyNode cyNode = nodes[id]
+            view.getNodeView(cyNode).setVisualProperty(NODE_X_LOCATION, x as Double)
+            view.getNodeView(cyNode).setVisualProperty(NODE_Y_LOCATION, y as Double)
         }
 
         monitor.statusMessage = 'Creating view'
