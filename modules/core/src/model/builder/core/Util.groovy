@@ -1,6 +1,7 @@
 package model.builder.core
 
 import org.cytoscape.model.CyColumn
+import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
 import org.osgi.framework.BundleContext
@@ -32,6 +33,29 @@ class Util {
         def list = row.getList(name, type, [])
         list.add(element)
         row.set(name, list)
+    }
+
+    static void addMetadata(Map metadata, CyNetwork cyN, CyTable table) {
+        Map columns = metadata.collectEntries {
+            String k, Object v -> [k, toColumn(table, k, v)]
+        }
+        metadata.each { String k, Object v ->
+            CyColumn col = columns[k]
+            CyRow r = cyN.getRow(cyN)
+            col.listElementType ? r.getList(k, col.listElementType, []) : r.set(k, v)
+        }
+    }
+
+    static CyColumn toColumn(CyTable table, String name, Object val) {
+        if (!name) return null
+
+        Class<?> c = val.class
+        if (val instanceof List) {
+            def l = (val as List)
+            c = l[0].class
+            return createListColumn(table, name, c, false, [])
+        }
+        createColumn(table, name, c, false, null)
     }
 
     static def concordanceColor(String direction, Double concordance) {

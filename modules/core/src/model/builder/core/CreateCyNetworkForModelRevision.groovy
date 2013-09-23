@@ -7,6 +7,7 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import wslite.json.JSONArray
 
+import static model.builder.core.Util.addMetadata
 import static model.builder.core.Util.createColumn
 import static org.cytoscape.model.CyNetwork.*
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION
@@ -39,6 +40,7 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
         cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
+        addMetadata(network.metadata as Map, cyN, locals)
 
         def Map<Integer, CyNode> nodes = [:]
         network.nodes.collect { JSONArray node ->
@@ -46,7 +48,7 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
             CyNode cyNode = nodes[id] ?: (nodes[id] = cyN.addNode())
             cyN.getRow(cyNode).set(NAME, label)
             if (node[4]) {
-                // handle metadata
+                addMetadata(node[4].metadata as Map, cyN, locals)
             }
             cyNode
         }
@@ -57,6 +59,9 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
             CyNode cyTarget = nodes[tgt] ?: (nodes[tgt] = cyN.addNode())
             def cyEdge = cyN.addEdge(cySource, cyTarget, true)
             cyN.getRow(cyEdge).set('interaction', rel)
+            if (meta) {
+                addMetadata(meta.metadata as Map, cyN, locals)
+            }
             cyEdge
         }
 
