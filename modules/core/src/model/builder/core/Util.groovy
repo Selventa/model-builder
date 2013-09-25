@@ -42,6 +42,7 @@ class Util {
         metadata.each { String k, Object v ->
             CyColumn col = columns[k]
             CyRow r = cyN.getRow(cyN)
+            v = (v == null || "$v" == "null") ? null : v
             col.listElementType ? r.getList(k, col.listElementType, []) : r.set(k, v)
         }
     }
@@ -49,7 +50,9 @@ class Util {
     static CyColumn toColumn(CyTable table, String name, Object val) {
         if (!name) return null
 
-        Class<?> c = val.class
+        // read value's class; if val type of JSONObject$Null then default to
+        // String class
+        Class<?> c = (val == null || "$val" == "null") ? String.class : val.class
         if (val instanceof List) {
             def l = (val as List)
             c = l[0].class
