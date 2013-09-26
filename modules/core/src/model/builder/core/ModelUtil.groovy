@@ -84,15 +84,13 @@ class ModelUtil {
         }
 
         [
-            network: [
-                name: cyNr.get(NAME, String.class),
-                description: cyNr.get('description', String.class, null),
-                species: cyNr.get('species', String.class, null),
-                reference_node: cyNr.get('reference_node', String.class, null),
-                metadata: null,
-                nodes: nodes,
-                edges: edges
-            ]
+            name: cyNr.get(NAME, String.class),
+            description: cyNr.get('description', String.class, null),
+            species: cyNr.get('species', String.class, null),
+            reference_node: cyNr.get('reference_node', String.class, null),
+            metadata: null,
+            nodes: nodes,
+            edges: edges
         ]
     }
 }

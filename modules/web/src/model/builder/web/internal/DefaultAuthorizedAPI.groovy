@@ -185,6 +185,22 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         } as WebResponse[]
     }
 
+    @Override
+    WebResponse putModelRevision(id, network, comment, revision, uri) {
+        if (uri) {
+            def tokens = "$uri".split(/\/api\//)
+            if (tokens.length != 2)
+                throw new IllegalArgumentException("uri is an invalid model revision uri: $uri")
+            return get(path: "/api/${tokens[1]}")
+        }
+
+        return put(path: "/api/models/$id/revisions/$revision") {
+            type JSON
+            charset "utf8"
+            json revision : ['comment': "$comment", 'network': network]
+        } as WebResponse
+    }
+
     def WebResponse addModelData(WebResponse response) {
         if (response.data) {
             def map = response.data
@@ -196,6 +212,16 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     def WebResponse get(Map params) {
         try {
             client.get(params) as WebResponse
+        } catch (HTTPClientException e) {
+            def res = e.response as WebResponse
+            if (res.statusCode == 500) throw e
+            res
+        }
+    }
+
+    def WebResponse put(Map params, Closure content) {
+        try {
+            client.put(params, content) as WebResponse
         } catch (HTTPClientException e) {
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
