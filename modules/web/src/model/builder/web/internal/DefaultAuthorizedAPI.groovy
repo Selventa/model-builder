@@ -186,15 +186,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
-    WebResponse putModelRevision(id, network, comment, revision, uri) {
-        if (uri) {
-            def tokens = "$uri".split(/\/api\//)
-            if (tokens.length != 2)
-                throw new IllegalArgumentException("uri is an invalid model revision uri: $uri")
-            return get(path: "/api/${tokens[1]}")
-        }
-
-        return put(path: "/api/models/$id/revisions/$revision") {
+    WebResponse putModelRevision(uri, network, comment) {
+        return put(path: uri) {
             type JSON
             charset "utf8"
             json revision : ['comment': "$comment", 'network': network]

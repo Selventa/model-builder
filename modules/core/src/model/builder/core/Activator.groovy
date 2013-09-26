@@ -17,6 +17,7 @@ import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.cytoscape.task.NetworkTaskFactory
+import org.cytoscape.task.NetworkViewTaskFactory
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
@@ -155,8 +156,8 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Save Model (New revision)
-        registerService(bc, new SaveModelFactory(),
-                NetworkTaskFactory.class, [
+        registerService(bc, new SaveModelFactory(apiManager),
+                NetworkViewTaskFactory.class, [
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
                 title: 'Save Model (New revision)'

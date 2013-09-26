@@ -85,10 +85,10 @@ class ModelUtil {
 
         [
             name: cyNr.get(NAME, String.class),
-            description: cyNr.get('description', String.class, null),
-            species: cyNr.get('species', String.class, null),
-            reference_node: cyNr.get('reference_node', String.class, null),
-            metadata: null,
+            description: cyNr.get('description', String.class, ''),
+            species: cyNr.get('species', String.class, 0),
+            reference_node: cyNr.get('reference_node', String.class, ''),
+            metadata: [:],
             nodes: nodes,
             edges: edges
         ]

@@ -51,7 +51,7 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         monitor.progress = 0.0d
         monitor.statusMessage = 'Adding network'
 
-        CyNetworkView cyNv = from(revision as Map, modelRev.revision as int, cyRef)
+        CyNetworkView cyNv = from(modelRev.uri, revision as Map, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)

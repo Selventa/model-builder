@@ -1,18 +1,23 @@
 package model.builder.core
 
-import org.cytoscape.model.CyNetwork
-import org.cytoscape.task.NetworkTaskFactory
+import groovy.transform.TupleConstructor
+import model.builder.web.api.APIManager
+import org.cytoscape.task.NetworkViewTaskFactory
+import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskIterator
 
-class SaveModelFactory implements NetworkTaskFactory {
+@TupleConstructor
+class SaveModelFactory implements NetworkViewTaskFactory {
+
+    final APIManager apiManager
 
     @Override
-    TaskIterator createTaskIterator(CyNetwork cyN) {
-        new TaskIterator(new SaveModel(cyN))
+    TaskIterator createTaskIterator(CyNetworkView cyNv) {
+        new TaskIterator(new SaveModel(cyNv, apiManager))
     }
 
     @Override
-    boolean isReady(CyNetwork cyN) {
+    boolean isReady(CyNetworkView cyNv) {
         return true
     }
 }
