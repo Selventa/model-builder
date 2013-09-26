@@ -18,6 +18,7 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
      */
     @Override
     void run(TaskMonitor monitor) throws Exception {
+        def model = context.model as Map
         def revision = context.revision as Map
         def revisionNumber = context.revisionNumber as int
 
@@ -26,7 +27,8 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
         monitor.progress = 0.0d
         monitor.statusMessage = 'Adding network nodes and edges'
 
-        CyNetworkView cyNv = from(revision, revisionNumber, cyRef)
+        def uri = "${model.uri}/revisions/$revisionNumber"
+        CyNetworkView cyNv = from(uri, revision, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)

@@ -14,7 +14,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 class ModelUtil {
 
-    static CyNetworkView from(Map revision, int number, Expando cyRef) {
+    static CyNetworkView from(String uri, Map revision, Expando cyRef) {
         def network = revision.network
 
         CyNetwork cyN = cyRef.cyNetworkFactory.createNetwork()
@@ -22,12 +22,12 @@ class ModelUtil {
         createColumn(locals, 'who', String.class, true, null)
         createColumn(locals, 'when', String.class, true, null)
         createColumn(locals, 'comment', String.class, true, null)
-        createColumn(locals, 'revision_number', Integer.class, true, null)
+        createColumn(locals, 'uri', String.class, true, null)
         cyN.getRow(cyN, LOCAL_ATTRS).set(NAME, network.name)
         cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
-        cyN.getRow(cyN, LOCAL_ATTRS).set('revision_number', number)
+        cyN.getRow(cyN, LOCAL_ATTRS).set('uri', uri)
         addMetadata(network.metadata as Map, cyN, locals)
 
         def Map<Integer, CyNode> index = [:]
