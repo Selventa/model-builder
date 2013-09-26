@@ -11,11 +11,13 @@ import static org.cytoscape.model.SavePolicy.*
 @TupleConstructor
 class AddRevisionsTable extends AbstractTask {
 
-    final Map model
+    final Map context
     final Expando cyRef
 
     @Override
     void run(TaskMonitor monitor) throws Exception {
+        def model = context.model as Map
+
         CyTableFactory fac = cyRef.cyTableFactory
         CyTableManager mgr = cyRef.cyTableManager
         def revTable = mgr.getAllTables(false).find{it.title == 'SDP.Revisions'} ?:

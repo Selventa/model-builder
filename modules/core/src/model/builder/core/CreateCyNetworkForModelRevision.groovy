@@ -10,8 +10,7 @@ import static ModelUtil.from
 @TupleConstructor
 class CreateCyNetworkForModelRevision extends AbstractTask {
 
-    final int number
-    final Map revision
+    final Map context
     final Expando cyRef
 
     /**
@@ -19,12 +18,15 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
      */
     @Override
     void run(TaskMonitor monitor) throws Exception {
+        def revision = context.revision as Map
+        def revisionNumber = context.revisionNumber as int
+
         def network = revision.network
-        monitor.title = "Creating network for ${network.name} / $number"
+        monitor.title = "Creating network for ${network.name} / $revisionNumber"
         monitor.progress = 0.0d
         monitor.statusMessage = 'Adding network nodes and edges'
 
-        CyNetworkView cyNv = from(revision, number, cyRef)
+        CyNetworkView cyNv = from(revision, revisionNumber, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)

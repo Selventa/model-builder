@@ -119,17 +119,20 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction importModel = new AbstractCyAction('Import Models') {
             void actionPerformed(ActionEvent ev) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
-                def importModel = {
-                    def tasks = new TaskIterator()
+                def importModel = { models ->
+                    def all = new TaskIterator()
                     try {
-                        WebResponse res = api.model(it.id)
-                        def model = res.data.model
-                        def revisionNumber = model.revisions.length() - 1 as Integer
-                        WebResponse rev = api.modelRevisions(it.id, revisionNumber, '').first()
-                        tasks.append(new CreateCyNetworkForModelRevision(revisionNumber, rev.data.revision as Map, cyr))
-                        tasks.append(addBelFac.createTaskIterator())
-                        tasks.append(new AddRevisionsTable(model as Map, cyr))
-                        cyr.dialogTaskManager.execute(tasks)
+                        models.collect {
+                            def tasks = new TaskIterator()
+                            def context = ['id': it.id]
+                            tasks.append(new RetrieveModel(context, apiManager))
+                            tasks.append(new RetrieveRevision(context, apiManager))
+                            tasks.append(new CreateCyNetworkForModelRevision(context, cyr))
+                            tasks.append(addBelFac.createTaskIterator())
+                            tasks.append(new AddRevisionsTable(context, cyr))
+                            tasks
+                        }.each(all.&append)
+                        cyr.dialogTaskManager.execute(all)
                     } catch (RESTClientException e) {
                         msg.error("Error retrieving ${it.name}", e)
                     }

@@ -332,7 +332,8 @@ class UI {
 
     private static JPanel modelSearchPanel(AuthorizedAPI api, Closure tagsClosure,
                                            Closure searchClosure, Closure importClosure) {
-        new SwingBuilder().panel() {
+        def swing = new SwingBuilder()
+        swing.panel() {
             def JTextField name
             def JCheckBox human
             def JCheckBox mouse
@@ -431,7 +432,7 @@ class UI {
                 addButton = button(text: 'Import', enabled: false, actionPerformed: {
                     def data = resultsTable.model.rowsModel.value
                     def selected = resultsTable.selectedRows.collect(data.&get)
-                    selected.each { importClosure.call(it) }
+                    importClosure.call(selected)
                 })
             }
         }
