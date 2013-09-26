@@ -156,11 +156,11 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Save Model (New revision)
-        registerService(bc, new SaveModelFactory(apiManager),
+        registerService(bc, new SaveModelFactory(cyr, apiManager),
                 NetworkViewTaskFactory.class, [
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
-                title: 'Save Model (New revision)'
+                title: 'Save Model Revision'
         ] as Properties)
 
 

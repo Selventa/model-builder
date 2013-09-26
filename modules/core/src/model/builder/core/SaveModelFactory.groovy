@@ -9,6 +9,7 @@ import org.cytoscape.work.TaskIterator
 @TupleConstructor
 class SaveModelFactory implements NetworkViewTaskFactory {
 
+    final Expando cyRef
     final APIManager apiManager
 
     @Override
@@ -18,6 +19,8 @@ class SaveModelFactory implements NetworkViewTaskFactory {
 
     @Override
     boolean isReady(CyNetworkView cyNv) {
-        return true
+        def cyN = cyRef.cyApplicationManager.currentNetwork
+        // TODO improve ready condition
+        cyN && cyN.getRow(cyN).isSet('uri')
     }
 }
