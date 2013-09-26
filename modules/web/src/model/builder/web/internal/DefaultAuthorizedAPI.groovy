@@ -9,6 +9,7 @@ import wslite.rest.RESTClient
 import wslite.rest.Response
 
 import javax.net.ssl.SSLContext
+import static wslite.rest.ContentType.JSON
 
 class DefaultAuthorizedAPI implements AuthorizedAPI {
 
@@ -98,27 +99,27 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse user(String email) {
-        get(path: "/api/users/$email")
+        get(path: "/api/users/$email", accept: JSON)
     }
 
     @Override
     WebResponse comparison(String id) {
-        get(path: "/api/comparisons/$id")
+        get(path: "/api/comparisons/$id", accept: JSON)
     }
 
     @Override
     WebResponse model(String id) {
-        addModelData(get(path: "/api/models/$id"))
+        addModelData(get(path: "/api/models/$id", accept: JSON))
     }
 
     @Override
     WebResponse models() {
-        addModelData(get(path: '/api/models'))
+        addModelData(get(path: '/api/models', accept: JSON))
     }
 
     @Override
     WebResponse rcrResult(String id) {
-        get(path: "/api/rcr_results/$id")
+        get(path: "/api/rcr_results/$id", accept: JSON)
     }
 
     @Override
@@ -131,7 +132,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        get(path: '/search', query: params)
+        get(path: '/search', query: params, accept: JSON)
     }
 
     @Override
@@ -146,7 +147,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        get(path: '/search', query: params)
+        get(path: '/search', query: params, accept: JSON)
     }
 
     @Override
@@ -159,14 +160,14 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
         if (data.sort) params.sort = data.sort
 
-        get(path: '/search', query: params)
+        get(path: '/search', query: params, accept: JSON)
     }
 
     @Override
     WebResponse tags(types = ['*']) {
         def params = [q: types.collect {"type:$it"}.join(' OR '),
                       rows: '0', facet: 'on', 'facet.field': 'tags']
-        get(path: '/search', query: params)
+        get(path: '/search', query: params, accept: JSON)
     }
 
     @Override
@@ -180,7 +181,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
         [revision].flatten().collect {
             String path = "/api/models/$id/revisions/$revision"
-            get(path: path)
+            get(path: path, accept: JSON)
         } as WebResponse[]
     }
 
