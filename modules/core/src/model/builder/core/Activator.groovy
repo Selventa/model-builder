@@ -151,6 +151,15 @@ class Activator extends AbstractCyActivator {
                 title: 'Import Model Revision'
         ] as Properties)
 
+        // ... Save Model (New revision)
+        registerService(bc, new SaveModelFactory(),
+                NetworkTaskFactory.class, [
+                preferredMenu: 'Apps.SDP.Models',
+                menuGravity: 103.0,
+                title: 'Save Model (New revision)'
+        ] as Properties)
+
+
         // ... Import RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
             void actionPerformed(ActionEvent e) {
