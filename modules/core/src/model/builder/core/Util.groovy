@@ -1,6 +1,7 @@
 package model.builder.core
 
 import org.cytoscape.model.CyColumn
+import org.cytoscape.model.CyIdentifiable
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
@@ -8,15 +9,15 @@ import org.osgi.framework.BundleContext
 
 class Util {
 
-    static CyColumn createColumn(CyTable table, String name, Class<?> type,
-                                 boolean immutable, Object defaultValue) {
+    static CyColumn createColumn(table, name, type, immutable, defaultValue) {
+        name = "$name"
         table.getColumn(name) ?: (table.createColumn(name, type, immutable, defaultValue))
         table.getColumn(name)
     }
 
-    static CyColumn createListColumn(CyTable table, String name,
-                                     Class<?> listElementType, boolean immutable,
-                                     List defaultValue) {
+    static CyColumn createListColumn(table, name, listElementType, immutable,
+                                     defaultValue) {
+        name = "$name"
         table.getColumn(name) ?: (table.createListColumn(name, listElementType, immutable, defaultValue))
         table.getColumn(name)
     }
@@ -35,15 +36,84 @@ class Util {
         row.set(name, list)
     }
 
-    static void addMetadata(Map metadata, CyNetwork cyN, CyTable table) {
-        Map columns = metadata.collectEntries {
-            String k, Object v -> [k, toColumn(table, k, v)]
+    /**
+     * For CyNetwork, CyNode or CyEdge (multiple maps)
+     */
+    static void setMetadata(List data, List cyObjects, CyTable table) {
+        Map gathered = gather(data)
+        Map columns = gathered.collectEntries { k, v ->
+            [k, classReduce(v)]
+        }.
+        collectEntries { k, v ->
+            switch(v) {
+                case List:
+                    def clazz = classReduce(gathered[k].flatten()) ?: String.class
+                    [k, createListColumn(table, k, clazz, false, [])]
+                    break
+                default:
+                    v = (v && "$v" != 'null') ? v : String.class
+                    [k, createColumn(table, k, v, false, null)]
+            }
         }
-        metadata.each { String k, Object v ->
-            CyColumn col = columns[k]
-            CyRow r = cyN.getRow(cyN)
-            v = (v == null || "$v" == "null") ? null : v
-            col.listElementType ? r.getList(k, col.listElementType, []) : r.set(k, v)
+        [data, cyObjects].transpose().each {
+            def (metadata, CyIdentifiable cyObj) = it
+            metadata.each { k, v ->
+                def col = columns[k] as CyColumn
+                CyRow row = table.getRow(cyObj.SUID)
+                if(col.listElementType) {
+                    def values = row.getList(k, col.listElementType, [])
+                    if (v != null && v instanceof List) {
+                        values.addAll(v.collect {
+                            (it == null || "$it" == "null") ? null : it
+                        })
+                    }
+                    row.set(k, values)
+                } else {
+                    v = (v == null || "$v" == "null") ? null : v
+                    row.set(k, v)
+                }
+            }
+        }
+    }
+
+    static Map gather(List data) {
+        data.inject([:].withDefault {[]}) { initial, next ->
+            next.each { k, v ->
+                initial[k] << v
+            }
+            initial
+        }
+    }
+
+    static Class<?> classReduce(values) {
+        if (!values) return
+        values.find { it != null && "$it" != 'null' }?.class as Class<?>
+    }
+
+    static CyColumn addData(String k, Object v, CyNetwork cyN,
+                            CyIdentifiable id, CyTable table) {
+        CyColumn col = toColumn(table, k, v)
+        CyRow r = cyN.getRow(id)
+        v = (v == null || "$v" == "null") ? null : v
+        if(col.listElementType) {
+            def values = r.getList(k, col.listElementType, [])
+            if (v != null && v.class.isAssignableFrom(col.listElementType))
+                values.addAll(v)
+            r.set(k, values)
+        } else {
+            r.set(k, v)
+        }
+        col
+    }
+
+    static Map rowData(CyIdentifiable id, CyNetwork cyN, CyTable table) {
+        cyN.getRow(id).allValues.collectEntries { k, v ->
+            def col = table.getColumn(k)
+            if (col.listElementType && v == null) {
+                [k, []]
+            } else {
+                [k, v]
+            }
         }
     }
 
@@ -54,8 +124,7 @@ class Util {
         // String class
         Class<?> c = (val == null || "$val" == "null") ? String.class : val.class
         if (val instanceof List) {
-            def l = (val as List)
-            c = l[0].class
+            c = val.isEmpty() ? String.class : val.first().class
             return createListColumn(table, name, c, false, [])
         }
         createColumn(table, name, c, false, null)
@@ -69,9 +138,9 @@ class Util {
                             (0.05..0.1):   '#CCCCFF', (0.1..1):       '#FFFFFF']
                 return down.find {it.key.containsWithinBounds(concordance)}?.value
             case 'Up':
-                def up = [(0.0..0.001):'#FFA000', (0.001..0.005): '#FFC800',
-                        (0.005..0.01): '#FFE800', (0.01..0.05):   '#FFF800',
-                        (0.05..0.1):   '#FFFF99', (0.1..1):       '#FFFFFF']
+                def up = [(0.0..0.001):  '#FFA000', (0.001..0.005): '#FFC800',
+                          (0.005..0.01): '#FFE800', (0.01..0.05):   '#FFF800',
+                          (0.05..0.1):   '#FFFF99', (0.1..1):       '#FFFFFF']
                 return up.find {it.key.containsWithinBounds(concordance)}?.value
             case 'None':
                 return '#FFFFFF'

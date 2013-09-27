@@ -1,12 +1,13 @@
 package model.builder.core
 
+import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
 import wslite.json.JSONArray
+import wslite.json.JSONObject
 
-import static model.builder.core.Util.addMetadata
-import static model.builder.core.Util.createColumn
+import static model.builder.core.Util.*
 import static org.cytoscape.model.CyNetwork.*
 import static org.cytoscape.model.CyEdge.INTERACTION
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION
@@ -14,8 +15,17 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 class ModelUtil {
 
+    static def MODEL_FIELDS = ['name', 'description', 'species',
+                               'reference_node']
+    static def NETWORK_INELIGIBLE_FIELDS = ['SUID', 'shared name', 'selected',
+                                            'uri', 'who', 'when', 'comment']
+    static def NODE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',
+                                         'bel.function']
+    static def EDGE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',
+                                         'interaction', 'shared interaction']
+
     static CyNetworkView from(String uri, Map revision, Expando cyRef) {
-        def network = revision.network
+        Map network = revision.network
 
         CyNetwork cyN = cyRef.cyNetworkFactory.createNetwork()
         def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
@@ -28,27 +38,34 @@ class ModelUtil {
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
         cyN.getRow(cyN, LOCAL_ATTRS).set('uri', uri)
-        addMetadata(network.metadata as Map, cyN, locals)
+
+        network.subMap(MODEL_FIELDS).each {
+            addData(it.key as String, it.value, cyN, cyN, locals)
+        }
+
+        if (network.metadata && "$network.metadata" != 'null')
+            setMetadata([network.metadata], [cyN], locals)
 
         def Map<Integer, CyNode> index = [:]
-        network.nodes.collect { JSONArray node ->
+        def cyNodes = network.nodes.collect { JSONArray node ->
             def (Integer id, label) = node
             CyNode cyNode = index[id] ?: (index[id] = cyN.addNode())
             cyN.getRow(cyNode).set(NAME, label)
-            if (node[4]) addMetadata(node[4].metadata as Map, cyN, locals)
             cyNode
         }
-        network.edges.collect { JSONArray edge ->
-            def (src, tgt, rel, meta, evidence) = edge
+        locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
+        setMetadata(network.nodes.collect {it[4].metadata}, cyNodes, locals)
+
+        def cyEdges = network.edges.collect { JSONArray edge ->
+            def (src, tgt, rel) = edge
             CyNode cySource = index[src] ?: (index[src] = cyN.addNode())
             CyNode cyTarget = index[tgt] ?: (index[tgt] = cyN.addNode())
             def cyEdge = cyN.addEdge(cySource, cyTarget, true)
             cyN.getRow(cyEdge).set('interaction', rel)
-            if (meta) {
-                addMetadata(meta.metadata as Map, cyN, locals)
-            }
             cyEdge
         }
+        locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
+        setMetadata(network.edges.collect {it[3].metadata}, cyEdges, locals)
 
         def cyNv = cyRef.cyNetworkViewFactory.createNetworkView(cyN)
         network.nodes.each { JSONArray node ->
@@ -62,9 +79,6 @@ class ModelUtil {
 
     static Map from(CyNetworkView cyNv) {
         def cyN = cyNv.model
-        def cyNr = cyN.getRow(cyN)
-
-        // TODO convert metadata
 
         // convert nodes
         def counter = 0
@@ -74,23 +88,35 @@ class ModelUtil {
             Double x = cyNv.getNodeView(cyNode).getVisualProperty(NODE_X_LOCATION)
             Double y = cyNv.getNodeView(cyNode).getVisualProperty(NODE_Y_LOCATION)
             index[cyNode] = counter
-            [counter++, name, x as Integer, y as Integer, null]
+
+            def locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
+            def metadata = rowData(cyNode, cyN, locals).collectEntries { k, v ->
+                [k, v == null ? JSONObject.NULL : v]
+            }
+            NODE_INELIGIBLE_FIELDS.each(metadata.&remove)
+            [counter++, name, x as Integer, y as Integer, [metadata: metadata]]
         }
 
         // convert edges
         def edges = cyN.edgeList.collect { cyEdge ->
             def rel = cyN.getRow(cyEdge).get(INTERACTION, String.class)
-            [index[cyEdge.source], index[cyEdge.target], rel, null, null]
+            def locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
+            def metadata = rowData(cyEdge, cyN, locals).collectEntries { k, v ->
+                [k, v == null ? JSONObject.NULL : v]
+            }
+            EDGE_INELIGIBLE_FIELDS.each(metadata.&remove)
+            [index[cyEdge.source], index[cyEdge.target], rel, [metadata: metadata], null]
         }
 
-        [
-            name: cyNr.get(NAME, String.class),
-            description: cyNr.get('description', String.class, ''),
-            species: cyNr.get('species', String.class, 0),
-            reference_node: cyNr.get('reference_node', String.class, ''),
-            metadata: [:],
-            nodes: nodes,
-            edges: edges
-        ]
+        def result = [nodes: nodes, edges: edges]
+        def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
+        def networkData = rowData(cyN, cyN, locals).collectEntries { k, v ->
+            [k, v == null ? JSONObject.NULL : v]
+        }
+        NETWORK_INELIGIBLE_FIELDS.each(networkData.&remove)
+        def fields = networkData.subMap(MODEL_FIELDS)
+        result += fields
+        result.metadata = networkData - fields
+        result
     }
 }
