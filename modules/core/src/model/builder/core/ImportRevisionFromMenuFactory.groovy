@@ -1,25 +1,29 @@
 package model.builder.core
 
-import groovy.transform.TupleConstructor
 import model.builder.web.api.APIManager
-import model.builder.web.api.AuthorizedAPI
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.work.TaskIterator
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
 
-@TupleConstructor
 class ImportRevisionFromMenuFactory implements NetworkTaskFactory {
 
     final APIManager apiManager
     final Expando cyRef
-    final AddBelColumnsToCurrentFactory addBelFac
+    final AddBelColumnsToCurrentFactory belFac
+
+    ImportRevisionFromMenuFactory(APIManager apiManager, Expando cyRef,
+                                  AddBelColumnsToCurrentFactory belFac) {
+        this.apiManager = apiManager
+        this.cyRef = cyRef
+        this.belFac = belFac
+    }
 
     @Override
     TaskIterator createTaskIterator(CyNetwork cyN) {
         TaskIterator tasks = new TaskIterator(
             new CreateCyNetworkForModelRevisionTunable(cyN, apiManager, cyRef))
-        tasks.append(addBelFac.createTaskIterator())
+        tasks.append(belFac.createTaskIterator())
         tasks
     }
 
