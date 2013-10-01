@@ -5,7 +5,7 @@ cd "${DIR}" || exit 1
 . env.sh || exit 1
 
 # loop
-while inotifywait -qq -r -e modify "$PLUGIN_MODULES_DIR"; do
+while inotifywait -qq -r -e modify "$DEV_MODULES_DIR"; do
     gradle -q test jar
     if [ "$?" != "0" ]; then 
         notify-send -t 3000 "Failed compilation.\n\n$RESULT"
