@@ -194,6 +194,15 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         } as WebResponse
     }
 
+    @Override
+    WebResponse postModel(comment, network) {
+        return post(path: '/api/models') {
+            type JSON
+            charset "utf8"
+            json model : ['comment': "$comment", 'network': network]
+        } as WebResponse
+    }
+
     def WebResponse addModelData(WebResponse response) {
         if (response.data) {
             def map = response.data
@@ -222,32 +231,13 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         }
     }
 
-    static void main(String[] args) {
-
-        def proxy = ProxyMetaClass.getInstance(DefaultAuthorizedAPI.class)
-        proxy.interceptor = new BenchmarkInterceptor()
-        proxy.use {
-            def access = new AccessInformation('janssen-sdp.selventa.com',
-                    'abargnesi@selventa.com', 'api:abargnesi@selventa.com',
-                    'superman')
-            AuthorizedAPI api = new DefaultAuthorizedAPI(access)
-            try {
-                println api.tags().data.facet_counts.facet_fields.tags
-//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/1')
-//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a/revisions/latest')
-//                println api.id(uri: 'https://sdpdemo.selventa.com/api/models/519695ea42bc1d34b1757f5a')
-//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.model('519695ea42bc1d34b1757f5a').data))
-//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.modelRevisions('519695ea42bc1d34b1757f5a', 0).data))
-//                println JsonOutput.toJson(api.models().data)
-//                println api.searchModels(rows: 500).data.response.numFound
-//                println api.searchModels(tags: ['NetworkKnitting']).data.response.numFound
-//                println api.searchModels(tags: ['NetworkKnitting', 'SDPmigration'], species: ['9606']).data.response.numFound
-//                println api.searchModels(name: 'Angiogenesis*').data.response.numFound
-//                println JsonOutput.prettyPrint(JsonOutput.toJson(api.searchModels(name: 'Angiogenesis*', start: 5, rows: 1).data.response.docs))
-            } catch (HTTPClientException e) {
-                println "${e.response.statusCode}: ${e.response.statusMessage}"
-            }
+    def WebResponse post(Map params, Closure content) {
+        try {
+            client.post(params, content) as WebResponse
+        } catch (HTTPClientException e) {
+            def res = e.response as WebResponse
+            if (res.statusCode == 500) throw e
+            res
         }
-        println proxy.interceptor.statistic()
     }
 }

@@ -26,5 +26,7 @@ interface AuthorizedAPI {
 
     WebResponse[] modelRevisions(id, revision, uri)
 
+    WebResponse postModel(comment, network)
+
     WebResponse putModelRevision(uri, comment, network)
 }

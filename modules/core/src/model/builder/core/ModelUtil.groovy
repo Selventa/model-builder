@@ -115,6 +115,7 @@ class ModelUtil {
         }
         NETWORK_INELIGIBLE_FIELDS.each(networkData.&remove)
         def fields = networkData.subMap(MODEL_FIELDS)
+        MODEL_FIELDS.each {fields[it] = fields[it] ?: ''}
         result += fields
         result.metadata = networkData - fields
         result

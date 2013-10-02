@@ -19,8 +19,6 @@ class SaveModelFactory implements NetworkViewTaskFactory {
 
     @Override
     boolean isReady(CyNetworkView cyNv) {
-        def cyN = cyRef.cyApplicationManager.currentNetwork
-        // TODO improve ready condition
-        cyN && cyN.getRow(cyN).isSet('uri')
+        cyNv && cyNv.model
     }
 }
