@@ -29,4 +29,6 @@ interface AuthorizedAPI {
     WebResponse postModel(comment, network)
 
     WebResponse putModelRevision(uri, comment, network)
+
+    JsonStreamResponse paths(knowledgeNetwork, sources, targets)
 }

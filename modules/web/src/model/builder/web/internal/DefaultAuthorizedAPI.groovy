@@ -2,6 +2,7 @@ package model.builder.web.internal
 
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
+import model.builder.web.api.JsonStreamResponse
 import model.builder.web.api.WebResponse
 import wslite.http.HTTPClientException
 import wslite.http.HTTPResponse
@@ -9,22 +10,22 @@ import wslite.rest.RESTClient
 import wslite.rest.Response
 
 import javax.net.ssl.SSLContext
+
+import static model.builder.web.api.Constant.*
 import static wslite.rest.ContentType.JSON
 
 class DefaultAuthorizedAPI implements AuthorizedAPI {
 
-    def RESTClient client
+    final RESTClient client
+    final AccessInformation access
 
     DefaultAuthorizedAPI(AccessInformation access) {
         SSLContext.default = SSL.context
 
-        String uri
-        if (access.host == 'localhost') {
-            uri = "http://${access.host}:8080"
-        } else {
-            uri = "https://${access.host}"
-        }
+        def (scheme, host, port, portPart) = convertHost(access.host)
+        String uri = "$scheme://$host$portPart"
 
+        this.access = access
         client = new RESTClient(uri)
         client.requestBuilder = new AuthdRequestBuilder(access.apiKey, access.privateKey)
         client.defaultAcceptHeader = 'application/json'
@@ -45,7 +46,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
                             delegate.json as Map
                     )
                 else
-                    oldAsType.invoke(delegate, c)
+                    old.invoke(delegate, c)
             }
         }
         HTTPResponse.metaClass.define {
@@ -60,7 +61,25 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
                             delegate.headers
                     )
                 else
-                    oldAsType.invoke(delegate, c)
+                    old.invoke(delegate, c)
+            }
+        }
+        HttpURLConnection.metaClass.define {
+            old = HttpURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
+            asType = { Class c ->
+                if (c == JsonStreamResponse) {
+                    if (!delegate.contentType.contains(JSON_MIME_TYPE))
+                        throw new IllegalArgumentException("stream is not json")
+                    new JsonStreamResponse(
+                            delegate.responseCode,
+                            delegate.responseMessage,
+                            delegate.contentType,
+                            delegate.contentEncoding,
+                            delegate.headerFields,
+                            delegate.inputStream
+                    )
+                } else
+                    old.invoke(delegate, c)
             }
         }
     }
@@ -186,21 +205,38 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
-    WebResponse putModelRevision(uri, network, comment) {
-        return put(path: uri) {
-            type JSON
-            charset "utf8"
-            json revision : ['comment': "$comment", 'network': network]
-        } as WebResponse
-    }
-
-    @Override
     WebResponse postModel(comment, network) {
-        return post(path: '/api/models') {
+        post(path: '/api/models') {
             type JSON
             charset "utf8"
             json model : ['comment': "$comment", 'network': network]
-        } as WebResponse
+        }
+    }
+
+    @Override
+    WebResponse putModelRevision(uri, network, comment) {
+        put(path: uri) {
+            type JSON
+            charset "utf8"
+            json revision : ['comment': "$comment", 'network': network]
+        }
+    }
+
+    @Override
+    JsonStreamResponse paths(knowledgeNetwork, sources, targets) {
+        def path = "/api/knowledge_networks/$knowledgeNetwork/paths"
+        def (scheme, host, port) = convertHost(access.host)
+        def query = [
+            sources.collect {"from=$it"}, targets.collect {"to=$it"},
+            "direction=both", "max_path_length=4", "num_returned=5000",
+            "rel_include=increases", "rel_include=decreases",
+            "rel_include=directlyIncreases", "rel_include=directlyDecreases",
+            "apikey=${access.apiKey}"
+        ].flatten().join('&')
+        def url = toURL(scheme, host, port, path, query)
+        URLConnection urlc = url.openConnection()
+        urlc.setRequestProperty('Accept-Encoding', 'gzip')
+        urlc as JsonStreamResponse
     }
 
     def WebResponse addModelData(WebResponse response) {
@@ -238,6 +274,41 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res
+        }
+    }
+
+    static List convertHost(String host) {
+        host == 'localhost' ?
+            ['http', 'localhost', '8080', ':8080'] :
+            ['https', host, '', '']
+    }
+
+    static URL toURL(scheme, host, port, path, query) {
+        if (port)
+            new URI(scheme, null, host, port as int, path, query, null).toURL()
+        else
+            new URI(scheme, host, path, query, null).toURL()
+    }
+
+    public static void main(String[] args) {
+        AccessInformation ai = new AccessInformation(true, 'localhost', 'abargnesi@selventa.com', 'api:abargnesi@selventa.com', 'superman')
+        //AccessInformation ai = new AccessInformation(true, 'sdptest.selventa.com', 'test@sdptest.selventa.com', 'api:test@sdptest.selventa.com', 'test')
+        AuthorizedAPI api = new DefaultAuthorizedAPI(ai)
+
+        JsonStream.instance.initializeFactory()
+
+        for (int i = 0; i < 5; i++) {
+            int count = 0
+            long s = System.currentTimeMillis()
+            JsonStreamResponse res = api.paths("Full", ["p(HGNC:AKT1)"], ["p(HGNC:AKT2)"])
+            JsonStream.JsonIterator<Map> objs = res.jsonObjects
+            objs.each {
+                count++
+                //println it
+            }
+            objs.close()
+            long e = System.currentTimeMillis()
+            println "read $count path results in ${(e - s) / 1000f} seconds"
         }
     }
 }
