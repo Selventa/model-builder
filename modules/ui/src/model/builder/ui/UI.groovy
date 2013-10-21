@@ -46,7 +46,7 @@ class UI {
 
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
-    static def createSet(Closure onCreate) {
+    static def createSet(List initialItems, Closure onCreate) {
         def swing = new SwingBuilder()
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
@@ -61,6 +61,7 @@ class UI {
                 multiSelectionEnabled: true)
 
         def items = new BasicEventList()
+        items.addAll(initialItems)
         def filteredResults = new DefaultEventTableModel(items,
                 [
                         getColumnCount: {1},
@@ -152,7 +153,7 @@ class UI {
                 flowLayout(alignment: FlowLayout.RIGHT)
                 button(text: 'Cancel', preferredSize: [85, 25],
                         actionPerformed: {dialog.dispose()})
-                button(id: 'createButton', enabled: false, text: 'Create', preferredSize: [85, 25],
+                button(id: 'createButton', enabled: !items.empty, text: 'Create', preferredSize: [85, 25],
                     actionPerformed: {
                         swing.edt {
                             def ret = onCreate.call(dialog, name.text, description.text, items)
@@ -252,11 +253,11 @@ class UI {
                         }
                     })
                     button(icon: Util.icon('/add.png', 'Add'), actionPerformed: {
-                        UI.createSet({ createDialog, name, desc, newItems ->
+                        createSet([], { createDialog, name, desc, newItems ->
                             swing.doOutside {
                                 WebResponse res = api.postSet(name, desc, newItems)
                                 if (res.statusCode == 201) {
-                                    msg.info("Created set ${name} (${items.size()} items).")
+                                    msg.info("Created set ${name} (${newItems.size()} items).")
                                     createDialog.dispose()
                                     swing.doOutside {
                                         res = api.sets()
@@ -267,9 +268,10 @@ class UI {
                                             }
                                         }
                                     }
-
+                                    true
                                 } else {
                                     msg.error("Could not create set.")
+                                    false
                                 }
                             }
                         })

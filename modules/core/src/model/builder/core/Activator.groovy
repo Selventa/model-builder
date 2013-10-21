@@ -19,6 +19,7 @@ import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.NetworkViewTaskFactory
+import org.cytoscape.task.NodeViewTaskFactory
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
@@ -151,6 +152,14 @@ class Activator extends AbstractCyActivator {
         registerService(bc, manageSets, CyAction.class, [
                 id: 'apps_sdp.sets.manage'
         ] as Properties)
+
+        registerService(bc,
+            new CreateSetFactory(apiManager),
+            NodeViewTaskFactory.class, [
+                preferredMenu: 'Apps.SDP',
+                menuGravity: 11.0,
+                title: "Create Set from Selected Nodes"
+            ] as Properties)
 
         // ... Add Pathfind
         AbstractCyAction pathfind = new AbstractCyAction('Pathfind') {
