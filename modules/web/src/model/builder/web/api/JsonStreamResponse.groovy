@@ -1,7 +1,7 @@
 package model.builder.web.api
 
 import groovy.transform.TupleConstructor
-import model.builder.web.internal.JsonStream
+import model.builder.common.JsonStream
 
 import java.util.zip.GZIPInputStream
 

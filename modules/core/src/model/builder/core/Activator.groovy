@@ -1,6 +1,7 @@
 package model.builder.core
 
 import model.builder.ui.UI
+import model.builder.ui.api.Dialogs
 import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
@@ -67,6 +68,48 @@ class Activator extends AbstractCyActivator {
         APIManager apiManager = getService(bc, APIManager.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
 
+        Dialogs dialogs = getService(bc, Dialogs.class)
+        def denormalizePaths = { item ->
+            def param = ~/[A-Z]+:"?([^")]+)"?/
+            def nodes = item.path.collect {it.label}.findAll()
+            def relationships = item.path.collect {it.relationship}.findAll().unique()
+            def causal = [
+                    'increases', 'decreases', 'directlyIncreases',
+                    'directlyDecreases', 'rateLimitingStepOf'
+            ]
+            def intermediates = nodes.subList(1, nodes.size() - 1).collect {
+                def m = (it =~ param)
+                if (m.find()) m[0][1]
+            }.findAll()
+
+            // static fields
+            def description = [
+                    causal: relationships.every {it in causal},
+                    start_term: item.start.label,
+                    end_term: item.end.label,
+                    start_entity: (item.start.label =~ param)[0][1],
+                    end_entity: (item.end.label =~ param)[0][1],
+                    length: (int) (item.path.size() / 2),
+                    intermediates: intermediates,
+                    relationships: relationships
+            ].withDefault {[]}
+
+            // dynamic annotation fields
+            item.path.collect { it.evidence*.annotations }.
+                    flatten().findAll().
+                    inject([:].withDefault { [] }) { agg, next ->
+                        next.each { k, v ->
+                            agg[k] << v
+                        }
+                        agg
+                    }.each { k, v ->
+                v.unique().each {
+                    description[k] << it
+                }
+            }
+            description
+        }
+
         // ... Apps > SDP Menu Actions ...
 
         // ... Add Configure
@@ -98,6 +141,30 @@ class Activator extends AbstractCyActivator {
                 id: 'apps_sdp.configure'
         ] as Properties)
 
+        // ... Add Sets > Manage Sets Action
+        AbstractCyAction manageSets = new AbstractCyAction('Manage') {
+            void actionPerformed(ActionEvent e) {
+                UI.manageSets(apiManager)
+            }
+        }
+        manageSets.preferredMenu = 'Apps.SDP.Sets'
+        registerService(bc, manageSets, CyAction.class, [
+                id: 'apps_sdp.sets.manage'
+        ] as Properties)
+
+        // ... Add Pathfind
+        AbstractCyAction pathfind = new AbstractCyAction('Pathfind') {
+            void actionPerformed(ActionEvent e) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+                def res = api.paths('Large Corpus', ['p(HGNC:TNF)', 'p(HGNC:EGFR)'], ['p(HGNC:AKT1)','p(HGNC:IL6)'])
+                dialogs.pathFacetSearch(res.jsonObjects, denormalizePaths)
+            }
+        }
+        pathfind.preferredMenu = 'Apps.SDP'
+        registerService(bc, pathfind, CyAction.class, [
+                id: 'apps_sdp.pathfind'
+        ] as Properties)
+
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
@@ -113,11 +180,11 @@ class Activator extends AbstractCyActivator {
         importComparison.menuGravity = 100.0
         importComparison.preferredMenu = 'Apps.SDP.Data'
         registerService(bc, importComparison, CyAction.class, [
-                id: 'apps_sdp.import_comparison'
+                id: 'apps_sdp.data.add_comparison'
         ] as Properties)
 
         // ... Import Model
-        AbstractCyAction importModel = new AbstractCyAction('Import Models') {
+        AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
                 def importModel = { models ->
@@ -144,25 +211,26 @@ class Activator extends AbstractCyActivator {
         importModel.preferredMenu = 'Apps.SDP.Models'
         importModel.menuGravity = 101.0
         registerService(bc, importModel, CyAction.class, [
-            id: 'apps_sdp.import_model'
+            id: 'apps_sdp.models.import'
         ] as Properties)
 
         // ... Import Model Revision
         registerService(bc, new ImportRevisionFromMenuFactory(apiManager, cyr, addBelFac),
                 NetworkTaskFactory.class, [
+                id: 'apps_sdp.models.import_revision',
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 102.0,
-                title: 'Import Model Revision'
+                title: 'Import Revision'
         ] as Properties)
 
         // ... Save Model (New revision)
         registerService(bc, new SaveModelFactory(cyr, apiManager),
                 NetworkViewTaskFactory.class, [
+                id: 'apps_sdp.models.save_revision',
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
-                title: 'Save Model Revision'
+                title: 'Save Revision'
         ] as Properties)
-
 
         // ... Import RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
@@ -179,7 +247,7 @@ class Activator extends AbstractCyActivator {
         importRCR.menuGravity = 103.0
         importRCR.preferredMenu = 'Apps.SDP.Data'
         registerService(bc, importRCR, CyAction.class, [
-                id: 'apps_sdp.import_rcr'
+                id: 'apps_sdp.data.add_rcr_result'
         ] as Properties)
     }
 }

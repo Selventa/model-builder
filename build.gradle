@@ -60,9 +60,13 @@ project('modules/common') {
       "$rootDir/libs/compile/antlr-runtime-3.3.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
+      "$rootDir/libs/compile/jackson-core-2.2.3.jar",
+      "$rootDir/libs/compile/jackson-databind-2.2.3.jar",
       "$rootDir/libs/compile/org.openbel.framework.common-3.0.0.jar")
     testCompile files(
-      "$rootDir/libs/test/junit-4.11.jar")
+      "$rootDir/libs/test/junit-4.11.jar",
+      "$rootDir/libs/test/hamcrest-all-1.3.jar")
   }
 
   jar {
@@ -75,6 +79,9 @@ project('modules/common') {
       name = 'Model Builder - Common'
       symbolicName = 'model.builder.common'
       instruction 'Import-Package', '''
+        com.fasterxml.jackson.core;version="[2.2,3)",
+        com.fasterxml.jackson.core.type;version="[2.2,3)",
+        com.fasterxml.jackson.databind;version="[2.2,3)",
         groovy.lang;version="[2.1,3)",
         groovy.transform;version="[2.1,3)",
         groovy.util.slurpersupport;version="[2.1,3)",
@@ -93,9 +100,7 @@ project('modules/common') {
       '''
       instruction 'Export-Package', '''
         model.builder.common,
-        model.builder.common.extensions,
-        model.builder.common.model,
-        model.builder.common.util
+        model.builder.common.facet
       '''
     }
   }
@@ -192,8 +197,10 @@ project('modules/ui') {
     compile project(':modules/common')
     compile project(':modules/web')
     compile files(
+      "$rootDir/libs/compile/glazedlists_java15-1.9.0.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
-      "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
+      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/compile/swingx-all-1.6.5-1.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar")
   }
@@ -208,6 +215,10 @@ project('modules/ui') {
       name = 'Model Builder - UI'
       symbolicName = 'model.builder.ui'
       instruction 'Import-Package', '''
+        ca.odell.glazedlists,
+        ca.odell.glazedlists.event,
+        ca.odell.glazedlists.gui,
+        ca.odell.glazedlists.swing,
         groovy.lang;version="[2.1,3)",
         groovy.model;version="[2.1,3)",
         groovy.swing;version="[2.1,3)",
@@ -223,6 +234,7 @@ project('modules/ui') {
         javax.swing.table,
         javax.swing.text,
         model.builder.common,
+        model.builder.common.facet,
         model.builder.web.api,
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",
@@ -233,11 +245,19 @@ project('modules/ui') {
         org.cytoscape.application.swing;version="[3,4)",
         org.cytoscape.io.webservice;version="[3,4)",
         org.cytoscape.io.webservice.swing;version="[3,4)",
+        org.cytoscape.service.util;version="[3,4)",
         org.cytoscape.util.swing;version="[3,4)",
         org.cytoscape.work;version="[3,4)",
+        org.jdesktop.swingx,
+        org.jdesktop.swingx.decorator,
+        org.osgi.framework,
         org.slf4j;version="[1,2)"
       '''
-      instruction 'Export-Package', 'model.builder.ui'
+      instruction 'Bundle-Activator', 'model.builder.ui.Activator'
+      instruction 'Export-Package', '''
+        model.builder.ui,
+        model.builder.ui.api
+      '''
     }
   }
 }
@@ -292,8 +312,7 @@ project('modules/web') {
         org.cytoscape.service.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
-        model.builder.common.model,
-        model.builder.common.util,
+        model.builder.common,
         model.builder.web.api,
         org.osgi.framework,
         org.slf4j;version="[1,2)",

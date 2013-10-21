@@ -1,5 +1,6 @@
 package model.builder.web.internal
 
+import model.builder.common.JsonStream
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.JsonStreamResponse
@@ -128,12 +129,12 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse model(String id) {
-        addModelData(get(path: "/api/models/$id", accept: JSON))
+        addId(get(path: "/api/models/$id", accept: JSON))
     }
 
     @Override
     WebResponse models() {
-        addModelData(get(path: '/api/models', accept: JSON))
+        addId(get(path: '/api/models', accept: JSON))
     }
 
     @Override
@@ -228,7 +229,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         def (scheme, host, port) = convertHost(access.host)
         def query = [
             sources.collect {"from=$it"}, targets.collect {"to=$it"},
-            "direction=both", "max_path_length=4", "num_returned=5000",
+            "direction=both", "max_path_length=3", "num_returned=500",
             "rel_include=increases", "rel_include=decreases",
             "rel_include=directlyIncreases", "rel_include=directlyDecreases",
             "apikey=${access.apiKey}"
@@ -239,7 +240,35 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         urlc as JsonStreamResponse
     }
 
-    def WebResponse addModelData(WebResponse response) {
+    @Override
+    WebResponse sets() {
+        get(path: '/api/sets', accept: JSON)
+    }
+
+    @Override
+    WebResponse postSet(name, description, elements) {
+        post(path: '/api/sets') {
+            type JSON
+            charset "utf8"
+            json name: name, description: description, elements: elements
+        }
+    }
+
+    @Override
+    WebResponse putSet(uri, name, description, elements) {
+        put(path: uri) {
+            type JSON
+            charset "utf8"
+            json name: name, description: description, elements: elements
+        }
+    }
+
+    @Override
+    WebResponse deleteSet(uri) {
+        delete(path: uri)
+    }
+
+    def WebResponse addId(WebResponse response) {
         if (response.data) {
             def map = response.data
             map.model.id = this.id(uri: map.model.uri as String)
@@ -277,6 +306,16 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         }
     }
 
+    def WebResponse delete(Map params) {
+        try {
+            client.delete(params) as WebResponse
+        } catch (HTTPClientException e) {
+            def res = e.response as WebResponse
+            if (res.statusCode == 500) throw e
+            res
+        }
+    }
+
     static List convertHost(String host) {
         host == 'localhost' ?
             ['http', 'localhost', '8080', ':8080'] :
@@ -296,15 +335,14 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         AuthorizedAPI api = new DefaultAuthorizedAPI(ai)
 
         JsonStream.instance.initializeFactory()
-
         for (int i = 0; i < 5; i++) {
             int count = 0
             long s = System.currentTimeMillis()
             JsonStreamResponse res = api.paths("Full", ["p(HGNC:AKT1)"], ["p(HGNC:AKT2)"])
-            JsonStream.JsonIterator<Map> objs = res.jsonObjects
+            Iterator<Map> objs = res.jsonObjects
             objs.each {
                 count++
-                //println it
+                println it
             }
             objs.close()
             long e = System.currentTimeMillis()

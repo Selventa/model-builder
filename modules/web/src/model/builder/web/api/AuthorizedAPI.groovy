@@ -31,4 +31,12 @@ interface AuthorizedAPI {
     WebResponse putModelRevision(uri, comment, network)
 
     JsonStreamResponse paths(knowledgeNetwork, sources, targets)
+
+    WebResponse sets()
+
+    WebResponse postSet(name, description, elements)
+
+    WebResponse putSet(uri, name, description, elements)
+
+    WebResponse deleteSet(uri)
 }
