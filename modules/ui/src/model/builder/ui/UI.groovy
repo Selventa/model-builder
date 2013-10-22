@@ -855,11 +855,11 @@ class UI {
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
                     fill: HORIZONTAL))
             mouse = checkBox(text: 'Mouse', constraints: gbc(
-                    gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
+                    gridx: 2, gridy: 1, gridwidth: 1, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
                     fill: HORIZONTAL))
             rat =   checkBox(text: 'Rat', constraints: gbc(
-                    gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
+                    gridx: 3, gridy: 1, gridwidth: 1, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
                     fill: HORIZONTAL))
             label(text: 'Tags', constraints: gbc(

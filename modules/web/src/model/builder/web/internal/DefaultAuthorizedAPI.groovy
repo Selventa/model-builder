@@ -1,19 +1,23 @@
 package model.builder.web.internal
 
-import model.builder.common.JsonStream
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.JsonStreamResponse
 import model.builder.web.api.WebResponse
+import org.apache.commons.codec.binary.Hex
 import wslite.http.HTTPClientException
 import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
 import wslite.rest.Response
 
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import javax.net.ssl.SSLContext
 
+import static java.lang.System.currentTimeMillis
 import static model.builder.web.api.Constant.*
 import static wslite.rest.ContentType.JSON
+import static model.builder.web.internal.Constant.HMAC
 
 class DefaultAuthorizedAPI implements AuthorizedAPI {
 
@@ -191,6 +195,11 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
+    WebResponse knowledgeNetworks() {
+        get(path: '/api/knowledge_networks', accept: JSON)
+    }
+
+    @Override
     WebResponse[] modelRevisions(id, revision, uri = '') {
         if (uri) {
             def tokens = "$uri".split(/\/api\//)
@@ -224,17 +233,25 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
-    JsonStreamResponse paths(knowledgeNetwork, sources, targets) {
+    JsonStreamResponse paths(knowledgeNetwork, from, to, Map params = [:]) {
         def path = "/api/knowledge_networks/$knowledgeNetwork/paths"
         def (scheme, host, port) = convertHost(access.host)
-        def query = [
-            sources.collect {"from=$it"}, targets.collect {"to=$it"},
-            "direction=both", "max_path_length=3", "num_returned=500",
-            "rel_include=increases", "rel_include=decreases",
-            "rel_include=directlyIncreases", "rel_include=directlyDecreases",
-            "apikey=${access.apiKey}"
-        ].flatten().join('&')
-        def url = toURL(scheme, host, port, path, query)
+        def query = (
+            [
+                from.collect {"from=$it"},
+                to.collect {"to=$it"},
+                "apikey=${access.apiKey}",
+                "ts=${currentTimeMillis() / 1000 as int}"
+            ] +
+            [
+                'direction', 'max_path_length', 'num_returned', 'fx_include',
+                'fx_exclude', 'rel_include', 'rel_exclude'
+            ].collect { key ->
+                if (params."$key") [params."$key"].flatten().collect {"$key=$it"}
+            }.findAll()
+        ).flatten().join('&')
+
+        def url = hashURL(toURL(scheme, host, port, path, query), access.privateKey)
         URLConnection urlc = url.openConnection()
         urlc.setRequestProperty('Accept-Encoding', 'gzip')
         urlc as JsonStreamResponse
@@ -329,24 +346,14 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             new URI(scheme, host, path, query, null).toURL()
     }
 
-    public static void main(String[] args) {
-        AccessInformation ai = new AccessInformation(true, 'localhost', 'abargnesi@selventa.com', 'api:abargnesi@selventa.com', 'superman')
-        //AccessInformation ai = new AccessInformation(true, 'sdptest.selventa.com', 'test@sdptest.selventa.com', 'api:test@sdptest.selventa.com', 'test')
-        AuthorizedAPI api = new DefaultAuthorizedAPI(ai)
+    static URL hashURL(URL unhashed, String privateKey) {
+        SecretKeySpec keySpec = new SecretKeySpec(privateKey.bytes, HMAC);
+        Mac mac = Mac.getInstance(HMAC);
+        mac.init(keySpec);
 
-        JsonStream.instance.initializeFactory()
-        for (int i = 0; i < 5; i++) {
-            int count = 0
-            long s = System.currentTimeMillis()
-            JsonStreamResponse res = api.paths("Full", ["p(HGNC:AKT1)"], ["p(HGNC:AKT2)"])
-            Iterator<Map> objs = res.jsonObjects
-            objs.each {
-                count++
-                println it
-            }
-            objs.close()
-            long e = System.currentTimeMillis()
-            println "read $count path results in ${(e - s) / 1000f} seconds"
-        }
+        byte[] result = mac.doFinal(unhashed.bytes);
+        String hash = new String(Hex.encodeHex(result));
+
+        new URL("${unhashed}&hash=$hash")
     }
 }

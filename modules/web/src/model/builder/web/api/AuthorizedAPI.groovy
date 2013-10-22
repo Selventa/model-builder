@@ -24,13 +24,15 @@ interface AuthorizedAPI {
 
     WebResponse tags(types)
 
+    WebResponse knowledgeNetworks()
+
     WebResponse[] modelRevisions(id, revision, uri)
 
     WebResponse postModel(comment, network)
 
     WebResponse putModelRevision(uri, comment, network)
 
-    JsonStreamResponse paths(knowledgeNetwork, sources, targets)
+    JsonStreamResponse paths(knowledgeNetwork, from, to, Map params)
 
     WebResponse sets()
 

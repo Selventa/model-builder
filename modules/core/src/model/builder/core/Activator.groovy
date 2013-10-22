@@ -39,6 +39,7 @@ import wslite.rest.RESTClientException
 
 import java.awt.event.ActionEvent
 
+import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.core.Util.cyReference
 
 class Activator extends AbstractCyActivator {
@@ -68,48 +69,6 @@ class Activator extends AbstractCyActivator {
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
-
-        Dialogs dialogs = getService(bc, Dialogs.class)
-        def denormalizePaths = { item ->
-            def param = ~/[A-Z]+:"?([^")]+)"?/
-            def nodes = item.path.collect {it.label}.findAll()
-            def relationships = item.path.collect {it.relationship}.findAll().unique()
-            def causal = [
-                    'increases', 'decreases', 'directlyIncreases',
-                    'directlyDecreases', 'rateLimitingStepOf'
-            ]
-            def intermediates = nodes.subList(1, nodes.size() - 1).collect {
-                def m = (it =~ param)
-                if (m.find()) m[0][1]
-            }.findAll()
-
-            // static fields
-            def description = [
-                    causal: relationships.every {it in causal},
-                    start_term: item.start.label,
-                    end_term: item.end.label,
-                    start_entity: (item.start.label =~ param)[0][1],
-                    end_entity: (item.end.label =~ param)[0][1],
-                    length: (int) (item.path.size() / 2),
-                    intermediates: intermediates,
-                    relationships: relationships
-            ].withDefault {[]}
-
-            // dynamic annotation fields
-            item.path.collect { it.evidence*.annotations }.
-                    flatten().findAll().
-                    inject([:].withDefault { [] }) { agg, next ->
-                        next.each { k, v ->
-                            agg[k] << v
-                        }
-                        agg
-                    }.each { k, v ->
-                v.unique().each {
-                    description[k] << it
-                }
-            }
-            description
-        }
 
         // ... Apps > SDP Menu Actions ...
 
@@ -162,14 +121,15 @@ class Activator extends AbstractCyActivator {
             ] as Properties)
 
         // ... Add Pathfind
-        AbstractCyAction pathfind = new AbstractCyAction('Pathfind') {
+        Dialogs dialogs = getService(bc, Dialogs.class)
+        AbstractCyAction pathfind = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
-                def res = api.paths('Large Corpus', ['p(HGNC:TNF)', 'p(HGNC:EGFR)'], ['p(HGNC:AKT1)','p(HGNC:IL6)'])
-                dialogs.pathFacetSearch(res.jsonObjects, denormalizePaths)
+                dialogs.pathSearch(cyr.cyApplicationManager, api, [:])
             }
         }
         pathfind.preferredMenu = 'Apps.SDP'
+        pathfind.acceleratorKeyStroke = getKeyStroke('alt P')
         registerService(bc, pathfind, CyAction.class, [
                 id: 'apps_sdp.pathfind'
         ] as Properties)
