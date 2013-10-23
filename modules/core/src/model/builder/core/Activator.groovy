@@ -72,74 +72,6 @@ class Activator extends AbstractCyActivator {
 
         // ... Apps > SDP Menu Actions ...
 
-        // ... Add Configure
-        AbstractCyAction configure = new AbstractCyAction('Configure') {
-            void actionPerformed(ActionEvent e) {
-                UI.configuration(apiManager,
-                    { host, email, pass ->
-                        def res = apiManager.openAPI(host).apiKeys(email)
-                        if (res.statusCode == 404) return null
-                        String apiKey = res.data.api_keys.find {String k -> k.startsWith('api:')}
-                        if (!apiKey) return null
-
-                        AccessInformation access = new AccessInformation(false, host, email, apiKey, pass)
-                        AuthorizedAPI authAPI = apiManager.authorizedAPI(access)
-                        res = authAPI.user(email)
-                        switch(res.statusCode) {
-                            case 200:
-                                return apiKey
-                            case 401:
-                            case 404:
-                                return null
-                        }
-                    },
-                    apiManager.&saveConfiguration)
-            }
-        }
-        configure.preferredMenu = 'Apps.SDP'
-        configure.acceleratorKeyStroke = getKeyStroke('control alt O')
-        registerService(bc, configure, CyAction.class, [
-                id: 'apps_sdp.configure'
-        ] as Properties)
-
-        // ... Add Sets > Manage Sets Action
-        AbstractCyAction manageSets = new AbstractCyAction('Manage') {
-            void actionPerformed(ActionEvent e) {
-                UI.manageSets(apiManager)
-            }
-        }
-        manageSets.preferredMenu = 'Apps.SDP.Sets'
-        registerService(bc, manageSets, CyAction.class, [
-                id: 'apps_sdp.sets.manage'
-        ] as Properties)
-
-        registerService(bc,
-            new CreateSetFactory(apiManager),
-            NodeViewTaskFactory.class, [
-                preferredMenu: 'Apps.SDP',
-                menuGravity: 11.0,
-                title: "Create Set from Selected Nodes"
-            ] as Properties)
-
-        // ... Add Pathfind
-        Dialogs dialogs = getService(bc, Dialogs.class)
-        AbstractCyAction pathfind = new AbstractCyAction('Find Paths') {
-            void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
-                dialogs.pathSearch(cyr.cyApplicationManager, api, [:], { edges ->
-                    def cyN = cyr.cyApplicationManager.currentNetwork
-                    edges.collect {
-                        [it.source_node.label, it.relationship, it.target_node.label]
-                    }.collect { triple -> Util.&getOrCreateEdge.curry(cyN).call(*triple)}
-                })
-            }
-        }
-        pathfind.preferredMenu = 'Apps.SDP'
-        pathfind.acceleratorKeyStroke = getKeyStroke('control alt P')
-        registerService(bc, pathfind, CyAction.class, [
-                id: 'apps_sdp.pathfind'
-        ] as Properties)
-
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
@@ -152,11 +84,30 @@ class Activator extends AbstractCyActivator {
                 UI.addComparison(api, importData)
             }
         }
-        importComparison.menuGravity = 100.0
+        importComparison.menuGravity = 0.0
         importComparison.preferredMenu = 'Apps.SDP.Data'
         importComparison.acceleratorKeyStroke = getKeyStroke('control alt C')
         registerService(bc, importComparison, CyAction.class, [
                 id: 'apps_sdp.data.add_comparison'
+        ] as Properties)
+
+        // ... Add RCR Result
+        AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
+            void actionPerformed(ActionEvent e) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                def importData = { id ->
+                    WebResponse res = api.rcrResult(id)
+                    cyr.dialogTaskManager.execute(
+                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, dMapFac, pMapFac).createTaskIterator())
+                }
+                UI.addRcr(api, importData)
+            }
+        }
+        importRCR.menuGravity = 0.0
+        importRCR.preferredMenu = 'Apps.SDP.Data'
+        importRCR.acceleratorKeyStroke = getKeyStroke('control alt R')
+        registerService(bc, importRCR, CyAction.class, [
+                id: 'apps_sdp.data.add_rcr_result'
         ] as Properties)
 
         // ... Import Model
@@ -188,7 +139,7 @@ class Activator extends AbstractCyActivator {
         importModel.preferredMenu = 'Apps.SDP.Models'
         importModel.menuGravity = 101.0
         registerService(bc, importModel, CyAction.class, [
-            id: 'apps_sdp.models.import'
+                id: 'apps_sdp.models.import'
         ] as Properties)
 
         // ... Import Model Revision
@@ -210,23 +161,78 @@ class Activator extends AbstractCyActivator {
                 accelerator: 'control alt S'
         ] as Properties)
 
-        // ... Import RCR Result
-        AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
+        // ... Add Configure
+        AbstractCyAction configure = new AbstractCyAction('Configure') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
-                def importData = { id ->
-                    WebResponse res = api.rcrResult(id)
-                    cyr.dialogTaskManager.execute(
-                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, dMapFac, pMapFac).createTaskIterator())
-                }
-                UI.addRcr(api, importData)
+                UI.configuration(apiManager,
+                    { host, email, pass ->
+                        def res = apiManager.openAPI(host).apiKeys(email)
+                        if (res.statusCode == 404) return null
+                        String apiKey = res.data.api_keys.find {String k -> k.startsWith('api:')}
+                        if (!apiKey) return null
+
+                        AccessInformation access = new AccessInformation(false, host, email, apiKey, pass)
+                        AuthorizedAPI authAPI = apiManager.authorizedAPI(access)
+                        res = authAPI.user(email)
+                        switch(res.statusCode) {
+                            case 200:
+                                return apiKey
+                            case 401:
+                            case 404:
+                                return null
+                        }
+                    },
+                    apiManager.&saveConfiguration)
             }
         }
-        importRCR.menuGravity = 103.0
-        importRCR.preferredMenu = 'Apps.SDP.Data'
-        importRCR.acceleratorKeyStroke = getKeyStroke('control alt R')
-        registerService(bc, importRCR, CyAction.class, [
-                id: 'apps_sdp.data.add_rcr_result'
+        configure.menuGravity = 100.0
+        configure.preferredMenu = 'Apps.SDP'
+        configure.acceleratorKeyStroke = getKeyStroke('control alt O')
+        registerService(bc, configure, CyAction.class, [
+                id: 'apps_sdp.configure'
         ] as Properties)
+
+        // ... Add Find Paths
+        Dialogs dialogs = getService(bc, Dialogs.class)
+        AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
+            void actionPerformed(ActionEvent e) {
+                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+                dialogs.pathSearch(cyr.cyApplicationManager, api, [:], { edges ->
+                    def cyN = cyr.cyApplicationManager.currentNetwork
+                    edges.collect {
+                        [it.source_node.label, it.relationship, it.target_node.label]
+                    }.collect { triple -> Util.&getOrCreateEdge.curry(cyN).call(*triple)}
+                })
+            }
+        }
+        findPaths.menuGravity = 110.0
+        findPaths.preferredMenu = 'Apps.SDP'
+        findPaths.acceleratorKeyStroke = getKeyStroke('control alt P')
+        registerService(bc, findPaths, CyAction.class, [
+                id: 'apps_sdp.find_paths'
+        ] as Properties)
+
+        // ... Add Manage Sets Action
+        AbstractCyAction manageSets = new AbstractCyAction('Manage Sets') {
+            void actionPerformed(ActionEvent e) {
+                UI.manageSets(apiManager)
+            }
+        }
+        manageSets.preferredMenu = 'Apps.SDP'
+        manageSets.menuGravity = 120.0
+        manageSets.acceleratorKeyStroke = getKeyStroke('control alt T')
+        registerService(bc, manageSets, CyAction.class, [
+                id: 'apps_sdp.manage_sets'
+        ] as Properties)
+
+        registerService(bc,
+            new CreateSetFactory(apiManager),
+            NodeViewTaskFactory.class, [
+                preferredMenu: 'Apps.SDP',
+                menuGravity: 11.0,
+                title: "Create Set from Selected Nodes"
+            ] as Properties)
+
+
     }
 }
