@@ -351,7 +351,11 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         Mac mac = Mac.getInstance(HMAC);
         mac.init(keySpec);
 
-        byte[] result = mac.doFinal(unhashed.bytes);
+        String decodedPath = unhashed.path.replace('%22', '"').replace('%20', ' ')
+        String port = unhashed.port == -1 ? '' : ":${unhashed.port}"
+        String toHash = "${unhashed.protocol}://${unhashed.host}${port}$decodedPath?$unhashed.query"
+
+        byte[] result = mac.doFinal(toHash.bytes);
         String hash = new String(Hex.encodeHex(result));
 
         new URL("${unhashed}&hash=$hash")
