@@ -18,9 +18,9 @@ class ModelUtil {
     static def NETWORK_INELIGIBLE_FIELDS = ['SUID', 'shared name', 'selected',
                                             'uri', 'who', 'when', 'comment']
     static def NODE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',
-                                         'bel.function']
+                                         'kam.id', 'bel.function', 'linked']
     static def EDGE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',
-                                         'interaction', 'shared interaction']
+                                         'interaction', 'shared interaction', 'kam.id']
 
     static CyNetworkView from(String uri, Map revision, Expando cyRef) {
         Map network = revision.network
@@ -95,6 +95,7 @@ class ModelUtil {
                 [k, v == null ? JSONObject.NULL : v]
             }
             NODE_INELIGIBLE_FIELDS.each(metadata.&remove)
+            metadata.findAll {'.' in it.key}.each(metadata.&remove)
             if (metadata)
                 node.metadata = metadata
 
@@ -115,6 +116,7 @@ class ModelUtil {
                 [k, v == null ? JSONObject.NULL : v]
             }
             EDGE_INELIGIBLE_FIELDS.each(metadata.&remove)
+            metadata.findAll {'.' in it.key}.each(metadata.&remove)
             if (metadata)
                 edge.metadata = metadata
             edge
