@@ -46,7 +46,7 @@ class MergeFacet {
                     ]
                 ]
             ],
-            // same field, same value; count accumulates but filterComparison left alone
+            // same field, same value; count accumulates; shift add filterComparison
             [
                 facetA: [
                     foo: [A: [value: 'A', count: 3, filterComparison: 'unset']]
@@ -60,7 +60,7 @@ class MergeFacet {
                 ],
                 merge: [
                     foo: [
-                        A: [value: 'A', count: 4, filterComparison: 'unset'],
+                        A: [value: 'A', count: 4, filterComparison: 'inclusion'],
                         B: [value: 'B', count: 3, filterComparison: 'unset']
                     ],
                     bar: [B: [value: 'B', count: 3, filterComparison: 'unset']]

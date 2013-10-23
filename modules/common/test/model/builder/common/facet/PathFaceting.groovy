@@ -1,6 +1,7 @@
 package model.builder.common.facet
 
 import model.builder.common.JsonStream
+import org.junit.BeforeClass
 import org.junit.experimental.theories.DataPoints
 import org.junit.experimental.theories.Theories
 import org.junit.experimental.theories.Theory
@@ -14,30 +15,14 @@ import static org.junit.Assert.assertTrue
 @RunWith(Theories.class)
 class PathFaceting {
 
-    @Theory void equalCardinality(Map data) {
-        assertThat data.items.size(), is(data.fieldDescriptions.size())
-    }
+    private static Map[] data
 
-    @Theory void flatFieldDescriptions(Map data) {
-        assertTrue data.fieldDescriptions.every {
-            !(Map in it.values().collect {it.class})
-        }
-    }
-
-    @Theory void facetStructure(Map data) {
-        assertTrue data.facets.every { field, facet ->
-            facet.values().every {it.&containsKey('count')}
-        }
-    }
-
-    @Theory void filterApplication(Map data) {
-        assertThat filter(data.items, data.fieldDescriptions, data.facetsSelected.call(data.facets)).size(), is(data.filteredCount)
-    }
-
-    @DataPoints
-    static Map[] data() {
+    /**
+     * Allows exception propagation.  Hidden if called by theories runner.
+     */
+    @BeforeClass static void setupDatapoints() {
         JsonStream.instance.initializeFactory()
-        InputStream file = PathFaceting.class.getResourceAsStream('paths.json')
+        InputStream file = PathFaceting.class.getResourceAsStream('/paths.json')
         List objs = JsonStream.instance.jsonObjects(file).toList()
         def descClosure = {
             def desc = [
@@ -67,7 +52,7 @@ class PathFaceting {
             desc
         }
 
-        [
+        data = [
             [
                 items: objs,
                 fieldDescriptions: describe(objs, descClosure),
@@ -89,5 +74,30 @@ class PathFaceting {
                 filteredCount: 2
             ]
         ]
+    }
+
+    @Theory void equalCardinality(Map data) {
+        assertThat data.items.size(), is(data.fieldDescriptions.size())
+    }
+
+    @Theory void flatFieldDescriptions(Map data) {
+        assertTrue data.fieldDescriptions.every {
+            !(Map in it.values().collect {it.class})
+        }
+    }
+
+    @Theory void facetStructure(Map data) {
+        assertTrue data.facets.every { field, facet ->
+            facet.values().every {it.&containsKey('count')}
+        }
+    }
+
+    @Theory void filterApplication(Map data) {
+        assertThat filter(data.items, data.fieldDescriptions, data.facetsSelected.call(data.facets)).size(), is(data.filteredCount)
+    }
+
+    @DataPoints
+    static Map[] data() {
+        data
     }
 }
