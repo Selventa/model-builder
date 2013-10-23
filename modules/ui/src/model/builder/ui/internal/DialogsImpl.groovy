@@ -22,7 +22,6 @@ import javax.swing.DefaultComboBoxModel
 import javax.swing.JDialog
 import javax.swing.JFileChooser
 import javax.swing.JFrame
-import javax.swing.JOptionPane
 import javax.swing.RowSorter.SortKey
 import javax.swing.SortOrder
 import javax.swing.event.ListSelectionListener
@@ -43,7 +42,8 @@ class DialogsImpl implements Dialogs {
     SwingBuilder swing
 
     @Override
-    JDialog pathSearch(CyApplicationManager appMgr, AuthorizedAPI api, Map controls) {
+    JDialog pathSearch(CyApplicationManager appMgr, AuthorizedAPI api, Map controls,
+                       Closure addEdges) {
         def merged = [
             direction: 'both', max_length: 2, causal_only: true,
             starts: 'Add from network(s) selection', ends: 'Add from network(s) selection',
@@ -172,7 +172,7 @@ class DialogsImpl implements Dialogs {
                                     items: ['Add from file(s)', 'Add from network(s) selection'],
                                     selectedItem: merged.ends)
                             button(action: action(name: 'Add Ends', mnemonic: 'E', closure: {
-                                def item = startsCombo.selectedItem
+                                def item = endsCombo.selectedItem
                                 switch (item) {
                                     case 'Add from file(s)':
                                         doOutside {
@@ -305,7 +305,7 @@ class DialogsImpl implements Dialogs {
                                     pathMsg.text = 'Zero paths found'
                                 }
                             } else {
-                                pathFacet(res.jsonObjects, denormalizePath)
+                                pathFacet(appMgr, res.jsonObjects, denormalizePath, addEdges)
                                 pathMsg.text = ''
                             }
                         }
@@ -322,13 +322,14 @@ class DialogsImpl implements Dialogs {
     }
 
     @Override
-    JDialog pathFacet(Iterator<Map> itemIterator, Closure denormalizeClosure) {
+    JDialog pathFacet(CyApplicationManager appMgr, Iterator<Map> itemIterator,
+                      Closure denormalize, Closure addEdges) {
         def items = [itemIterator.take(1).next()]
         def fieldDescriptions = []
 
         def columns = ['Start node', 'End node', 'Goes Through', 'Is Causal?']
 
-        fieldDescriptions.addAll(describe(items, denormalizeClosure))
+        fieldDescriptions.addAll(describe(items, denormalize))
         def facets = facet(fieldDescriptions) as Map
 
         def resultEventList = new BasicEventList()
@@ -425,7 +426,13 @@ class DialogsImpl implements Dialogs {
                     }))
                     addPathsButton = button(action: action(enabled: false, name: 'Add Selected Paths', mnemonic: 'A', closure: {
                         swing.doOutside {
-                            //def selected = results.selectedRows.collect(results.&convertRowIndexToModel).collect {ends.get(it)}
+                            def sel = results.selectedRows.
+                                collect(results.&convertRowIndexToModel).
+                                collect {resultEventList.get(it)}
+                            def selItems = sel.
+                                collect(fieldDescriptions.&indexOf).
+                                collect(items.&get)
+                            addEdges.call(selItems.collect{it.path}.flatten().findAll{it.relationship})
                         }
                     }))
                 }
@@ -441,8 +448,9 @@ class DialogsImpl implements Dialogs {
         swing.doOutside {
             while (itemIterator.hasNext()) {
                 // load in 100 chunk increments
-                items = itemIterator.take(100).toList()
-                def descriptions = describe(items, denormalizeClosure)
+                def next = itemIterator.take(100).toList()
+                items += next
+                def descriptions = describe(next, denormalize)
 
                 swing.edt {
                     fieldDescriptions.addAll(descriptions)
@@ -541,7 +549,6 @@ class DialogsImpl implements Dialogs {
             }
         }
     }
-
 
     private static def denormalizePath = { item ->
         def param = ~/[A-Z]+:"?([^"),]+)"?/

@@ -1,11 +1,22 @@
 package model.builder.core
 
 import org.cytoscape.model.CyColumn
+import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyIdentifiable
 import org.cytoscape.model.CyNetwork
+import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
+import org.openbel.framework.common.InvalidArgument
+import org.openbel.framework.common.enums.RelationshipType
+import org.openbel.framework.common.model.Term
 import org.osgi.framework.BundleContext
+
+import static org.cytoscape.model.CyNetwork.NAME
+import static org.cytoscape.model.CyEdge.INTERACTION
+import static org.cytoscape.model.CyEdge.Type.DIRECTED
+import static org.openbel.framework.common.bel.parser.BELParser.parseTerm
+import static org.openbel.framework.common.enums.RelationshipType.*
 
 class Util {
 
@@ -157,5 +168,77 @@ class Util {
             e.setProperty(name[0].toLowerCase() + name[1..-1], impl)
         }
         e
+    }
+
+    static def getOrCreateNode(CyNetwork cyN, String label) {
+        getNode(cyN, label) ?: createNode(cyN, label)
+    }
+
+    static def getOrCreateEdge(CyNetwork cyN, src, rel, tgt) {
+        def nodeSource = getOrCreateNode(cyN, src)
+        if (!nodeSource) return null
+        def nodeTarget = getOrCreateNode(cyN, tgt)
+        if (!nodeTarget) return null
+        RelationshipType rtype = fromString(rel)
+        if (!rtype) rtype = fromAbbreviation(rel)
+        if (!rtype) return null
+
+        cyN.getConnectingEdgeList(nodeSource, nodeTarget, DIRECTED).find {
+            def row = cyN.getRow(it)
+            row.get(INTERACTION, String.class) == rtype.displayValue
+        } ?: createEdge(cyN, nodeSource, nodeTarget, rel)
+    }
+
+    static def getNode(CyNetwork cyNetwork, String label) {
+        def table = cyNetwork.defaultNodeTable
+        table.getMatchingRows(NAME, label).
+            collect { row ->
+                long id = row.get(table.primaryKey.name, Long.class)
+                if (!id) return null
+                cyNetwork.getNode(id)
+            }.find()
+    }
+
+    static def getEdge(CyNetwork cyNetwork, String source, String rel, String target) {
+        def nodeSource = getNode(cyNetwork, source)
+        if (!nodeSource) return null
+        def nodeTarget = getNode(cyNetwork, target)
+        if (!nodeTarget) return null
+        RelationshipType rtype = fromString(rel)
+        if (!rtype) rtype = fromAbbreviation(rel)
+        if (!rtype) return null
+
+        cyNetwork.getConnectingEdgeList(nodeSource, nodeTarget, DIRECTED).find {
+            def row = cyNetwork.getRow(it)
+            row.get(INTERACTION, String.class) == rtype.displayValue
+        }
+    }
+
+    static def createNode(CyNetwork cyN, String label) {
+        cyN.defaultNodeTable.getColumn('bel.function') ?:
+            cyN.defaultNodeTable.createColumn('bel.function', String.class, false)
+        cyN.addNode().with {
+            cyN.getRow(it).set(NAME, label)
+            cyN.getRow(it).set('bel.function', (toBEL(label).fx ?: '') as String)
+            return it
+        }
+    }
+
+    private static def createEdge(CyNetwork cyN, CyNode s, CyNode t, String rel) {
+        cyN.addEdge(s, t, true).with {
+            cyN.getRow(it).set(INTERACTION, rel)
+            return it
+        }
+    }
+
+    static def toBEL(String label) {
+        try {
+            Term term = parseTerm(label)
+            if (!term) return [:]
+            return [fx: term.functionEnum, lbl: label]
+        } catch (InvalidArgument e) {
+            // parse failure; cannot resolve so return
+            return [:]
+        }
     }
 }

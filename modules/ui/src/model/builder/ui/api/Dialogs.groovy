@@ -7,7 +7,9 @@ import javax.swing.JDialog
 
 interface Dialogs {
 
-    JDialog pathSearch(CyApplicationManager appMgr, AuthorizedAPI api, Map controls)
+    JDialog pathSearch(CyApplicationManager appMgr, AuthorizedAPI api, Map controls,
+                       Closure addEdges)
 
-    JDialog pathFacet(Iterator<Map> itemIterator, Closure denormalizeClosure)
+    JDialog pathFacet(CyApplicationManager appMgr, Iterator<Map> itemIterator,
+                      Closure denormalize, Closure addEdges)
 }

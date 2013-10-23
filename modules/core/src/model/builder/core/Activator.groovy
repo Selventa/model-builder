@@ -125,7 +125,12 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction pathfind = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
-                dialogs.pathSearch(cyr.cyApplicationManager, api, [:])
+                dialogs.pathSearch(cyr.cyApplicationManager, api, [:], { edges ->
+                    def cyN = cyr.cyApplicationManager.currentNetwork
+                    edges.collect {
+                        [it.source_node.label, it.relationship, it.target_node.label]
+                    }.collect { triple -> Util.&getOrCreateEdge.curry(cyN).call(*triple)}
+                })
             }
         }
         pathfind.preferredMenu = 'Apps.SDP'
