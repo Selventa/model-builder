@@ -97,6 +97,7 @@ class Activator extends AbstractCyActivator {
             }
         }
         configure.preferredMenu = 'Apps.SDP'
+        configure.acceleratorKeyStroke = getKeyStroke('control alt O')
         registerService(bc, configure, CyAction.class, [
                 id: 'apps_sdp.configure'
         ] as Properties)
@@ -134,7 +135,7 @@ class Activator extends AbstractCyActivator {
             }
         }
         pathfind.preferredMenu = 'Apps.SDP'
-        pathfind.acceleratorKeyStroke = getKeyStroke('alt P')
+        pathfind.acceleratorKeyStroke = getKeyStroke('control alt P')
         registerService(bc, pathfind, CyAction.class, [
                 id: 'apps_sdp.pathfind'
         ] as Properties)
@@ -153,6 +154,7 @@ class Activator extends AbstractCyActivator {
         }
         importComparison.menuGravity = 100.0
         importComparison.preferredMenu = 'Apps.SDP.Data'
+        importComparison.acceleratorKeyStroke = getKeyStroke('control alt C')
         registerService(bc, importComparison, CyAction.class, [
                 id: 'apps_sdp.data.add_comparison'
         ] as Properties)
@@ -182,6 +184,7 @@ class Activator extends AbstractCyActivator {
                 UI.importModel(api, importModel)
             }
         }
+        importModel.acceleratorKeyStroke = getKeyStroke('control alt M')
         importModel.preferredMenu = 'Apps.SDP.Models'
         importModel.menuGravity = 101.0
         registerService(bc, importModel, CyAction.class, [
@@ -203,7 +206,8 @@ class Activator extends AbstractCyActivator {
                 id: 'apps_sdp.models.save_revision',
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
-                title: 'Save Revision'
+                title: 'Save Revision',
+                accelerator: 'control alt S'
         ] as Properties)
 
         // ... Import RCR Result
@@ -220,6 +224,7 @@ class Activator extends AbstractCyActivator {
         }
         importRCR.menuGravity = 103.0
         importRCR.preferredMenu = 'Apps.SDP.Data'
+        importRCR.acceleratorKeyStroke = getKeyStroke('control alt R')
         registerService(bc, importRCR, CyAction.class, [
                 id: 'apps_sdp.data.add_rcr_result'
         ] as Properties)
