@@ -3,7 +3,6 @@ package model.builder.ui
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.swing.DefaultEventTableModel
-import groovy.beans.Bindable
 import groovy.swing.SwingBuilder
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
@@ -16,7 +15,6 @@ import org.jdesktop.swingx.JXTaskPaneContainer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.swing.DefaultListSelectionModel
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JDialog
@@ -32,15 +30,10 @@ import javax.swing.JTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.ListSelectionListener
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.FlowLayout
 import java.awt.Window
 
 import static java.awt.GridBagConstraints.*
-import static javax.swing.ScrollPaneConstants.*
-import static model.builder.common.facet.Functions.describe
-import static model.builder.common.facet.Functions.facet
-import static model.builder.common.facet.Functions.mergeFacets
 
 class UI {
 
@@ -446,221 +439,6 @@ class UI {
         dialog
     }
 
-    /**
-     * 1. Updating facet values is an awful remove/add which kills selection.
-     * 2. How do we save selected state of facet values?
-     * 3. Incremental faceting
-     *    a) Add Functions.mergeFacets(facetsA, facetsB).
-     *    b) Facet next chunk and then merge with existing facets.
-     */
-    static def pathfind(APIManager mgr) {
-        AuthorizedAPI api = mgr.authorizedAPI(mgr.default)
-        def res = api.paths('Large Corpus', ['p(HGNC:TNF)'], ['p(HGNC:AKT1)'])
-        def pathIterator = res.jsonObjects
-        def swing = new SwingBuilder()
-        swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
-        swing.registerBeanFactory('taskPane', JXTaskPane.class)
-        swing.registerBeanFactory('jxList', JXList.class)
-        swing.registerBeanFactory('jxTable', JXTable.class)
-
-        def items = [pathIterator.take(1).next()]
-        def fieldDescriptions = new BasicEventList()
-
-        def columns = ['Causal', 'Start node', 'End node', 'Start entity', 'End entity', 'Path length', 'Intermediate node', 'Relationship']
-        def props = ['causal', 'start_term', 'end_term', 'start_entity', 'end_entity', 'path_length', 'intermediates', 'relationships']
-        def param = ~/[A-Z]+:"?([^")]+)"?/
-
-        fieldDescriptions.addAll(describe(items) { item ->
-            def nodes = item.path.collect {it.label}.findAll().unique()
-            def relationships = item.path.collect {it.relationship}.findAll().unique()
-            def causal = [
-                    'increases', 'decreases', 'directlyIncreases',
-                    'directlyDecreases', 'rateLimitingStepOf'
-            ]
-
-            // static fields
-            def description = [
-                    causal: relationships.every {it in causal},
-                    start_term: item.start.label,
-                    end_term: item.end.label,
-                    start_entity: (item.start.label =~ param)[0][1],
-                    end_entity: (item.end.label =~ param)[0][1],
-                    path_length: (int) (item.path.size() / 2),
-                    intermediates: nodes.subList(1, nodes.size()-1),
-                    relationships: relationships
-            ].withDefault {[]}
-
-            // dynamic annotation fields
-            item.path.collect { it.evidence*.annotations }.
-                    flatten().findAll().
-                    inject([:].withDefault { [] }) { agg, next ->
-                        next.each { k, v ->
-                            agg[k] << v
-                        }
-                        agg
-                    }.each { k, v ->
-                v.unique().each {
-                    description[k] << it
-                }
-            }
-            description
-        })
-        def facets = facet(fieldDescriptions) as ObservableMap
-
-        def resultEventList = new BasicEventList()
-        resultEventList.addAll(fieldDescriptions)
-        def filteredResults = new DefaultEventTableModel(resultEventList,
-                [
-                        getColumnCount: {columns.size()},
-                        getColumnName: {i -> columns[i]},
-                        getColumnValue: {o, i -> o."${props[i]}"}
-                ] as TableFormat
-        )
-
-        def createTaskPane = {k, v ->
-            def title = k.capitalize()
-            def facetModel = new DefaultEventTableModel(
-                    new BasicEventList(facets[k].values().toList() as List),
-                    [
-                            getColumnCount: {3},
-                            getColumnName: {i -> ['Include', 'Value', 'Count'][i] },
-                            getColumnValue: {o, i ->
-                                switch(i) {
-                                    case 0: return o.filterComparison == 'inclusion'
-                                    case 1: return o.value
-                                    case 2: return o.count
-                                }
-                            }
-                    ] as TableFormat
-            )
-            def tbl
-            def selectionModel = new DefaultListSelectionModel()
-            def pane = swing.taskPane(title: title, animated: false, collapsed: true) {
-                scrollPane(border: lineBorder(thickness: 1, color: Color.black),
-                        constraints: BorderLayout.CENTER, background: Color.white) {
-                    tbl = jxTable(model: facetModel, selectionModel: selectionModel)
-                }
-            }
-            selectionModel.addListSelectionListener([
-                valueChanged: {evt ->
-                    if (evt.valueIsAdjusting) return
-                    facets[k]
-
-                    tbl.model.rowCount
-                    for (int i = 0; i < tbl.model.rowCount; i++) {
-                        def facetValue = tbl.model.getElementAt(i)
-                        facetValue.filterComparison = (tbl.isRowSelected(i) ? 'inclusion' : 'unset')
-                    }
-                }
-            ] as ListSelectionListener)
-            pane
-        }
-
-        def dialog = swing.dialog(id: 'the_dialog', title: 'Pathfind',
-                defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE, modal: false) {
-
-            splitPane(
-                leftComponent: scrollPane(horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_NEVER,
-                                          verticalScrollBarPolicy: VERTICAL_SCROLLBAR_AS_NEEDED) {
-                    taskPaneContainer(id: 'facetContainer') {
-                        facets.each(createTaskPane)
-                    }
-                },
-                rightComponent: scrollPane {
-                    jxTable(model: filteredResults, selectionMode: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
-                }
-            )
-        }
-
-        swing.doOutside {
-            while (pathIterator.hasNext()) {
-                // load in 100 chunk increments
-                items = pathIterator.take(100).toList()
-                def descriptions = describe(items) { item ->
-                    def nodes = item.path.collect {it.label}.findAll().unique()
-                    def relationships = item.path.collect {it.relationship}.findAll().unique()
-                    def causal = [
-                            'increases', 'decreases', 'directlyIncreases',
-                            'directlyDecreases', 'rateLimitingStepOf'
-                    ]
-
-                    // static fields
-                    def description = [
-                            causal: relationships.every {it in causal},
-                            start_term: item.start.label,
-                            end_term: item.end.label,
-                            start_entity: (item.start.label =~ param)[0][1],
-                            end_entity: (item.end.label =~ param)[0][1],
-                            path_length: (int) (item.path.size() / 2),
-                            intermediates: nodes.subList(1, nodes.size()-1),
-                            relationships: relationships
-                    ].withDefault {[]}
-
-                    // dynamic annotation fields
-                    item.path.collect { it.evidence*.annotations }.
-                            flatten().findAll().
-                            inject([:].withDefault { [] }) { agg, next ->
-                                next.each { k, v ->
-                                    agg[k] << v
-                                }
-                                agg
-                            }.each { k, v ->
-                        v.unique().each {
-                            description[k] << it
-                        }
-                    }
-                    description
-                }
-
-                swing.edt {
-                    fieldDescriptions.addAll(descriptions)
-                    resultEventList.addAll(descriptions)
-                }
-                def newFacets = facet(descriptions)
-                def newFacetKeys = newFacets.keySet() - facets.keySet()
-                mergeFacets([facets, newFacets])
-
-                swing.edt {
-                    int facetCount = facetContainer.getComponentCount()
-                    for (int cid = 0; cid < facetCount; cid++) {
-                        def facetPane = facetContainer.getComponent(cid)
-                        def k = facetPane.title.toLowerCase()
-                        def facetModel = new DefaultEventTableModel(
-                            new BasicEventList(facets[k].values().toList() as List),
-                            [
-                                getColumnCount: {3},
-                                getColumnName: {i -> ['Include', 'Value', 'Count'][i] },
-                                getColumnValue: {o, i ->
-                                    switch(i) {
-                                        case 0: return o.filterComparison == 'inclusion'
-                                        case 1: return o.value
-                                        case 2: return o.count
-                                    }
-                                }
-                            ] as TableFormat
-                        )
-                        facetPane.getComponent(0).getComponent(0).getComponent(0).getComponent(0).getComponent(0).getComponent(0).model = facetModel
-                    }
-
-                    newFacets.each { k, v ->
-                        if (k in newFacetKeys) {
-                            def taskPane = createTaskPane.call(k, v)
-                            facetContainer.add(taskPane)
-                            facetContainer.doLayout()
-                        }
-                    }
-                }
-            }
-        }
-
-        dialog.pack()
-        dialog.size = [1000, 600]
-        dialog.locationRelativeTo = null
-        dialog.visible = true
-        dialog
-    }
-
-
     static JDialog importModel(AuthorizedAPI api, Closure importData) {
         def tags = {
             WebResponse res = api.tags(['model'])
@@ -842,7 +620,7 @@ class UI {
                             anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
                             insets: [0, 15, 0, 0]))
             name = textField(constraints: gbc(
-                    gridx: 1, gridy: 0, gridwidth: 1, gridheight: 1,
+                    gridx: 1, gridy: 0, gridwidth: 3, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
                     fill: HORIZONTAL))
             label(text: 'Species',
@@ -867,13 +645,13 @@ class UI {
                     anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
                     insets: [0, 15, 0, 0]))
             scrollPane(constraints: gbc(
-                    gridx: 1, gridy: 2, gridwidth: 1, gridheight: 1,
+                    gridx: 1, gridy: 2, gridwidth: 3, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.35,
                     fill: BOTH)) {
                 tags = list(items: tagsClosure.call())
             }
             scrollPane(constraints: gbc(
-                    gridx: 0, gridy: 3, gridwidth: 2, gridheight: 1,
+                    gridx: 0, gridy: 3, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
                     fill: BOTH)) {
                 resultsTable = table(id: 'resTable', selectionMode: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION) {
@@ -888,7 +666,7 @@ class UI {
                     } as ListSelectionListener)
                 }
             }
-            panel(constraints: gbc(gridx: 0, gridy: 4, gridwidth: 2, gridheight: 1,
+            panel(constraints: gbc(gridx: 0, gridy: 4, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_END, weightx: 1.0, weighty: 0.1,
                     fill: HORIZONTAL)) {
                 flowLayout(alignment: FlowLayout.RIGHT)
@@ -928,30 +706,6 @@ class UI {
                     importClosure.call(selected)
                 })
             }
-        }
-    }
-
-    private static class FacetModel {
-        @Bindable def items = []
-        @Bindable def fieldDescriptions = []
-        @Bindable def facets
-
-        FacetModel(Iterator<Map> it) {
-            def item = it.take(1)
-            items.addAll([item].flatten())
-            fieldDescriptions.addAll(describe(items) {
-                [start: it.start.label, end: it.end.label, path_length: (int) it.path.size() / 2]
-            })
-            facets = facet(fieldDescriptions)
-
-            def eventList = new BasicEventList()
-            def tableModel = new DefaultEventTableModel(eventList,
-                    [
-                            getColumnCount: 3,
-                            getColumnName: {i -> ['Path length', 'Start', 'End'][i]},
-                            getColumnValue: {o, i -> o."${['path_length', 'start', 'end'][i]}"}
-                    ] as TableFormat
-            )
         }
     }
 }
