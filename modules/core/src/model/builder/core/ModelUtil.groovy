@@ -14,7 +14,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 class ModelUtil {
 
-    static def MODEL_FIELDS = ['name', 'desc', 'tax_id', 'reference_node']
+    static def MODEL_FIELDS = ['name', 'description', 'species', 'reference_node']
     static def NETWORK_INELIGIBLE_FIELDS = ['SUID', 'shared name', 'selected',
                                             'uri', 'who', 'when', 'comment']
     static def NODE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',

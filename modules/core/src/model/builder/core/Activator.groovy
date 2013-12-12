@@ -161,6 +161,16 @@ class Activator extends AbstractCyActivator {
                 accelerator: 'control alt S'
         ] as Properties)
 
+        // ... Save as New Model (New model)
+        registerService(bc, new SaveAsNewModelFactory(cyr, apiManager),
+                NetworkViewTaskFactory.class, [
+                id: 'apps_sdp.models.save_as_new_model',
+                preferredMenu: 'Apps.SDP.Models',
+                menuGravity: 103.0,
+                title: 'Save as New Model',
+                accelerator: 'control shift S'
+        ] as Properties)
+
         // ... Add Configure
         AbstractCyAction configure = new AbstractCyAction('Configure') {
             void actionPerformed(ActionEvent e) {
