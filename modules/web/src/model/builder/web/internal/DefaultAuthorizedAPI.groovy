@@ -116,7 +116,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             if (match.find()) return match[0][1]
             match = (uri as String) =~ /\/api\/models\/(.+)/
             if (match.find()) return match[0][1]
-            match = (uri as String) =~ /\/api\/rcr_results\/(.+)/
+            match = (uri as String) =~ /\/api\/rcr-results\/(.+)/
             if (match.find()) return match[0][1]
         }
     }
@@ -143,7 +143,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse rcrResult(String id) {
-        get(path: "/api/rcr_results/$id", accept: JSON)
+        get(path: "/api/rcr-results/$id", accept: JSON)
     }
 
     @Override
@@ -177,7 +177,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     @Override
     WebResponse searchRcrResults(Map data) {
         def params = [:]
-        params.q = "type:rcr_result AND name:${data.name ?: '*'}"
+        params.q = "type:rcr-result AND name:${data.name ?: '*'}"
         params.start = data.start ?: 0
         params.rows = data.rows ?: 100
         if (data.tags)
@@ -196,7 +196,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse knowledgeNetworks() {
-        get(path: '/api/knowledge_networks', accept: JSON)
+        get(path: '/api/knowledge-networks', accept: JSON)
     }
 
     @Override
@@ -234,7 +234,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     JsonStreamResponse paths(knowledgeNetwork, from, to, Map params = [:]) {
-        def path = "/api/knowledge_networks/$knowledgeNetwork/paths"
+        def path = "/api/knowledge-networks/$knowledgeNetwork/paths"
         def (scheme, host, port) = convertHost(access.host)
         def query = (
             [
@@ -288,7 +288,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     def WebResponse addId(WebResponse response) {
         if (response.data) {
             def map = response.data
-            map.model.id = this.id(uri: map.model.uri as String)
+            map.id = this.id(uri: map.uri as String)
         }
         response
     }

@@ -18,7 +18,7 @@ class RetrieveModel implements Task {
         AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
 
         WebResponse res = api.model(context['id'] as String)
-        context['model'] = res.data.model as Map
+        context['model'] = res.data as Map
     }
 
     @Override

@@ -9,5 +9,5 @@ class WebResponse {
     final String contentType
     final String charset
     final Map headers
-    final Map data
+    final def data
 }

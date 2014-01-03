@@ -60,7 +60,7 @@ class SaveModel extends AbstractNetworkViewTask {
         WebResponse res = api.postModel(comment, network)
         String uri = res.headers['Location']
         res = api.model(api.id([uri: uri]))
-        def model = res.data.model
+        def model = res.data
         def createdRevision = (model.revisions.length() - 1 as Integer)
         "$uri/revisions/$createdRevision"
     }
@@ -68,7 +68,7 @@ class SaveModel extends AbstractNetworkViewTask {
     private static String newRevision(AuthorizedAPI api, String modelId,
                                     String comment, Map network) {
         WebResponse res = api.model(modelId)
-        def model = res.data.model
+        def model = res.data
         def nextURI = model.links.find {it.rel == 'next_revision'}.uri
         def path = new URI(nextURI).path
         res = api.putModelRevision(path, network, comment)

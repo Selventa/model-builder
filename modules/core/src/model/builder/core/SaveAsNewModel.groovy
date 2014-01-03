@@ -88,7 +88,8 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
         WebResponse res = api.postModel(comment, network)
         String uri = res.headers['Location']
         res = api.model(api.id([uri: uri]))
-        def model = res.data.model
+        def model = res.data
+        println model
         def createdRevision = (model.revisions.length() - 1 as Integer)
         "$uri/revisions/$createdRevision"
     }
