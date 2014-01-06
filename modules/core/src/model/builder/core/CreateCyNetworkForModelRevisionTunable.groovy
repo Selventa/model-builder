@@ -11,7 +11,7 @@ import org.cytoscape.work.util.ListSingleSelection
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static ModelUtil.from
+import static ModelUtil.fromRevision
 
 class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
 
@@ -51,7 +51,7 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         monitor.progress = 0.0d
         monitor.statusMessage = 'Adding network'
 
-        CyNetworkView cyNv = from(modelRev.uri, revision as Map, cyRef)
+        CyNetworkView cyNv = fromRevision(modelRev.uri, revision as Map, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)

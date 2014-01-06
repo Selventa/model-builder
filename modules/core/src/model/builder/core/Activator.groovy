@@ -11,6 +11,8 @@ import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
 import org.cytoscape.application.swing.CySwingApplication
 import org.cytoscape.event.CyEventHelper
+import org.cytoscape.io.read.InputStreamTaskFactory
+import org.cytoscape.io.util.StreamUtil
 import org.cytoscape.model.CyNetworkFactory
 import org.cytoscape.model.CyNetworkManager
 import org.cytoscape.model.CyNetworkTableManager
@@ -69,6 +71,12 @@ class Activator extends AbstractCyActivator {
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
+
+        // Reader / Writer for Model Json format
+        StreamUtil util = new StreamUtilImpl()
+        registerService(bc, JsonNetworkReaderFactory.create(cyr, util), InputStreamTaskFactory.class,
+            [readerId: 'modelJSONReader', readerDescription: 'Model JSON reader'] as Properties)
+        registerAllServices(bc, JsonNetworkWriterFactory.create(util), [:] as Properties)
 
         // ... Apps > SDP Menu Actions ...
 

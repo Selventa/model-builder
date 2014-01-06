@@ -10,7 +10,6 @@ import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 
 import static Util.createColumn
-import static model.builder.core.ModelUtil.from
 import static model.builder.ui.MessagePopups.successMessage
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
 import static org.cytoscape.model.CyNetwork.NAME
@@ -69,7 +68,7 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
         newDescription = newDescription ?: (cyN.getRow(cyN).get('description', String.class))
         cyN.getRow(cyN).set('description', newDescription)
 
-        Map network = from(view)
+        Map network = fromView(view)
         network.description
 
         if (cyN.getRow(cyN).isSet('uri'))

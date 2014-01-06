@@ -9,8 +9,8 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 
+import static model.builder.core.ModelUtil.fromView
 import static model.builder.ui.MessagePopups.successMessage
-import static model.builder.core.ModelUtil.from
 import static Util.createColumn
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
 
@@ -33,7 +33,7 @@ class SaveModel extends AbstractNetworkViewTask {
     @Override
     void run(TaskMonitor monitor) throws Exception {
         AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
-        Map network = from(view)
+        Map network = fromView(view)
 
         // get current model from revision
         def cyN = view.model

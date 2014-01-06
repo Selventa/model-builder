@@ -5,7 +5,7 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 
-import static ModelUtil.from
+import static ModelUtil.fromRevision
 
 @TupleConstructor
 class CreateCyNetworkForModelRevision extends AbstractTask {
@@ -28,7 +28,7 @@ class CreateCyNetworkForModelRevision extends AbstractTask {
         monitor.statusMessage = 'Adding network nodes and edges'
 
         def uri = "${model.uri}/revisions/$revisionNumber"
-        CyNetworkView cyNv = from(uri, revision, cyRef)
+        CyNetworkView cyNv = fromRevision(uri, revision, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)
