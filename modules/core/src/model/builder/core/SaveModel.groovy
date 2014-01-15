@@ -35,6 +35,9 @@ class SaveModel extends AbstractNetworkViewTask {
         AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
         Map network = fromView(view)
 
+        monitor.title = "Saving new model to SDP"
+        monitor.statusMessage = "Saving update to model \"${network.name}\"."
+
         // get current model from revision
         def cyN = view.model
 

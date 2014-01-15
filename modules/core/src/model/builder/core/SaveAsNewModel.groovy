@@ -10,6 +10,7 @@ import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 
 import static Util.createColumn
+import static model.builder.core.ModelUtil.fromView
 import static model.builder.ui.MessagePopups.successMessage
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
 import static org.cytoscape.model.CyNetwork.NAME
@@ -63,6 +64,9 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
         // set new name
         newName = newName ?: (cyN.getRow(cyN).get(NAME, String.class))
         cyN.getRow(cyN).set(NAME, newName)
+
+        monitor.title = "Saving new model to SDP"
+        monitor.statusMessage = "Saving as new model \"${newName}\"."
 
         // set new description
         newDescription = newDescription ?: (cyN.getRow(cyN).get('description', String.class))
