@@ -69,6 +69,7 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
         monitor.statusMessage = "Saving as new model \"${newName}\"."
 
         // set new description
+        createColumn(cyN.defaultNetworkTable, 'description', String.class, false, null)
         newDescription = newDescription ?: (cyN.getRow(cyN).get('description', String.class))
         cyN.getRow(cyN).set('description', newDescription)
 
