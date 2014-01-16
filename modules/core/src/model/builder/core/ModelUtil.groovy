@@ -6,7 +6,6 @@ import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
-import wslite.json.JSONObject
 
 import static model.builder.core.Util.*
 import static org.cytoscape.model.CyNetwork.*
@@ -88,14 +87,8 @@ class ModelUtil {
             ]
 
             def locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
-            def metadata = rowData(cyNode, cyN, locals).collectEntries { k, v ->
-                //[k, (v == null ? JSONObject.NULL : v)]
-                [k, v]
-            }
-            NODE_INELIGIBLE_FIELDS.each(metadata.&remove)
-            metadata.findAll {'.' in it.key}.each(metadata.&remove)
-            if (metadata)
-                node.metadata = metadata
+            def metadata = scrubMetadata(rowData(cyNode, cyN, locals), NODE_INELIGIBLE_FIELDS)
+            if (metadata) node.metadata = metadata
 
             index[cyNode] = counter++
             node
@@ -110,13 +103,9 @@ class ModelUtil {
             ]
 
             def locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
-            def metadata = rowData(cyEdge, cyN, locals).collectEntries { k, v ->
-                //[k, (v == null ? JSONObject.NULL : v)]
-                [k, v]
-            }
-            EDGE_INELIGIBLE_FIELDS.each(metadata.&remove)
-            metadata.findAll {'.' in it.key}.each(metadata.&remove)
+            def metadata = scrubMetadata(rowData(cyEdge, cyN, locals), EDGE_INELIGIBLE_FIELDS)
             if (metadata) edge.metadata = metadata
+
             if (cyN.getRow(cyEdge).isSet('evidence')) {
                 def evTxt = cyN.getRow(cyEdge).get('evidence', String.class)
                 def ev = new JsonSlurper().parseText(evTxt)
@@ -128,11 +117,7 @@ class ModelUtil {
 
         def result = [nodes: nodes, edges: edges]
         def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
-        def networkData = rowData(cyN, cyN, locals).collectEntries { k, v ->
-            //[k, (v == null ? JSONObject.NULL : v)]
-            [k, v]
-        }
-        NETWORK_INELIGIBLE_FIELDS.each(networkData.&remove)
+        def networkData = scrubMetadata(rowData(cyN, cyN, locals), NETWORK_INELIGIBLE_FIELDS)
         def fields = networkData.subMap(MODEL_FIELDS)
         result += fields
         result.metadata = networkData - fields
@@ -154,14 +139,8 @@ class ModelUtil {
             ]
 
             def locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
-            def metadata = rowData(cyNode, cyN, locals).collectEntries { k, v ->
-                //[k, (v == null ? JSONObject.NULL : v)]
-                [k, v]
-            }
-            NODE_INELIGIBLE_FIELDS.each(metadata.&remove)
-            metadata.findAll {'.' in it.key}.each(metadata.&remove)
-            if (metadata)
-                node.metadata = metadata
+            def metadata = scrubMetadata(rowData(cyNode, cyN, locals), NODE_INELIGIBLE_FIELDS)
+            if (metadata) node.metadata = metadata
 
             index[cyNode] = counter++
             node
@@ -176,13 +155,9 @@ class ModelUtil {
             ]
 
             def locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
-            def metadata = rowData(cyEdge, cyN, locals).collectEntries { k, v ->
-                //[k, (v == null ? JSONObject.NULL : v)]
-                [k, v]
-            }
-            EDGE_INELIGIBLE_FIELDS.each(metadata.&remove)
-            metadata.findAll {'.' in it.key}.each(metadata.&remove)
+            def metadata = scrubMetadata(rowData(cyEdge, cyN, locals), EDGE_INELIGIBLE_FIELDS)
             if (metadata) edge.metadata = metadata
+
             if (cyN.getRow(cyEdge).isSet('evidence')) {
                 def evTxt = cyN.getRow(cyEdge).get('evidence', String.class)
                 def ev = new JsonSlurper().parseText(evTxt)
@@ -194,15 +169,17 @@ class ModelUtil {
 
         def result = [nodes: nodes, edges: edges]
         def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
-        def networkData = rowData(cyN, cyN, locals).collectEntries { k, v ->
-            //[k, (v == null ? JSONObject.NULL : v)]
-            [k, v]
-        }
-        NETWORK_INELIGIBLE_FIELDS.each(networkData.&remove)
+        def networkData = scrubMetadata(rowData(cyN, cyN, locals), NETWORK_INELIGIBLE_FIELDS)
         def fields = networkData.subMap(MODEL_FIELDS)
         result += fields
         result.metadata = networkData - fields
         result
+    }
+
+    private static Map scrubMetadata(Map metadata, List ineligibleFields) {
+        Map scrubbed = [:] + metadata
+        ineligibleFields.each(scrubbed.&remove)
+        scrubbed.findAll {!it.key?.contains('.')}
     }
 
     private static Tuple makeNetwork(Map network, Expando cyr) {
@@ -261,5 +238,4 @@ class ModelUtil {
         }
         cyNv
     }
-
 }
