@@ -6,6 +6,10 @@ import model.builder.web.internal.DefaultAPIManager
 import org.cytoscape.application.CyApplicationConfiguration
 import org.cytoscape.service.util.AbstractCyActivator
 import org.osgi.framework.BundleContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import static model.builder.common.Constant.setLoggingExceptionHandler
 
 class Activator extends AbstractCyActivator {
 
@@ -19,5 +23,7 @@ class Activator extends AbstractCyActivator {
         JsonStream.instance.initializeFactory()
         APIManager apiManager = new DefaultAPIManager(cfg)
         registerService(bc, apiManager, APIManager.class, [:] as Properties)
+
+        setLoggingExceptionHandler()
     }
 }

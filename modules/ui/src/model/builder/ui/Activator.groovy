@@ -12,9 +12,9 @@ import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class Activator extends AbstractCyActivator {
+import static model.builder.common.Constant.setLoggingExceptionHandler
 
-    private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
+class Activator extends AbstractCyActivator {
 
     /**
      * {@inheritDoc}
@@ -29,5 +29,7 @@ class Activator extends AbstractCyActivator {
 
         Dialogs dialogs = new DialogsImpl(swing)
         registerService(bc, dialogs, Dialogs.class, [:] as Properties)
+
+        setLoggingExceptionHandler()
     }
 }

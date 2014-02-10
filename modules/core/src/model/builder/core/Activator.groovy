@@ -42,6 +42,7 @@ import wslite.rest.RESTClientException
 import java.awt.event.ActionEvent
 
 import static javax.swing.KeyStroke.getKeyStroke
+import static model.builder.common.Constant.setLoggingExceptionHandler
 import static model.builder.core.Util.cyReference
 
 class Activator extends AbstractCyActivator {
@@ -251,6 +252,6 @@ class Activator extends AbstractCyActivator {
                 title: "Create Set from Selected Nodes"
             ] as Properties)
 
-
+        setLoggingExceptionHandler()
     }
 }
