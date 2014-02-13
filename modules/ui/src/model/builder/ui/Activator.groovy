@@ -16,12 +16,14 @@ import static model.builder.common.Constant.setLoggingExceptionHandler
 
 class Activator extends AbstractCyActivator {
 
+    public static SwingBuilder swing
+
     /**
      * {@inheritDoc}
      */
     @Override
     void start(BundleContext bc) {
-        SwingBuilder swing = new SwingBuilder()
+        swing = new SwingBuilder()
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
         swing.registerBeanFactory('jxList', JXList.class)

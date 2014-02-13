@@ -40,7 +40,8 @@ class UI {
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
     static def createSet(List initialItems, Closure onCreate) {
-        def swing = new SwingBuilder()
+        def swing = Activator.swing ?: new SwingBuilder()
+
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
         swing.registerBeanFactory('jxList', JXList.class)
@@ -148,13 +149,15 @@ class UI {
                         actionPerformed: {dialog.dispose()})
                 button(id: 'createButton', enabled: !items.empty, text: 'Create', preferredSize: [85, 25],
                     actionPerformed: {
-                        swing.edt {
+                        swing.doOutside {
                             def ret = onCreate.call(dialog, name.text, description.text, items)
-                            if (ret) {
-                                msg.info("Created set ${name.text} (${items.size()} items).")
-                                dialog.dispose()
-                            } else {
-                                msg.error("Could not create set.")
+                            swing.edt {
+                                if (ret) {
+                                    msg.info("Created set ${name.text} (${items.size()} items).")
+                                    dialog.dispose()
+                                } else {
+                                    msg.error("Could not create set.")
+                                }
                             }
                         }
                     }
@@ -169,7 +172,8 @@ class UI {
     }
 
     static def manageSets(APIManager mgr) {
-        def swing = new SwingBuilder()
+        def swing = Activator.swing ?: new SwingBuilder()
+
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
         swing.registerBeanFactory('jxList', JXList.class)
@@ -251,14 +255,12 @@ class UI {
                                 WebResponse res = api.postSet(name, desc, newItems)
                                 if (res.statusCode == 201) {
                                     msg.info("Created set ${name} (${newItems.size()} items).")
-                                    createDialog.dispose()
-                                    swing.doOutside {
-                                        res = api.sets()
-                                        if (res.statusCode == 200) {
-                                            swing.edt {
-                                                items.removeAll {true}
-                                                items.addAll(res.data.sets)
-                                            }
+                                    res = api.sets()
+                                    if (res.statusCode == 200) {
+                                        swing.edt {
+                                            createDialog.dispose()
+                                            items.removeAll {true}
+                                            items.addAll(res.data.sets)
                                         }
                                     }
                                     true
@@ -298,7 +300,7 @@ class UI {
 
     static def configuration(APIManager mgr,
                              Closure doAuthenticate, Closure onSave) {
-        def swing = new SwingBuilder()
+        def swing = Activator.swing ?: new SwingBuilder()
         def dialog = swing.dialog(id: 'the_dialog', title: 'Configure SDP',
                                   defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE) {
 
@@ -366,7 +368,9 @@ class UI {
                                         }
                                     }
                                 } else {
-                                    MessagePopups.errorConnectionAccess(host.text, email.text, pass.password as String)
+                                    edt {
+                                        MessagePopups.errorConnectionAccess(host.text, email.text, pass.password as String)
+                                    }
                                 }
                             }
                         })
@@ -425,9 +429,11 @@ class UI {
                 button(text: 'Cancel', preferredSize: [85, 25],
                        actionPerformed: {dialog.dispose()})
                 button(text: 'Save', preferredSize: [85, 25], actionPerformed: {
-                    configurationsTable.model.with {
-                        def rows = rowsModel.value
-                        onSave.call(rows as Set)
+                    swing.doOutside {
+                        configurationsTable.model.with {
+                            def rows = rowsModel.value
+                            onSave.call(rows as Set)
+                        }
                     }
                 })
             }
@@ -440,6 +446,8 @@ class UI {
     }
 
     static JDialog importModel(AuthorizedAPI api, Closure importData) {
+        def swing = Activator.swing ?: new SwingBuilder()
+
         def tags = {
             WebResponse res = api.tags(['model'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -459,9 +467,8 @@ class UI {
                     rows: 100])
         }
 
-        def swing = new SwingBuilder()
         def dialog = swing.dialog(title: 'Import Model')
-        dialog.contentPane.add(modelSearchPanel(api, tags, search, importData))
+        dialog.contentPane.add(modelSearchPanel(swing, api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
         dialog.locationRelativeTo = null
@@ -470,6 +477,8 @@ class UI {
     }
 
     static JDialog addComparison(AuthorizedAPI api, Closure importData) {
+        def swing = Activator.swing ?: new SwingBuilder()
+
         def tags = {
             WebResponse res = api.tags(['comparison'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -483,9 +492,8 @@ class UI {
                 rows: 100])
         }
 
-        def swing = new SwingBuilder()
         def dialog = swing.dialog(title: 'Add Comparison')
-        dialog.contentPane.add(searchPanel(api, tags, search, importData))
+        dialog.contentPane.add(searchPanel(swing, api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
         dialog.locationRelativeTo = null
@@ -494,6 +502,8 @@ class UI {
     }
 
     static JDialog addRcr(AuthorizedAPI api, Closure importData) {
+        def swing = Activator.swing ?: new SwingBuilder()
+
         def tags = {
             WebResponse res = api.tags(['rcr_result'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -507,9 +517,8 @@ class UI {
                     rows: 100])
         }
 
-        def swing = new SwingBuilder()
         def dialog = swing.dialog(title: 'Add RCR Result')
-        dialog.contentPane.add(searchPanel(api, tags, search, importData))
+        dialog.contentPane.add(searchPanel(swing, api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
         dialog.locationRelativeTo = null
@@ -517,9 +526,9 @@ class UI {
         dialog
     }
 
-    private static JPanel searchPanel(AuthorizedAPI api, Closure tagsClosure,
+    private static JPanel searchPanel(SwingBuilder swing, AuthorizedAPI api, Closure tagsClosure,
                                       Closure searchClosure, Closure importClosure) {
-        new SwingBuilder().panel() {
+        swing.panel() {
             def JTextField name
             def JList tags
             def JTable resultsTable
@@ -543,7 +552,7 @@ class UI {
                     gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.35,
                     fill: BOTH)) {
-                tags = list(items: tagsClosure.call())
+                tags = list(items: [])
             }
             scrollPane(constraints: gbc(
                     gridx: 0, gridy: 2, gridwidth: 2, gridheight: 1,
@@ -577,19 +586,24 @@ class UI {
                     }
                 })
                 button(text: 'Search', actionPerformed: {
-                    WebResponse res = searchClosure.call([name: name.text,
-                                                          tags: tags.selectedValuesList])
-                    def solr = res.data.response
-                    def results = solr.docs.collect {
-                        it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
-                        it.id = api.id(searchKey: it.id)
-                        it
-                    }.sort {it.name}
-                    resultsTable.model = tableModel(list: results) {
-                        propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                        propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                        propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                        propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                    swing.doOutside {
+                        WebResponse res = searchClosure.call([name: name.text,
+                                                              tags: tags.selectedValuesList])
+                        def solr = res.data.response
+                        def results = solr.docs.collect {
+                            it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
+                            it.id = api.id(searchKey: it.id)
+                            it
+                        }.sort {it.name}
+
+                        swing.edt {
+                            resultsTable.model = tableModel(list: results) {
+                                propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
+                                propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
+                                propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
+                                propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                            }
+                        }
                     }
                 })
                 addButton = button(text: 'Add', enabled: false, actionPerformed: {
@@ -598,12 +612,19 @@ class UI {
                     selected.each { importClosure.call(it.id) }
                 })
             }
+
+            // load tags outside EDT
+            swing.doOutside {
+                def tagData = tagsClosure.call()
+                swing.edt {
+                    tags.listData = tagData
+                }
+            }
         }
     }
 
-    private static JPanel modelSearchPanel(AuthorizedAPI api, Closure tagsClosure,
+    private static JPanel modelSearchPanel(SwingBuilder swing, AuthorizedAPI api, Closure tagsClosure,
                                            Closure searchClosure, Closure importClosure) {
-        def swing = new SwingBuilder()
         swing.panel() {
             def JTextField name
             def JCheckBox human
@@ -648,7 +669,7 @@ class UI {
                     gridx: 1, gridy: 2, gridwidth: 3, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.35,
                     fill: BOTH)) {
-                tags = list(items: tagsClosure.call())
+                tags = list(items: [])
             }
             scrollPane(constraints: gbc(
                     gridx: 0, gridy: 3, gridwidth: 4, gridheight: 1,
@@ -682,29 +703,45 @@ class UI {
                     }
                 })
                 button(text: 'Search', actionPerformed: {
-                    WebResponse res = searchClosure.call([
-                            name: name.text,
-                            tags: tags.selectedValuesList,
-                            human: human.selected, mouse: mouse.selected,
-                            rat: rat.selected])
-                    def solr = res.data.response
-                    def results = solr.docs.collect {
-                        it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
-                        it.id = api.id(searchKey: it.id)
-                        it
-                    }.sort {it.name}
-                    resultsTable.model = tableModel(list: results) {
-                        propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                        propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                        propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                        propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                    swing.doOutside {
+                        WebResponse res = searchClosure.call([
+                                name: name.text,
+                                tags: tags.selectedValuesList,
+                                human: human.selected, mouse: mouse.selected,
+                                rat: rat.selected])
+                        def solr = res.data.response
+                        def results = solr.docs.collect {
+                            it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
+                            it.id = api.id(searchKey: it.id)
+                            it
+                        }.sort {it.name}
+
+                        swing.edt {
+                            resultsTable.model = tableModel(list: results) {
+                                propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
+                                propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
+                                propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
+                                propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                            }
+                        }
                     }
                 })
                 addButton = button(text: 'Import', enabled: false, actionPerformed: {
                     def data = resultsTable.model.rowsModel.value
                     def selected = resultsTable.selectedRows.collect(data.&get)
-                    importClosure.call(selected)
+
+                    swing.doOutside {
+                        importClosure.call(selected)
+                    }
                 })
+            }
+
+            // load tags outside EDT
+            swing.doOutside {
+                def tagData = tagsClosure.call()
+                swing.edt {
+                    tags.listData = tagData
+                }
             }
         }
     }
