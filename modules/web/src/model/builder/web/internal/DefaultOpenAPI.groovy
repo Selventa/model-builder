@@ -2,6 +2,8 @@ package model.builder.web.internal
 
 import model.builder.web.api.OpenAPI
 import model.builder.web.api.WebResponse
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import wslite.http.HTTPClientException
 import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
@@ -11,6 +13,7 @@ import javax.net.ssl.SSLContext
 
 class DefaultOpenAPI implements OpenAPI {
 
+    private static final Logger msg = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
     def RESTClient client
 
     DefaultOpenAPI(String host) {
@@ -66,6 +69,9 @@ class DefaultOpenAPI implements OpenAPI {
         try {
             client.get(path: "/api/apikeys/users/$email") as WebResponse
         } catch (HTTPClientException e) {
+            String msgLog = "GET Error; Params '[path: '/api/apikeys/users/$email']'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res

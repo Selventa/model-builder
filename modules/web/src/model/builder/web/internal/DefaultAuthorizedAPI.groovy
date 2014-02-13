@@ -5,6 +5,8 @@ import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.JsonStreamResponse
 import model.builder.web.api.WebResponse
 import org.apache.commons.codec.binary.Hex
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import wslite.http.HTTPClientException
 import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
@@ -21,6 +23,7 @@ import static model.builder.web.internal.Constant.HMAC
 
 class DefaultAuthorizedAPI implements AuthorizedAPI {
 
+    private static final Logger msg = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
     final RESTClient client
     final AccessInformation access
 
@@ -73,8 +76,10 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             old = HttpURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
             asType = { Class c ->
                 if (c == JsonStreamResponse) {
-                    if (!delegate.contentType.contains(JSON_MIME_TYPE))
+                    if (!delegate.contentType.contains(JSON_MIME_TYPE)) {
+                        msg.error("${delegate.requestMethod} Error; Params '[path: '${delegate.url}']'; Content type is not $JSON_MIME_TYPE for stream")
                         throw new IllegalArgumentException("stream is not json")
+                    }
                     new JsonStreamResponse(
                             delegate.responseCode,
                             delegate.responseMessage,
@@ -297,6 +302,9 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         try {
             client.get(params) as WebResponse
         } catch (HTTPClientException e) {
+            String msgLog = "GET Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res
@@ -307,6 +315,9 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         try {
             client.put(params, content) as WebResponse
         } catch (HTTPClientException e) {
+            String msgLog = "PUT Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res
@@ -317,6 +328,9 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         try {
             client.post(params, content) as WebResponse
         } catch (HTTPClientException e) {
+            String msgLog = "POST Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res
@@ -327,6 +341,9 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         try {
             client.delete(params) as WebResponse
         } catch (HTTPClientException e) {
+            String msgLog = "DELETE Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+
             def res = e.response as WebResponse
             if (res.statusCode == 500) throw e
             res
