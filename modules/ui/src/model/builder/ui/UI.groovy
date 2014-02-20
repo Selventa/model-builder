@@ -34,6 +34,7 @@ import java.awt.FlowLayout
 import java.awt.Window
 
 import static java.awt.GridBagConstraints.*
+import static model.builder.ui.MessagePopups.errorAccessNotSet
 
 class UI {
 
@@ -173,12 +174,18 @@ class UI {
 
     static def manageSets(APIManager mgr) {
         def swing = Activator.swing ?: new SwingBuilder()
+        swing.optionPane()
 
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
         swing.registerBeanFactory('jxList', JXList.class)
         swing.registerBeanFactory('jxTable', JXTable.class)
+
         AuthorizedAPI api = mgr.authorizedAPI(mgr.default)
+        if (!api) {
+            errorAccessNotSet()
+            return
+        }
 
         def elementList = new BasicEventList()
         def elementModel = new DefaultEventTableModel(elementList,

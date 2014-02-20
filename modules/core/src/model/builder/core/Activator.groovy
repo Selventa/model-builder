@@ -39,11 +39,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import wslite.rest.RESTClientException
 
+import javax.swing.JOptionPane
 import java.awt.event.ActionEvent
 
 import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.common.Constant.setLoggingExceptionHandler
 import static model.builder.core.Util.cyReference
+import static model.builder.ui.MessagePopups.errorAccessNotSet;
 
 class Activator extends AbstractCyActivator {
 
@@ -85,6 +87,10 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                if (!api) {
+                    errorAccessNotSet()
+                    return
+                }
                 def importData = { id ->
                     WebResponse res = api.comparison(id)
                     cyr.dialogTaskManager.execute(
@@ -104,6 +110,10 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                if (!api) {
+                    errorAccessNotSet()
+                    return
+                }
                 def importData = { id ->
                     WebResponse res = api.rcrResult(id)
                     cyr.dialogTaskManager.execute(
@@ -123,6 +133,11 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                if (!api) {
+                    errorAccessNotSet()
+                    return
+                }
+
                 def importModel = { models ->
                     def all = new TaskIterator()
                     try {
@@ -216,6 +231,10 @@ class Activator extends AbstractCyActivator {
         AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+                if (!api) {
+                    errorAccessNotSet()
+                    return
+                }
                 dialogs.pathSearch(cyr.cyApplicationManager, api, [:], { edges ->
                     def cyN = cyr.cyApplicationManager.currentNetwork
                     edges.collect {

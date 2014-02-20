@@ -6,6 +6,7 @@ import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import org.cytoscape.work.Task
 import org.cytoscape.work.TaskMonitor
+import static model.builder.ui.MessagePopups.errorAccessNotSet
 
 @TupleConstructor
 class RetrieveRevision implements Task {
@@ -16,6 +17,10 @@ class RetrieveRevision implements Task {
     @Override
     void run(TaskMonitor monitor) throws Exception {
         AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+        if (!api) {
+            errorAccessNotSet()
+            return
+        }
 
         def id = context.id
         def model = context.model

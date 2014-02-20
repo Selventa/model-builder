@@ -10,6 +10,7 @@ import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 
 import static model.builder.core.ModelUtil.fromView
+import static model.builder.ui.MessagePopups.errorAccessNotSet
 import static model.builder.ui.MessagePopups.successMessage
 import static Util.createColumn
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
@@ -33,6 +34,10 @@ class SaveModel extends AbstractNetworkViewTask {
     @Override
     void run(TaskMonitor monitor) throws Exception {
         AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+        if (!api) {
+            errorAccessNotSet()
+            return
+        }
         Map network = fromView(view)
 
         monitor.title = "Saving model to SDP"

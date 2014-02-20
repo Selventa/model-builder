@@ -10,6 +10,15 @@ class MessagePopups {
 
     private static final Logger userMessages = LoggerFactory.getLogger('CyUserMessages');
 
+    static void errorAccessNotSet() {
+        def swing = new SwingBuilder()
+        String msg = "An SDP server has not been configured or set as default.\n\n" +
+                     "Open Apps -> SDP -> Models -> Import " +
+                     "(shortcut: Ctrl + Alt + M)"
+        swing.optionPane(message: msg, messageType: ERROR_MESSAGE).
+                createDialog(null, 'Connection Error').setVisible(true)
+    }
+
     static void errorConnectionAccess(String host, String email, String pass) {
         def swing = new SwingBuilder()
         String msg = "The email or password is incorrect.  Please verify\n" +

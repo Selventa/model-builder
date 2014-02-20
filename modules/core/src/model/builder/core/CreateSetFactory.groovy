@@ -15,6 +15,7 @@ import org.cytoscape.work.TaskIterator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import static org.cytoscape.model.CyNetwork.*
+import static model.builder.ui.MessagePopups.errorAccessNotSet
 
 @TupleConstructor
 class CreateSetFactory extends AbstractNodeViewTaskFactory {
@@ -27,11 +28,16 @@ class CreateSetFactory extends AbstractNodeViewTaskFactory {
      */
     @Override
     TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView cyNv) {
+        def api = apiManager.authorizedAPI(apiManager.default)
+        if (!api) {
+            errorAccessNotSet()
+            return
+        }
+
         def nodes = getNodesInState(cyNv.model, 'selected', true).collect {
             cyNv.model.getRow(it).get(NAME, String.class)
         }
         UI.createSet(nodes, { createDialog, name, desc, newItems ->
-            def api = apiManager.authorizedAPI(apiManager.default)
             WebResponse res = api.postSet(name, desc, newItems)
             println res.statusCode
             res.statusCode == 201
