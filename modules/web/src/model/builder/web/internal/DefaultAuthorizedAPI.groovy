@@ -201,7 +201,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse knowledgeNetworks() {
-        get(path: '/api/knowledge_networks', accept: JSON)
+        get(path: '/api/knowledge-networks', accept: JSON)
     }
 
     @Override
@@ -239,7 +239,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     JsonStreamResponse paths(knowledgeNetwork, from, to, Map params = [:]) {
-        def path = "/api/knowledge_networks/$knowledgeNetwork/paths"
+        def path = "/api/knowledge-networks/$knowledgeNetwork/paths"
         def (scheme, host, port) = convertHost(access.host)
         def query = (
             [
