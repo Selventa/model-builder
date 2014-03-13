@@ -94,7 +94,7 @@ class Activator extends AbstractCyActivator {
                 def importData = { id ->
                     WebResponse res = api.comparison(id)
                     cyr.dialogTaskManager.execute(
-                            new AddComparisonTableFactory(res.data.comparison, cyr).createTaskIterator())
+                            new AddComparisonTableFactory(res.data, cyr).createTaskIterator())
                 }
                 UI.addComparison(api, importData)
             }
@@ -117,7 +117,7 @@ class Activator extends AbstractCyActivator {
                 def importData = { id ->
                     WebResponse res = api.rcrResult(id)
                     cyr.dialogTaskManager.execute(
-                            new AddRcrResultTableFactory(res.data.rcr_result, cyr, dMapFac, pMapFac).createTaskIterator())
+                            new AddRcrResultTableFactory(res.data, cyr, dMapFac, pMapFac).createTaskIterator())
                 }
                 UI.addRcr(api, importData)
             }
@@ -202,7 +202,7 @@ class Activator extends AbstractCyActivator {
                     { host, email, pass ->
                         def res = apiManager.openAPI(host).apiKeys(email)
                         if (res.statusCode == 404) return null
-                        String apiKey = res.data.api_keys.find {String k -> k.startsWith('api:')}
+                        String apiKey = res.data.find {String k -> k.startsWith('api:')}
                         if (!apiKey) return null
 
                         AccessInformation access = new AccessInformation(false, host, email, apiKey, pass)

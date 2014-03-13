@@ -29,7 +29,11 @@ class AddRcrResultTable extends AbstractTask {
         createColumn(rcrTable, 'possible', Integer.class, true, null)
         cyRef.cyTableManager.addTable(rcrTable)
 
-        rcrResult.scores.each { JSONObject it ->
+        def slink = rcrResult._links.find { it.href.endsWith('scores') }
+        if (!slink) return
+
+        def scores = slink.val
+        scores.each { JSONObject it ->
             def cyRow = rcrTable.getRow(it.getString('mechanism'))
             cyRow.set('direction', it.getString('direction'))
             cyRow.set('richness', it.getDouble('richness'))

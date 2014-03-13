@@ -51,7 +51,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
                             delegate.contentType,
                             delegate.charset,
                             delegate.headers,
-                            delegate.json as Map
+                            delegate.json
                     )
                 else
                     old.invoke(delegate, c)
@@ -121,7 +121,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             if (match.find()) return match[0][1]
             match = (uri as String) =~ /\/api\/models\/(.+)/
             if (match.find()) return match[0][1]
-            match = (uri as String) =~ /\/api\/rcr_results\/(.+)/
+            match = (uri as String) =~ /\/api\/rcr-results\/(.+)/
             if (match.find()) return match[0][1]
         }
     }
@@ -133,7 +133,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse comparison(String id) {
-        get(path: "/api/comparisons/$id", accept: JSON)
+        get(path: "/api/comparisons/$id", query: ['navigate': 'subresource'], accept: JSON)
     }
 
     @Override
@@ -148,7 +148,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse rcrResult(String id) {
-        get(path: "/api/rcr_results/$id", accept: JSON)
+        get(path: "/api/rcr-results/$id", query: ['navigate': 'subresource'], accept: JSON)
     }
 
     @Override
@@ -292,8 +292,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def WebResponse addId(WebResponse response) {
         if (response.data) {
-            def map = response.data
-            map.model.id = this.id(uri: map.model.uri as String)
+            def model = response.data
+            model.id = this.id(uri: model.uri as String)
         }
         response
     }
@@ -368,7 +368,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         Mac mac = Mac.getInstance(HMAC);
         mac.init(keySpec);
 
-        String decodedPath = unhashed.path.replace('%22', '"').replace('%20', ' ')
+        //String decodedPath = unhashed.path.replace('%22', '"').replace('%20', ' ')
+        String decodedPath = unhashed.path
         String port = unhashed.port == -1 ? '' : ":${unhashed.port}"
         String toHash = "${unhashed.protocol}://${unhashed.host}${port}$decodedPath?$unhashed.query"
 

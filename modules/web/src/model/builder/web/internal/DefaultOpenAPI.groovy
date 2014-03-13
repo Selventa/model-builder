@@ -41,7 +41,7 @@ class DefaultOpenAPI implements OpenAPI {
                             delegate.contentType,
                             delegate.charset,
                             delegate.headers,
-                            delegate.json as Map
+                            delegate.json
                     )
                 else
                     oldAsType.invoke(delegate, c)

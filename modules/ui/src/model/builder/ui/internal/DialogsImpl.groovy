@@ -232,10 +232,7 @@ class DialogsImpl implements Dialogs {
                                 WebResponse res = api.knowledgeNetworks()
                                 switch(res.statusCode) {
                                     case 200:
-                                        def kns = res.data.knowledge_networks.
-                                                collect {
-                                                    it.name
-                                                }.sort() as String[]
+                                        def kns = res.data.collect { it.name }.sort() as String[]
                                         if (kns) {
                                             knowledge_network.model = new DefaultComboBoxModel(kns)
                                             knowledge_network.selectedItem = merged.knowledge_network

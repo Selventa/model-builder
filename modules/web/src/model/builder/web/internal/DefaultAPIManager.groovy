@@ -25,11 +25,11 @@ class DefaultAPIManager implements APIManager {
         authorizedAccess.find {it.defaultAccess}
     }
 
-//    @Override
-//    AuthorizedAPI authorizedAPI(String host) {
-//        def access = authorizedAccess.find {it.host == host}
-//        access ? new DefaultAuthorizedAPI(access) : null
-//    }
+    @Override
+    AuthorizedAPI authorizedAPI(String host) {
+        def access = authorizedAccess.find {it.host == host}
+        access ? new DefaultAuthorizedAPI(access) : null
+    }
 
     @Override
     AuthorizedAPI authorizedAPI(AccessInformation access) {

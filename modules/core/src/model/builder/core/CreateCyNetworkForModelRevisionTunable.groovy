@@ -44,14 +44,14 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
         }
 
         WebResponse res = api.modelRevisions(null, null, modelRev.uri).first()
-        def revision = res.data.revision
+        def revision = res.data.revision as Map
         def network = revision.network
 
         monitor.title = "Creating network for ${network.name} / ${modelRev.revision}"
         monitor.progress = 0.0d
         monitor.statusMessage = 'Adding network'
 
-        CyNetworkView cyNv = fromRevision(modelRev.uri, revision as Map, cyRef)
+        CyNetworkView cyNv = fromRevision(modelRev.uri, revision, cyRef)
 
         monitor.statusMessage = 'Creating view'
         cyRef.cyNetworkManager.addNetwork(cyNv.model)

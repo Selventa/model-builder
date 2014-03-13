@@ -23,7 +23,7 @@ class RetrieveModel implements Task {
         }
 
         WebResponse res = api.model(context['id'] as String)
-        context['model'] = res.data.model as Map
+        context['model'] = res.data
     }
 
     @Override

@@ -29,11 +29,15 @@ class AddComparisonTable extends AbstractTask {
         createColumn(cmpTable, 'p_value', Double.class, true, null)
         cyRef.cyTableManager.addTable(cmpTable)
 
-        comparison.measurements.each { JSONObject it ->
+        def mlink = comparison._links.find { it.href.endsWith('measurements')}
+        if (!mlink) return
+
+        def measurements = mlink.val
+        measurements.each { JSONObject it ->
             def cyRow = cmpTable.getRow(it.getString('id'))
-            cyRow.set('abundance', it.getDouble('abundance'))
-            cyRow.set('fold_change', it.getDouble('fold_change'))
-            cyRow.set('p_value', it.getDouble('p_value'))
+            cyRow.set('abundance', it.isNull('abundance') ? null : it.getDouble('abundance'))
+            cyRow.set('fold_change', it.isNull('fold_change') ? null : it.getDouble('fold_change'))
+            cyRow.set('p_value', it.isNull('p_value') ? null : it.getDouble('p_value'))
         }
 
         def selected = cyRef.cyApplicationManager.selectedNetworks
