@@ -14,6 +14,7 @@ import wslite.rest.Response
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 
 import static java.lang.System.currentTimeMillis
@@ -74,6 +75,26 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         }
         HttpURLConnection.metaClass.define {
             old = HttpURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
+            asType = { Class c ->
+                if (c == JsonStreamResponse) {
+                    if (!delegate.contentType.contains(JSON_MIME_TYPE)) {
+                        msg.error("${delegate.requestMethod} Error; Params '[path: '${delegate.url}']'; Content type is not $JSON_MIME_TYPE for stream")
+                        throw new IllegalArgumentException("stream is not json")
+                    }
+                    new JsonStreamResponse(
+                            delegate.responseCode,
+                            delegate.responseMessage,
+                            delegate.contentType,
+                            delegate.contentEncoding,
+                            delegate.headerFields,
+                            delegate.inputStream
+                    )
+                } else
+                    old.invoke(delegate, c)
+            }
+        }
+        HttpsURLConnection.metaClass.define {
+            old = HttpsURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
             asType = { Class c ->
                 if (c == JsonStreamResponse) {
                     if (!delegate.contentType.contains(JSON_MIME_TYPE)) {
