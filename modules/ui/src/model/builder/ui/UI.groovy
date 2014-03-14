@@ -267,7 +267,7 @@ class UI {
                                         swing.edt {
                                             createDialog.dispose()
                                             items.removeAll {true}
-                                            items.addAll(res.data.sets)
+                                            items.addAll(res.data)
                                         }
                                     }
                                     true
@@ -293,7 +293,7 @@ class UI {
             if (res.statusCode == 200) {
                 swing.edt {
                     items.removeAll {true}
-                    items.addAll(res.data.sets)
+                    items.addAll(res.data)
                 }
             }
         }
