@@ -363,7 +363,7 @@ class UI {
                         flowLayout(alignment: FlowLayout.RIGHT)
                         button(text: 'Add', preferredSize: [85, 25], actionPerformed: {
                             doOutside {
-                                def hostVal = host.text, emailVal = email.text, passVal = pass.password as String
+                                def hostVal = host.text.toLowerCase(), emailVal = email.text.toLowerCase(), passVal = pass.password as String
                                 def String apiKey = doAuthenticate.call(hostVal, emailVal, passVal)
                                 if (apiKey) {
                                     AccessInformation ai = new AccessInformation(false, hostVal, emailVal, apiKey, passVal)

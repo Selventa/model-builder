@@ -66,8 +66,10 @@ class DefaultOpenAPI implements OpenAPI {
 
     @Override
     WebResponse apiKeys(String email) {
+        if (!email) throw new IllegalArgumentException("email must not be null")
+
         try {
-            client.get(path: "/api/apikeys/users/$email") as WebResponse
+            client.get(path: "/api/apikeys/users/${email.toLowerCase()}") as WebResponse
         } catch (HTTPClientException e) {
             String msgLog = "GET Error; Params '[path: '/api/apikeys/users/$email']'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
