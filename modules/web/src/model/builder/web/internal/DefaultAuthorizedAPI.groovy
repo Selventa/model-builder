@@ -45,16 +45,17 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         Response.metaClass.define {
             old = Response.metaClass.getMetaMethod("asType", [Class] as Class[])
             asType = { Class c ->
-                if (c == WebResponse)
+                if (c == WebResponse) {
+                    def data = delegate.statusCode == 404 ? [] : delegate.json
                     new WebResponse(
                             delegate.statusCode,
                             delegate.statusMessage,
                             delegate.contentType,
                             delegate.charset,
                             delegate.headers,
-                            delegate.json
+                            data
                     )
-                else
+                } else
                     old.invoke(delegate, c)
             }
         }
@@ -285,7 +286,17 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse sets() {
-        get(path: '/api/sets', accept: JSON)
+        try {
+            client.get(path: '/api/sets', accept: JSON) as WebResponse
+        } catch (HTTPClientException e) {
+            def res = e.response as WebResponse
+            if (res.statusCode == 404) return res
+
+            String msgLog = "GET Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
+            msg.error(msgLog, e)
+            if (res.statusCode == 500) throw e
+            res
+        }
     }
 
     @Override
