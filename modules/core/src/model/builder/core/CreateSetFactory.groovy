@@ -28,7 +28,7 @@ class CreateSetFactory extends AbstractNodeViewTaskFactory {
      */
     @Override
     TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView cyNv) {
-        def api = apiManager.authorizedAPI(apiManager.default)
+        def api = apiManager.byAccess(apiManager.default)
         if (!api) {
             errorAccessNotSet()
             return

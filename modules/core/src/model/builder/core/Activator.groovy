@@ -86,7 +86,7 @@ class Activator extends AbstractCyActivator {
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
                 if (!api) {
                     errorAccessNotSet()
                     return
@@ -109,7 +109,7 @@ class Activator extends AbstractCyActivator {
         // ... Add RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
                 if (!api) {
                     errorAccessNotSet()
                     return
@@ -132,7 +132,7 @@ class Activator extends AbstractCyActivator {
         // ... Import Model
         AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default);
+                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
                 if (!api) {
                     errorAccessNotSet()
                     return
@@ -206,7 +206,7 @@ class Activator extends AbstractCyActivator {
                         if (!apiKey) return null
 
                         AccessInformation access = new AccessInformation(false, host, email, apiKey, pass)
-                        AuthorizedAPI authAPI = apiManager.authorizedAPI(access)
+                        AuthorizedAPI authAPI = apiManager.byAccess(access)
                         res = authAPI.user(email)
                         switch(res.statusCode) {
                             case 200:
@@ -230,7 +230,7 @@ class Activator extends AbstractCyActivator {
         Dialogs dialogs = getService(bc, Dialogs.class)
         AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+                AuthorizedAPI api = apiManager.byAccess(apiManager.default)
                 if (!api) {
                     errorAccessNotSet()
                     return

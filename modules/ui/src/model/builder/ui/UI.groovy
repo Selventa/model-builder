@@ -181,7 +181,7 @@ class UI {
         swing.registerBeanFactory('jxList', JXList.class)
         swing.registerBeanFactory('jxTable', JXTable.class)
 
-        AuthorizedAPI api = mgr.authorizedAPI(mgr.default)
+        AuthorizedAPI api = mgr.byAccess(mgr.default)
         if (!api) {
             errorAccessNotSet()
             return

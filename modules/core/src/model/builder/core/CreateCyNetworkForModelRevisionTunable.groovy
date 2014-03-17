@@ -36,7 +36,7 @@ class CreateCyNetworkForModelRevisionTunable extends AbstractNetworkTask {
     @Override
     void run(TaskMonitor monitor) throws Exception {
         def host = new URI(modelRev.uri as String).host
-        def api = apiManager.authorizedAPI(host)
+        def api = apiManager.byHost(host)
         if (!api) {
             msg.error("Missing SDP Configuration for ${host}.  ")
             throw new IllegalStateException("Missing SDP Configuration for ${host}.  " +

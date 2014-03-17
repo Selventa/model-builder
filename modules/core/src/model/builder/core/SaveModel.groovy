@@ -33,7 +33,7 @@ class SaveModel extends AbstractNetworkViewTask {
      */
     @Override
     void run(TaskMonitor monitor) throws Exception {
-        AuthorizedAPI api = apiManager.authorizedAPI(apiManager.default)
+        AuthorizedAPI api = apiManager.byAccess(apiManager.default)
         if (!api) {
             errorAccessNotSet()
             return

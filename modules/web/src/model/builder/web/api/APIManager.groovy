@@ -4,9 +4,9 @@ interface APIManager {
 
     AccessInformation getDefault()
 
-    AuthorizedAPI authorizedAPI(String host)
+    AuthorizedAPI byHost(String host)
 
-    AuthorizedAPI authorizedAPI(AccessInformation access)
+    AuthorizedAPI byAccess(AccessInformation access)
 
     OpenAPI openAPI(String host)
 
