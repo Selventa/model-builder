@@ -13,8 +13,7 @@ class MessagePopups {
     static void errorAccessNotSet() {
         def swing = new SwingBuilder()
         String msg = "An SDP server has not been configured or set as default.\n\n" +
-                     "Open Apps -> SDP -> Models -> Import " +
-                     "(shortcut: Ctrl + Alt + M)"
+                     "Open Apps -> SDP -> Configure (shortcut: Ctrl + Alt + O)"
         swing.optionPane(message: msg, messageType: ERROR_MESSAGE).
                 createDialog(null, 'Connection Error').setVisible(true)
     }
