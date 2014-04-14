@@ -1,5 +1,6 @@
 package model.builder.core
 
+import model.builder.ui.MessagePopups
 import model.builder.web.api.APIManager
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
@@ -8,6 +9,9 @@ import org.cytoscape.task.AbstractNetworkViewTask
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import wslite.http.HTTPClientException
 
 import static model.builder.core.ModelUtil.fromView
 import static model.builder.ui.MessagePopups.errorAccessNotSet
@@ -17,8 +21,10 @@ import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
 
 class SaveModel extends AbstractNetworkViewTask {
 
+    private static final Logger msg = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+
     // accessed by cytoscape
-    @Tunable(description="Revision summary")
+    @Tunable(description="Revision comment")
     public String summary = ''
 
     private final APIManager apiManager
@@ -77,6 +83,11 @@ class SaveModel extends AbstractNetworkViewTask {
                                     String comment, Map network) {
         WebResponse res = api.model(modelId)
         def model = res.data
+        if (!model && res.statusCode == 404) {
+            MessagePopups.modelMissingOnServer(network.name)
+            throw new RuntimeException("Model \"${network.name}\" was not found on SDP.")
+        }
+
         def nextURI = model.links.find {it.rel == 'next_revision'}.uri
         def path = new URI(nextURI).path
         res = api.putModelRevision(path, network, comment)

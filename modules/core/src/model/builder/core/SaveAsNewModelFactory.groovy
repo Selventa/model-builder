@@ -19,11 +19,6 @@ class SaveAsNewModelFactory implements NetworkViewTaskFactory {
 
     @Override
     boolean isReady(CyNetworkView cyNv) {
-        if (!(cyNv && cyNv.model))
-            false
-        else {
-            def cyN = cyNv.model
-            cyN.getRow(cyN).isSet('uri')
-        }
+        cyNv && cyNv.model
     }
 }

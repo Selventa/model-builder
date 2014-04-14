@@ -21,8 +21,8 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
     // accessed by cytoscape
     public String newName = null
     public String newDescription = null
-    @Tunable(description="Revision summary")
-    public String summary = ''
+    @Tunable(description="Comment")
+    public String comment = ''
 
     private final APIManager apiManager
 
@@ -84,7 +84,7 @@ class SaveAsNewModel extends AbstractNetworkViewTask {
         if (cyN.getRow(cyN).isSet('uri'))
             cyN.getRow(cyN).set('uri', null)
 
-        def uri = newModel(api, summary, network)
+        def uri = newModel(api, comment, network)
         createColumn(cyN.getTable(CyNetwork.class, LOCAL_ATTRS), 'uri',
                 String.class, true, '')
         successMessage("The new model, \"${newName}\", was " +

@@ -27,8 +27,18 @@ class MessagePopups {
                 createDialog(null, 'Connection Error').setVisible(true)
     }
 
+    static void modelMissingOnServer(String modelName) {
+        String msg = "The model \"$modelName\" could not be retrieved from the SDP.\n" +
+                     "It may have been recently deleted."
+        errorMessage(msg)
+    }
+
     static void successMessage(String msg) {
         userMessages.info(msg)
+    }
+
+    static void errorMessage(String msg) {
+        userMessages.error(msg)
     }
 
     /**

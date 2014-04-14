@@ -175,24 +175,24 @@ class Activator extends AbstractCyActivator {
                 title: 'Import Revision'
         ] as Properties)
 
-        // ... Save Model (New revision)
+        // ... Save (New revision)
         registerService(bc, new SaveModelFactory(cyr, apiManager),
                 NetworkViewTaskFactory.class, [
                 id: 'apps_sdp.models.save_revision',
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
-                title: 'Save Revision',
+                title: 'Save',
                 accelerator: 'control alt S'
         ] as Properties)
 
-        // ... Save as New Model (New model)
+        // ... Save as (New model)
         registerService(bc, new SaveAsNewModelFactory(cyr, apiManager),
                 NetworkViewTaskFactory.class, [
                 id: 'apps_sdp.models.save_as_new_model',
                 preferredMenu: 'Apps.SDP.Models',
                 menuGravity: 103.0,
-                title: 'Save as New Model',
-                accelerator: 'control shift S'
+                title: 'Save As',
+                accelerator: 'control alt shift S'
         ] as Properties)
 
         // ... Add Configure
