@@ -5,6 +5,7 @@ import model.builder.web.api.APIManager
 import model.builder.web.internal.DefaultAPIManager
 import org.cytoscape.application.CyApplicationConfiguration
 import org.cytoscape.service.util.AbstractCyActivator
+import org.openbel.ws.api.WsManager
 import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,7 +22,9 @@ class Activator extends AbstractCyActivator {
         CyApplicationConfiguration cyAppConfig = getService(bc, CyApplicationConfiguration.class)
         File cfg = cyAppConfig.getAppConfigurationDirectoryLocation(Activator.class)
         JsonStream.instance.initializeFactory()
-        APIManager apiManager = new DefaultAPIManager(cfg)
+
+        WsManager wsManager = getService(bc, WsManager.class)
+        APIManager apiManager = new DefaultAPIManager(cfg, wsManager)
         registerService(bc, apiManager, APIManager.class, [:] as Properties)
 
         setLoggingExceptionHandler()

@@ -43,6 +43,7 @@ subprojects {
     }
   }
   dependencies {
+    provided fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR/org/apache/felix", include: '**/*.jar')
     provided fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR/org/cytoscape", include: '**/*.jar')
     provided fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR/org/eclipse/osgi", include: '**/*.jar')
   }
@@ -177,6 +178,7 @@ project('modules/core') {
         model.builder.ui,
         model.builder.web.api,
         org.osgi.framework,
+        org.osgi.service.event,
         org.slf4j;version="[1,2)",
         javax.accessibility,
         wslite.json,
@@ -280,6 +282,7 @@ project('modules/web') {
       "$rootDir/libs/compile/commons-codec-1.8.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-wslite-0.8.0.jar",
+      "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
       "$rootDir/libs/compile/jackson-core-2.2.3.jar",
@@ -315,6 +318,7 @@ project('modules/web') {
         org.cytoscape.service.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
+        org.openbel.ws.api,
         model.builder.common,
         model.builder.web.api,
         org.osgi.framework,

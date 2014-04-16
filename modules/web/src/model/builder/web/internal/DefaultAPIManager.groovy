@@ -4,16 +4,23 @@ import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.OpenAPI
+import org.openbel.ws.api.WsManager
+
+import static String.format;
 
 class DefaultAPIManager implements APIManager {
 
+    static final String SDP_OPENBEL_URL = '%s://%s/openbel-ws/belframework/'
+
     final File configDir
+    final WsManager wsManager
 
     def authorizedAccess = [] as Set<AccessInformation>
     def openMap = [:] as Map<String, OpenAPI>
 
-    DefaultAPIManager(File configDir) {
+    DefaultAPIManager(File configDir, WsManager wsManager = null) {
         this.configDir = configDir
+        this.wsManager = wsManager
         if (!configDir.exists()) {
             configDir.mkdirs()
         }
@@ -60,6 +67,7 @@ class DefaultAPIManager implements APIManager {
     public void saveConfiguration(Set<AccessInformation> accessSet) {
         authorizedAccess = accessSet
         write(new File(configDir, 'config.props'))
+        syncWsManager()
     }
 
     private void read(File configFile) {
@@ -69,6 +77,17 @@ class DefaultAPIManager implements APIManager {
             authorizedAccess = props.collect { k, v ->
                 def (defaultAccess, host, email, apiKey, privateKey) = v.toString().split(/,/)
                 new AccessInformation(defaultAccess.toBoolean(), host, email, apiKey, privateKey)
+            }
+            syncWsManager()
+        }
+    }
+
+    private void syncWsManager() {
+        if (wsManager) {
+            all().collect {
+                belURI(it.host)
+            }.each {
+                wsManager.add(new URI(it))
             }
         }
     }
@@ -82,5 +101,12 @@ class DefaultAPIManager implements APIManager {
             }
             props.store(new FileOutputStream(configFile), null)
         }
+    }
+
+    private static String belURI(String host) {
+        if (host == 'localhost')
+            format(SDP_OPENBEL_URL, 'http', (host + ':8080'))
+        else
+            format(SDP_OPENBEL_URL, 'https', host)
     }
 }
