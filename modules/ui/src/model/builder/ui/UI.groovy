@@ -435,12 +435,14 @@ class UI {
                 flowLayout(alignment: FlowLayout.RIGHT)
                 button(text: 'Cancel', preferredSize: [85, 25],
                        actionPerformed: {dialog.dispose()})
-                button(text: 'Save', preferredSize: [85, 25], actionPerformed: {
+                button(text: 'OK', preferredSize: [85, 25], actionPerformed: {
                     swing.doOutside {
                         configurationsTable.model.with {
                             def rows = rowsModel.value
                             onSave.call(rows as Set)
                         }
+                        the_dialog.dispose()
+                        msg.info('SDP configuration saved successfully.')
                     }
                 })
             }
