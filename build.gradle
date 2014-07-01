@@ -125,7 +125,8 @@ project('modules/core') {
       "$rootDir/libs/compile/groovy-stream-0.6.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
     testCompile files(
-      "$rootDir/libs/test/junit-4.11.jar")
+      "$rootDir/libs/test/junit-4.11.jar",
+      "$rootDir/libs/test/hamcrest-all-1.3.jar")
   }
 
   jar {

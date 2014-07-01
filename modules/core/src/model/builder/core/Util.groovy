@@ -81,6 +81,8 @@ class Util {
                     row.set(k, values)
                 } else {
                     v = (v == null || "$v" == "null") ? null : v
+                    if (col.type == Double.class && v instanceof Integer)
+                        v = v.toDouble()
                     row.set(k, v)
                 }
             }
@@ -96,9 +98,26 @@ class Util {
         }
     }
 
-    static Class<?> classReduce(values) {
+    static Class<?> classReduce(List values) {
         if (!values) return
-        values.find { it != null && "$it" != 'null' }?.class as Class<?>
+
+        // map values to their classes; drop null values
+        def nonNullClasses = values.
+                findAll { it != null && "$it" != 'null' }.
+                groupBy { it?.class }
+
+        // up-convert to BigDecimal for numerical values
+        if (nonNullClasses.size() == 2 &&
+                nonNullClasses.containsKey(Integer.class) &&
+                nonNullClasses.containsKey(Double.class)) {
+            return Double.class
+        }
+
+        // if value domain is empty or has multiple types; generalize as String
+        if (nonNullClasses.isEmpty() || nonNullClasses.size() > 1) return String.class
+
+        // return only class
+        nonNullClasses.keySet().first()
     }
 
     static CyColumn addData(String k, Object v, CyNetwork cyN,
