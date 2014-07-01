@@ -211,6 +211,7 @@ class ModelUtil {
             CyNode cyTarget = index[edge.tgt] ?: (index[edge.tgt] = cyN.addNode())
             def cyEdge = cyN.addEdge(cySource, cyTarget, true)
             cyN.getRow(cyEdge).set('interaction', edge.rel)
+            cyN.getRow(cyEdge).set(NAME, computeEdgeName(cyN, cyEdge, edge.rel))
 
             if (edge.evidence) {
                 def evTxt = new JsonBuilder(edge.evidence).toString()
@@ -237,5 +238,15 @@ class ModelUtil {
                     node.yloc as Double)
         }
         cyNv
+    }
+
+    private static String computeEdgeName(CyNetwork cyN, CyEdge cyE, def rel = null) {
+        def relationship = rel.toString() ?: cyN.getRow(cyE).get(INTERACTION, String.class)
+
+        [
+            cyN.getRow(cyE.source).get(NAME, String.class),
+            relationship,
+            cyN.getRow(cyE.target).get(NAME, String.class)
+        ].join(' ')
     }
 }
