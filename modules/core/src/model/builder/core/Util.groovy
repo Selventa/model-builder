@@ -1,7 +1,6 @@
 package model.builder.core
 
 import org.cytoscape.model.CyColumn
-import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyIdentifiable
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
