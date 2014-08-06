@@ -319,6 +319,7 @@ project('modules/web') {
         org.cytoscape.model;version="[3,4)",
         org.cytoscape.property;version="[3,4)",
         org.cytoscape.service.util;version="[3,4)",
+        org.openbel.framework.common;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
         org.openbel.ws.api,
@@ -331,7 +332,8 @@ project('modules/web') {
         wslite.soap,
         javax.crypto,
         javax.crypto.spec,
-        javax.net.ssl
+        javax.net.ssl,
+        javax.swing
       '''
       instruction 'Bundle-Activator', 'model.builder.web.Activator'
       instruction 'Private-Package', 'model.builder.web.internal'

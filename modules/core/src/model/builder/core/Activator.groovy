@@ -201,7 +201,8 @@ class Activator extends AbstractCyActivator {
                 UI.configuration(apiManager,
                     { host, email, pass ->
                         def res = apiManager.openAPI(host).apiKeys(email)
-                        if (res.statusCode == 404) return null
+                        if (res?.statusCode != 200) return null
+
                         String apiKey = res.data.find {String k -> k.startsWith('api:')}
                         if (!apiKey) return null
 
