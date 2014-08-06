@@ -27,10 +27,16 @@ class MessagePopups {
                 createDialog(null, 'Connection Error').setVisible(true)
     }
 
-    static void modelMissingOnServer(String modelName) {
-        String msg = "The model \"$modelName\" could not be retrieved from the SDP.\n" +
-                     "It may have been recently deleted."
-        errorMessage(msg)
+    static int modelConflict(String model, Integer oldRev, String newRevWho,
+                             String newRevComment, String newRevWhen) {
+        String msg = "Save failed for \"$model\" because this version is out of date (revision $oldRev).\n\n" +
+                "The latest saved revision is:\n" +
+                "\n\tUser: $newRevWho\n\tComment: $newRevComment" +
+                "\n\tDate: $newRevWhen" +
+                "\n\nYou will have to manually apply your changes to the latest saved revision.\n" +
+                "Then you may save the merged changes as a new revision." +
+                "\n\nWould you like to open the latest revision?"
+        showConfirmDialog(null, msg, "Revision conflict", YES_NO_OPTION);
     }
 
     static void successMessage(String msg) {

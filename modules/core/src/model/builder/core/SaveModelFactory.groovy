@@ -14,7 +14,7 @@ class SaveModelFactory implements NetworkViewTaskFactory {
 
     @Override
     TaskIterator createTaskIterator(CyNetworkView cyNv) {
-        new TaskIterator(new SaveModel(cyNv, apiManager))
+        new TaskIterator(new SaveModel(cyNv, cyRef, apiManager))
     }
 
     @Override
