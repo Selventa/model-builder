@@ -192,7 +192,7 @@ class ModelUtil {
         }
 
         if (network.metadata && "$network.metadata" != 'null')
-            setMetadata([network.metadata].findAll(), [cyN], locals)
+            setMetadata([network.metadata], [cyN], locals)
 
         // handle nodes
         def Map<Integer, CyNode> index = [:]
@@ -202,7 +202,7 @@ class ModelUtil {
             cyNode
         }
         locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
-        setMetadata(network.nodes.collect {it.metadata}.findAll(), cyNodes, locals)
+        setMetadata(network.nodes.collect {it.metadata}, cyNodes, locals)
 
         // handle edges
         locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
@@ -220,7 +220,7 @@ class ModelUtil {
             }
             cyEdge
         }
-        setMetadata(network.edges.collect {it.metadata}.findAll(), cyEdges, locals)
+        setMetadata(network.edges.collect {it.metadata}, cyEdges, locals)
 
         new Tuple(cyN, index)
     }

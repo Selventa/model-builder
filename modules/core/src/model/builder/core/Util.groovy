@@ -46,10 +46,25 @@ class Util {
         row.set(name, list)
     }
 
+    static void setMetadata(Map data, CyIdentifiable cyObj, CyTable cyTable) {
+        setMetadata([data], [cyObj], cyTable)
+    }
+
     /**
      * For CyNetwork, CyNode or CyEdge (multiple maps)
      */
     static void setMetadata(List data, List cyObjects, CyTable table) {
+        if (!cyObjects)
+            throw new NullPointerException("cyObjects cannot be null")
+
+        cyObjects = [cyObjects].flatten()
+        if (cyObjects.any { it == null })
+            throw new NullPointerException("cyObjects cannot contain nulls")
+
+        data = [data].flatten()
+        if (data.size() != cyObjects.size())
+            throw new IllegalArgumentException("data and cyObjects do not have same cardinality")
+
         Map gathered = gather(data)
         Map columns = gathered.collectEntries { k, v ->
             [k, classReduce(v)]
@@ -67,6 +82,8 @@ class Util {
         }
         [data, cyObjects].transpose().each {
             def (metadata, CyIdentifiable cyObj) = it
+            if (!metadata) return
+
             metadata.each { k, v ->
                 def col = columns[k] as CyColumn
                 CyRow row = table.getRow(cyObj.SUID)
@@ -90,8 +107,10 @@ class Util {
 
     static Map gather(List data) {
         data.inject([:].withDefault {[]}) { initial, next ->
-            next.each { k, v ->
-                initial[k] << v
+            if (next) {
+                next.each { k, v ->
+                    initial[k] << v
+                }
             }
             initial
         }

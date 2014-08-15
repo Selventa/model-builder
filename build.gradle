@@ -124,11 +124,12 @@ project('modules/core') {
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-stream-0.6.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
-    testCompile fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR/org/cytoscape", include: '**/*.jar')
-    testCompile fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR/org/eclipse/osgi", include: '**/*.jar')
+    testCompile fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR", include: '**/*.jar')
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar",
-      "$rootDir/libs/test/hamcrest-all-1.3.jar")
+      "$rootDir/libs/test/hamcrest-all-1.3.jar",
+      "$rootDir/libs/test/objenesis-1.0.jar",
+      "$rootDir/libs/test/mockito-core-1.9.5.jar")
   }
 
   jar {
