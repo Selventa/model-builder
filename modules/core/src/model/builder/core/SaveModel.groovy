@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory
 import javax.swing.JOptionPane
 import java.util.regex.Pattern
 
+import static model.builder.core.ModelUtil.addModelRevisionColumns
 import static model.builder.core.ModelUtil.fromRevision
 import static model.builder.core.ModelUtil.fromView
 import static model.builder.ui.MessagePopups.errorAccessNotSet
@@ -79,6 +80,7 @@ class SaveModel extends AbstractNetworkViewTask {
                 if (!success) {
                     errorMessage("Latest revision could not be retrieved.")
                 } else {
+                    addModelRevisionColumns(cyN)
                     cyN.getRow(cyN).set('who', latestRevision.who)
                     cyN.getRow(cyN).set('comment', latestRevision.comment)
                     cyN.getRow(cyN).set('when', latestRevision.when)

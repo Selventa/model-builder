@@ -64,16 +64,19 @@ class ModelUtil {
         def cyNv = fromNetwork(revision.network, cyr)
         def cyN = cyNv.model
 
-        def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
-        createColumn(locals, 'who', String.class, true, null)
-        createColumn(locals, 'when', String.class, true, null)
-        createColumn(locals, 'comment', String.class, true, null)
-        createColumn(locals, 'uri', String.class, true, null)
+        addModelRevisionColumns(cyN)
         cyN.getRow(cyN, LOCAL_ATTRS).set('who', revision.who)
         cyN.getRow(cyN, LOCAL_ATTRS).set('when', revision.when)
         cyN.getRow(cyN, LOCAL_ATTRS).set('comment', revision.comment)
         cyN.getRow(cyN, LOCAL_ATTRS).set('uri', uri)
         cyNv
+    }
+
+    static void addModelRevisionColumns(CyNetwork cyN) {
+        def locals = cyN.getTable(CyNetwork.class, LOCAL_ATTRS)
+        ['who', 'when', 'comment', 'uri'].collect {
+            createColumn(locals, it, String.class, true, null)
+        }
     }
 
     static Map fromView(CyNetwork cyN) {
