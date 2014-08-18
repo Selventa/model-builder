@@ -202,7 +202,9 @@ class ModelUtil {
             cyNode
         }
         locals = cyN.getTable(CyNode.class, LOCAL_ATTRS)
-        setMetadata(network.nodes.collect {it.metadata}, cyNodes, locals)
+
+        if (!cyNodes.empty)
+            setMetadata(network.nodes.collect {it.metadata}, cyNodes, locals)
 
         // handle edges
         locals = cyN.getTable(CyEdge.class, LOCAL_ATTRS)
@@ -220,7 +222,9 @@ class ModelUtil {
             }
             cyEdge
         }
-        setMetadata(network.edges.collect {it.metadata}, cyEdges, locals)
+
+        if (!cyEdges.empty)
+            setMetadata(network.edges.collect {it.metadata}, cyEdges, locals)
 
         new Tuple(cyN, index)
     }
