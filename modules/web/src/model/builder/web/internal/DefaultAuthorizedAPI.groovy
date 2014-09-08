@@ -1,5 +1,6 @@
 package model.builder.web.internal
 
+import model.builder.common.uri.URIBuilder
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.JsonStreamResponse
@@ -8,17 +9,13 @@ import org.apache.commons.codec.binary.Hex
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import wslite.http.HTTPClientException
-import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
-import wslite.rest.Response
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 
 import static java.lang.System.currentTimeMillis
-import static model.builder.web.api.Constant.*
 import static wslite.rest.ContentType.JSON
 import static model.builder.web.internal.Constant.HMAC
 
@@ -41,79 +38,6 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
         client.defaultContentTypeHeader = 'application/json'
         client.defaultCharset = 'UTF-8'
         client.httpClient.followRedirects = true
-
-        Response.metaClass.define {
-            old = Response.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == WebResponse) {
-                    def data = delegate.statusCode == 404 ? [] : delegate.json
-                    new WebResponse(
-                            delegate.statusCode,
-                            delegate.statusMessage,
-                            delegate.contentType,
-                            delegate.charset,
-                            delegate.headers,
-                            data
-                    )
-                } else
-                    old.invoke(delegate, c)
-            }
-        }
-        HTTPResponse.metaClass.define {
-            old = HTTPResponse.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == WebResponse)
-                    new WebResponse(
-                            delegate.statusCode,
-                            delegate.statusMessage,
-                            delegate.contentType,
-                            delegate.charset,
-                            delegate.headers
-                    )
-                else
-                    old.invoke(delegate, c)
-            }
-        }
-        HttpURLConnection.metaClass.define {
-            old = HttpURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == JsonStreamResponse) {
-                    if (!delegate.contentType.contains(JSON_MIME_TYPE)) {
-                        msg.error("${delegate.requestMethod} Error; Params '[path: '${delegate.url}']'; Content type is not $JSON_MIME_TYPE for stream")
-                        throw new IllegalArgumentException("stream is not json")
-                    }
-                    new JsonStreamResponse(
-                            delegate.responseCode,
-                            delegate.responseMessage,
-                            delegate.contentType,
-                            delegate.contentEncoding,
-                            delegate.headerFields,
-                            delegate.inputStream
-                    )
-                } else
-                    old.invoke(delegate, c)
-            }
-        }
-        HttpsURLConnection.metaClass.define {
-            old = HttpsURLConnection.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == JsonStreamResponse) {
-                    if (!delegate.contentType.contains(JSON_MIME_TYPE)) {
-                        msg.error("${delegate.requestMethod} Error; Params '[path: '${delegate.url}']'; Content type is not $JSON_MIME_TYPE for stream")
-                        throw new IllegalArgumentException("stream is not json")
-                    }
-                    new JsonStreamResponse(
-                            delegate.responseCode,
-                            delegate.responseMessage,
-                            delegate.contentType,
-                            delegate.contentEncoding,
-                            delegate.headerFields,
-                            delegate.inputStream
-                    )
-                } else
-                    old.invoke(delegate, c)
-            }
-        }
     }
 
     @Override
@@ -263,40 +187,39 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     JsonStreamResponse paths(knowledgeNetwork, from, to, Map params = [:]) {
         def path = "/api/knowledge-networks/$knowledgeNetwork/paths"
         def (scheme, host, port) = convertHost(access.host)
-        def query = (
-            [
-                from.collect {"from=$it"},
-                to.collect {"to=$it"},
-                "apikey=${access.apiKey}",
-                "ts=${currentTimeMillis() / 1000 as int}"
-            ] +
-            [
-                'direction', 'max_path_length', 'num_returned', 'fx_include',
-                'fx_exclude', 'rel_include', 'rel_exclude'
-            ].collect { key ->
-                if (params."$key") [params."$key"].flatten().collect {"$key=$it"}
-            }.findAll()
-        ).flatten().join('&')
 
-        def url = hashURL(toURL(scheme, host, port, path, query), access.privateKey)
-        URLConnection urlc = url.openConnection()
-        urlc.setRequestProperty('Accept-Encoding', 'gzip')
-        urlc as JsonStreamResponse
+        URIBuilder ub = new URIBuilder("$scheme://$host")
+        if (port) ub.setPort(port)
+        ub.setPath(path)
+
+        from.collect { ub.addQueryParam("from", it)}
+        to.collect { ub.addQueryParam("to", it)}
+        [
+            'direction', 'max_path_length', 'num_returned', 'fx_include',
+            'fx_exclude', 'rel_include', 'rel_exclude'
+        ].each { key ->
+            [params[key]].flatten().findAll().each { ub.addQueryParam(key, it)}
+        }
+
+        try {
+            def url = hashURL(ub.toURL(), access.apiKey, access.privateKey)
+            URLConnection urlc = url.openConnection()
+            urlc.setRequestProperty('Accept-Encoding', 'gzip')
+
+            def jsonResponse = new JsonStreamResponse((HttpURLConnection) urlc)
+            if (jsonResponse)
+                logPathsResponse(msg, access.apiKey, path, params, jsonResponse)
+
+            return jsonResponse
+        } catch(Throwable e) {
+            msg.error("Paths GET Exception", e)
+            throw e
+        }
     }
 
     @Override
     WebResponse sets() {
-        try {
-            client.get(path: '/api/sets', accept: JSON) as WebResponse
-        } catch (HTTPClientException e) {
-            def res = e.response as WebResponse
-            if (res.statusCode == 404) return res
-
-            String msgLog = "GET Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
-            msg.error(msgLog, e)
-            if (res.statusCode == 500) throw e
-            res
-        }
+        get(path: '/api/sets', accept: JSON)
     }
 
     @Override
@@ -332,7 +255,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def WebResponse get(Map params) {
         try {
-            client.get(params) as WebResponse
+            return new WebResponse(client.get(params))
         } catch (HTTPClientException e) {
             String msgLog = "GET Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
@@ -345,7 +268,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def WebResponse put(Map params, Closure content) {
         try {
-            client.put(params, content) as WebResponse
+            return new WebResponse(client.put(params, content))
         } catch (HTTPClientException e) {
             String msgLog = "PUT Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
@@ -358,7 +281,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def WebResponse post(Map params, Closure content) {
         try {
-            client.post(params, content) as WebResponse
+            return new WebResponse(client.post(params, content))
         } catch (HTTPClientException e) {
             String msgLog = "POST Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
@@ -371,7 +294,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     def WebResponse delete(Map params) {
         try {
-            client.delete(params) as WebResponse
+            return new WebResponse(client.delete(params))
         } catch (HTTPClientException e) {
             String msgLog = "DELETE Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
@@ -388,26 +311,49 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             ['https', host, '', '']
     }
 
-    static URL toURL(scheme, host, port, path, query) {
-        if (port)
-            new URI(scheme, null, host, port as int, path, query, null).toURL()
-        else
-            new URI(scheme, host, path, query, null).toURL()
-    }
-
-    static URL hashURL(URL unhashed, String privateKey) {
+    static URL hashURL(URL unhashed, String apiKey, String privateKey) {
         SecretKeySpec keySpec = new SecretKeySpec(privateKey.bytes, HMAC);
         Mac mac = Mac.getInstance(HMAC);
         mac.init(keySpec);
 
-        //String decodedPath = unhashed.path.replace('%22', '"').replace('%20', ' ')
         String decodedPath = unhashed.path
         String port = unhashed.port == -1 ? '' : ":${unhashed.port}"
-        String toHash = "${unhashed.protocol}://${unhashed.host}${port}$decodedPath?$unhashed.query"
+        def creds = "apikey=${apiKey}&ts=${currentTimeMillis() / 1000 as int}".toString()
+
+        String toHash = "${unhashed.protocol}://${unhashed.host}${port}$decodedPath?$unhashed.query&$creds"
 
         byte[] result = mac.doFinal(toHash.bytes);
         String hash = new String(Hex.encodeHex(result));
 
-        new URL("${unhashed}&hash=$hash")
+        new URL("${unhashed}&$creds&hash=$hash")
+    }
+
+    /**
+     * Logs response of /paths request.
+     *
+     * XXX This is temporary in order to diagnose paths request failures.
+     */
+    private static void logPathsResponse(Logger log, String apiKey, String path,
+                                         Map params, JsonStreamResponse jsonResponse) {
+        String info =  "Paths GET Success"
+        String warn =  "Paths GET Warning"
+        String error = "Paths GET Error"
+        String data = "Path: $path; " +
+                "API Key: ${apiKey}; " +
+                "Params: ${params?.toMapString()}; " +
+                "Status Code: ${jsonResponse?.statusCode};" +
+                "Status Message: ${jsonResponse?.statusMessage};" +
+                "Headers: ${jsonResponse?.headers?.toMapString()}"
+        switch(jsonResponse.statusCode) {
+            case 200:
+                log.info("$info; $data")
+                break
+            case 500..<600:
+                log.error("$error; $data")
+                break
+            default:
+                log.warn("$warn; $data")
+                break
+        }
     }
 }

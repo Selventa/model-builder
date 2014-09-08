@@ -297,12 +297,13 @@ class DialogsImpl implements Dialogs {
                                     'directlyDecreases', 'rateLimitingStepOf'
                             ]
                             JsonStreamResponse res = api.paths(knowledge_network.selectedItem, starts, ends, params)
-                            if (!res.jsonObjects.hasNext()) {
+                            def jsonObjectIterator = res.jsonObjectStream
+                            if (!jsonObjectIterator.hasNext()) {
                                 swing.edt {
                                     pathMsg.text = 'Zero paths found'
                                 }
                             } else {
-                                pathFacet(appMgr, res.jsonObjects, denormalizePath, addEdges)
+                                pathFacet(appMgr, jsonObjectIterator, denormalizePath, addEdges)
                                 pathMsg.text = ''
                             }
                         }

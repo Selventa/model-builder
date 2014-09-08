@@ -64,6 +64,8 @@ project('modules/common') {
       "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
       "$rootDir/libs/compile/jackson-core-2.2.3.jar",
       "$rootDir/libs/compile/jackson-databind-2.2.3.jar",
+      "$rootDir/libs/compile/httpclient-osgi-4.2.1.jar",
+      "$rootDir/libs/compile/httpcore-osgi-4.2.1.jar",
       "$rootDir/libs/compile/org.openbel.framework.common-3.0.0.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar",
@@ -86,6 +88,9 @@ project('modules/common') {
         groovy.lang;version="[2.1,3)",
         groovy.transform;version="[2.1,3)",
         groovy.util.slurpersupport;version="[2.1,3)",
+        org.apache.http;version="[4.2,5)",
+        org.apache.http.client.utils;version="[4.2,5)",
+        org.apache.http.message;version="[4.2,5)",
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
@@ -101,7 +106,8 @@ project('modules/common') {
       '''
       instruction 'Export-Package', '''
         model.builder.common,
-        model.builder.common.facet
+        model.builder.common.facet,
+        model.builder.common.uri
       '''
     }
   }
@@ -325,6 +331,7 @@ project('modules/web') {
         org.openbel.framework.ws.model;version="[3,4)",
         org.openbel.ws.api,
         model.builder.common,
+        model.builder.common.uri,
         model.builder.web.api,
         org.osgi.framework,
         org.slf4j;version="[1,2)",

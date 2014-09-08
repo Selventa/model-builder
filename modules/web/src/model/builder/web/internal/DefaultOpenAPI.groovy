@@ -5,9 +5,7 @@ import model.builder.web.api.WebResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import wslite.http.HTTPClientException
-import wslite.http.HTTPResponse
 import wslite.rest.RESTClient
-import wslite.rest.Response
 
 import javax.net.ssl.SSLContext
 import javax.swing.JOptionPane
@@ -35,37 +33,6 @@ class DefaultOpenAPI implements OpenAPI {
         client.defaultCharset = 'UTF-8'
         client.httpClient.connectTimeout = 10000
         client.httpClient.followRedirects = true
-        Response.metaClass.define {
-            old = Response.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == WebResponse)
-                    new WebResponse(
-                            delegate.statusCode,
-                            delegate.statusMessage,
-                            delegate.contentType,
-                            delegate.charset,
-                            delegate.headers,
-                            delegate.json
-                    )
-                else
-                    oldAsType.invoke(delegate, c)
-            }
-        }
-        HTTPResponse.metaClass.define {
-            old = HTTPResponse.metaClass.getMetaMethod("asType", [Class] as Class[])
-            asType = { Class c ->
-                if (c == WebResponse)
-                    new WebResponse(
-                            delegate.statusCode,
-                            delegate.statusMessage,
-                            delegate.contentType,
-                            delegate.charset,
-                            delegate.headers
-                    )
-                else
-                    oldAsType.invoke(delegate, c)
-            }
-        }
     }
 
 
@@ -76,7 +43,7 @@ class DefaultOpenAPI implements OpenAPI {
         if (!checkAPI(email)) return null
 
         try {
-            client.get(path: "/api/apikeys/users/${email.toLowerCase()}") as WebResponse
+            new WebResponse(client.get(path: "/api/apikeys/users/${email.toLowerCase()}"))
         } catch (HTTPClientException e) {
             String msgLog = "GET Error; Params '[path: '/api/apikeys/users/$email']'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
@@ -89,7 +56,7 @@ class DefaultOpenAPI implements OpenAPI {
 
     def checkAPI(String email) {
         try {
-            def res = client.get(path: "/api/time") as WebResponse
+            def res = new WebResponse(client.get(path: "/api/time"))
             return res.statusCode == 200
         } catch (HTTPClientException e) {
             def host = new URL(client.url).host
