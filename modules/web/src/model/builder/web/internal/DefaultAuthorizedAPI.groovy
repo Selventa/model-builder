@@ -346,7 +346,7 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
                 "Headers: ${jsonResponse?.headers?.toMapString()}"
         switch(jsonResponse.statusCode) {
             case 200:
-                log.info("$info; $data")
+                log.warn("$info; $data")
                 break
             case 500..<600:
                 log.error("$error; $data")
