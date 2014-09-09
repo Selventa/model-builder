@@ -1,112 +1,35 @@
 package model.builder.ui
 
+import model.builder.web.api.AccessInformation
+import model.builder.web.api.AuthorizedAPI
+import model.builder.web.internal.DefaultAuthorizedAPI
+
 import javax.swing.JFrame
-import javax.swing.JTable
 
-import static java.util.Arrays.asList
+import static java.util.Collections.emptyList
 
-Vector<String> columns = new Vector<>(asList("Name", "E-Mail", "Age"))
-Vector<Vector<String>> rows = new Vector<>(asList(
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-        ["Anthony Bargnesi", "abargnesi@gmail.com", "32"] as Vector<String>,
-        ["Kate Bargnesi", "kate.bargnesi@gmail.com", "32"] as Vector<String>,
-));
+AuthorizedAPI api = new DefaultAuthorizedAPI(
+        new AccessInformation(
+                true,
+                "selventa-sdp.selventa.com",
+                "abargnesi@selventa.com",
+                "api:abargnesi@selventa.com",
+                "superman"))
 
-JTable table = new JTable(rows, columns)
-TableScrollable tscroll = new TableScrollable(table)
+TableScrollable<Expando> tscroll = new SearchTableScrollable<>({
+    int offset, int length ->
+        def models = api.searchModels(start: offset, rows: length)
+        if (models.statusCode != 200) return emptyList()
+
+        def solr = models.data.response
+        solr.docs.collect {
+            new Expando(
+                    id: it['id'],
+                    name: it['name'],
+                    tags: it['tags'].collect { it['name'] }.sort().join(', ') ?: ''
+            )
+        }.sort {it.name}
+})
 
 JFrame frame = new JFrame("Test")
 frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE

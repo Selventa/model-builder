@@ -243,10 +243,10 @@ project('modules/ui') {
         javax.swing.border,
         javax.swing.event,
         javax.swing.plaf,
-        javax.print,
-        javax.print.attribute,
         javax.swing.table,
         javax.swing.text,
+        javax.print,
+        javax.print.attribute,
         model.builder.common,
         model.builder.common.facet,
         model.builder.web.api,
@@ -270,6 +270,7 @@ project('modules/ui') {
         org.slf4j;version="[1,2)"
       '''
       instruction 'Bundle-Activator', 'model.builder.ui.Activator'
+      instruction 'DynamicImport-Package', '*'
       instruction 'Export-Package', '''
         model.builder.ui,
         model.builder.ui.api
@@ -314,6 +315,7 @@ project('modules/web') {
       symbolicName = 'model.builder.web'
       instruction 'Import-Package', '''
         groovy.lang;version="[2.1,3)",
+        groovy.util;version="[2.1,3)",
         org.apache.commons.codec.binary,
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",

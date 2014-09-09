@@ -16,6 +16,8 @@ interface AuthorizedAPI {
 
     WebResponse rcrResult(String id)
 
+    WebResponse search(Map data)
+
     WebResponse searchComparisons(Map data)
 
     WebResponse searchModels(Map data)

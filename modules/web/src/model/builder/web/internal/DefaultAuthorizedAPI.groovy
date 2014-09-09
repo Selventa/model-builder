@@ -98,6 +98,25 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
+    WebResponse search(Map data) {
+        if (data == null) throw new NullPointerException("data cannot be null")
+        if (!data.type) throw new IllegalArgumentException("data must contain a type to search")
+
+        def params = [:]
+        params.q = "type:${data.type} AND name:${data.name ?: '*'}"
+        params.start = data.start ?: 0
+        params.rows = data.rows ?: 100
+
+        if (data.tags)
+            params.q += " AND (${data.tags.collect {"tags:\"$it\""}.join(' OR ')})"
+        if (data.species)
+            params.q += " AND (${data.species.collect {"species:\"$it\""}.join(' OR ')})"
+        if (data.sort) params.sort = data.sort
+
+        get(path: '/search', query: params, accept: JSON)
+    }
+
+    @Override
     WebResponse searchComparisons(Map data) {
         def params = [:]
         params.q = "type:comparison AND name:${data.name ?: '*'}"

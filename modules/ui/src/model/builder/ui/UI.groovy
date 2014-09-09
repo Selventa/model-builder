@@ -7,6 +7,7 @@ import groovy.swing.SwingBuilder
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.APIManager
+import model.builder.web.api.SearchProvider
 import model.builder.web.api.WebResponse
 import org.jdesktop.swingx.JXList
 import org.jdesktop.swingx.JXTable
@@ -455,8 +456,6 @@ class UI {
     }
 
     static JDialog importModel(AuthorizedAPI api, Closure importData) {
-        def swing = Activator.swing ?: new SwingBuilder()
-
         def tags = {
             WebResponse res = api.tags(['model'])
             def facetTags = res.data.facet_counts.facet_fields.tags
@@ -476,8 +475,8 @@ class UI {
                     rows: 100])
         }
 
-        def dialog = swing.dialog(title: 'Import Model')
-        dialog.contentPane.add(modelSearchPanel(swing, api, tags, search, importData))
+        def dialog = Activator.swing.dialog(title: 'Import Model')
+        dialog.contentPane.add(modelSearchPanel(Activator.swing, api, tags, search, importData))
         dialog.pack()
         dialog.size = [600, 400]
         dialog.locationRelativeTo = null
@@ -634,13 +633,14 @@ class UI {
 
     private static JPanel modelSearchPanel(SwingBuilder swing, AuthorizedAPI api, Closure tagsClosure,
                                            Closure searchClosure, Closure importClosure) {
+
         swing.panel() {
             def JTextField name
             def JCheckBox human
             def JCheckBox mouse
             def JCheckBox rat
             def JList tags
-            def JTable resultsTable
+            def SearchTableScrollable searchTable
             def JButton addButton
 
             gridBagLayout()
@@ -680,22 +680,10 @@ class UI {
                     fill: BOTH)) {
                 tags = list(items: [])
             }
-            scrollPane(constraints: gbc(
+            searchTable = searchTableScrollable(constraints: gbc(
                     gridx: 0, gridy: 3, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
-                    fill: BOTH)) {
-                resultsTable = table(id: 'resTable', selectionMode: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION) {
-                    tableModel {
-                        propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                        propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                        propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                        propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
-                    }
-                    resTable.selectionModel.addListSelectionListener({ evt ->
-                        addButton.enabled = true
-                    } as ListSelectionListener)
-                }
-            }
+                    fill: BOTH))
             panel(constraints: gbc(gridx: 0, gridy: 4, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_END, weightx: 1.0, weighty: 0.1,
                     fill: HORIZONTAL)) {
@@ -713,26 +701,14 @@ class UI {
                 })
                 button(text: 'Search', actionPerformed: {
                     swing.doOutside {
-                        WebResponse res = searchClosure.call([
+                        Map modelSearch = [
+                                type: 'model',
                                 name: name.text,
                                 tags: tags.selectedValuesList,
                                 human: human.selected, mouse: mouse.selected,
-                                rat: rat.selected])
-                        def solr = res.data.response
-                        def results = solr.docs.collect {
-                            it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
-                            it.id = api.id(searchKey: it.id)
-                            it
-                        }.sort {it.name}
-
-                        swing.edt {
-                            resultsTable.model = tableModel(list: results) {
-                                propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                                propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                                propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                                propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
-                            }
-                        }
+                                rat: rat.selected
+                        ]
+                        searchTable.searchProvider = new SearchProvider(api, modelSearch)
                     }
                 })
                 addButton = button(text: 'Import', enabled: false, actionPerformed: {

@@ -28,6 +28,7 @@ class Activator extends AbstractCyActivator {
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
         swing.registerBeanFactory('jxList', JXList.class)
         swing.registerBeanFactory('jxTable', JXTable.class)
+        swing.registerBeanFactory('searchTableScrollable', SearchTableScrollable.class)
 
         Dialogs dialogs = new DialogsImpl(swing)
         registerService(bc, dialogs, Dialogs.class, [:] as Properties)
