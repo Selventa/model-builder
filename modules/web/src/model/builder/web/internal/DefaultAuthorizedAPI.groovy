@@ -279,9 +279,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             String msgLog = "GET Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
 
-            def res = e.response as WebResponse
-            if (res.statusCode == 500) throw e
-            res
+            if (e.response.statusCode == 500) throw e
+            return new WebResponse(e.response)
         }
     }
 
@@ -292,9 +291,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             String msgLog = "PUT Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
 
-            def res = e.response as WebResponse
-            if (res.statusCode == 500) throw e
-            res
+            if (e.response.statusCode == 500) throw e
+            return new WebResponse(e.response)
         }
     }
 
@@ -305,9 +303,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             String msgLog = "POST Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
 
-            def res = e.response as WebResponse
-            if (res.statusCode == 500) throw e
-            res
+            if (e.response.statusCode == 500) throw e
+            return new WebResponse(e.response)
         }
     }
 
@@ -318,9 +315,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             String msgLog = "DELETE Error; Params '${params.toMapString()}'; Status ${e.response?.statusCode}; ${e.response?.statusMessage}"
             msg.error(msgLog, e)
 
-            def res = e.response as WebResponse
-            if (res.statusCode == 500) throw e
-            res
+            if (e.response.statusCode == 500) throw e
+            return new WebResponse(e.response)
         }
     }
 

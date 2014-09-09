@@ -706,7 +706,8 @@ class UI {
                                 name: name.text,
                                 tags: tags.selectedValuesList,
                                 human: human.selected, mouse: mouse.selected,
-                                rat: rat.selected
+                                rat: rat.selected,
+                                sort: 'name asc'
                         ]
                         searchTable.searchProvider = new SearchProvider(api, modelSearch)
                     }
