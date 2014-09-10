@@ -2,6 +2,7 @@ package model.builder.ui
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.gui.TableFormat
+import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventTableModel
 import groovy.swing.SwingBuilder
 import model.builder.web.api.AccessInformation
@@ -476,7 +477,7 @@ class UI {
         }
 
         def dialog = Activator.swing.dialog(title: 'Import Model')
-        dialog.contentPane.add(modelSearchPanel(Activator.swing, api, tags, search, importData))
+        dialog.contentPane.add(modelSearchPanel(Activator.swing, api, tags, importData))
         dialog.pack()
         dialog.size = [600, 400]
         dialog.locationRelativeTo = null
@@ -632,8 +633,7 @@ class UI {
     }
 
     private static JPanel modelSearchPanel(SwingBuilder swing, AuthorizedAPI api, Closure tagsClosure,
-                                           Closure searchClosure, Closure importClosure) {
-
+                                           Closure importClosure) {
         swing.panel() {
             def JTextField name
             def JCheckBox human
@@ -684,6 +684,9 @@ class UI {
                     gridx: 0, gridy: 3, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
                     fill: BOTH))
+            searchTable.table.selectionModel.addListSelectionListener({ evt ->
+                addButton.enabled = true
+            } as ListSelectionListener)
             panel(constraints: gbc(gridx: 0, gridy: 4, gridwidth: 4, gridheight: 1,
                     anchor: PAGE_END, weightx: 1.0, weighty: 0.1,
                     fill: HORIZONTAL)) {
@@ -713,8 +716,13 @@ class UI {
                     }
                 })
                 addButton = button(text: 'Import', enabled: false, actionPerformed: {
-                    def data = resultsTable.model.rowsModel.value
-                    def selected = resultsTable.selectedRows.collect(data.&get)
+                    JXTable table = searchTable.getTable()
+                    def data = ((AdvancedTableModel<Expando>) table.model)
+                    def selected = table.selectedRows.collect {
+                        int viewIndex ->
+                        def modelIndex = table.convertRowIndexToModel(viewIndex)
+                        data.getElementAt(modelIndex)
+                    }
 
                     swing.doOutside {
                         importClosure.call(selected)

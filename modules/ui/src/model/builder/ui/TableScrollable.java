@@ -3,37 +3,33 @@ package model.builder.ui;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.gui.TableFormat;
-import ca.odell.glazedlists.swing.AdvancedTableModel;
-import ca.odell.glazedlists.swing.DefaultEventTableModel;
-import org.jdesktop.swingx.JXTable;
-import org.jdesktop.swingx.search.TableSearchable;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.RowSorter.SortKey;
+import java.awt.*;
 import java.util.*;
-
-import static java.util.Arrays.asList;
+import java.util.List;
 
 abstract class TableScrollable<T> extends JScrollPane implements TableFormat<T>, ChangeListener {
 
-    private EventList<T> rows;
+    protected final EventList<T> rows;
     private boolean fullRead = false;
     private volatile boolean busyLoad = false;
+    private JTable table;
 
     public TableScrollable() {
         super();
-
         rows = new BasicEventList<T>();
-        AdvancedTableModel<T> model = new DefaultEventTableModel<T>(rows, this);
-        JXTable table = new JXTable(model);
-        table.setSearchable(new TableSearchable(table));
-        table.setColumnControlVisible(true);
-        table.getRowSorter().setSortKeys(asList(new SortKey(0, SortOrder.ASCENDING)));
-
-        setViewportView(table);
         viewport.addChangeListener(this);
+    }
+
+    @Override
+    public void setViewportView(Component view) {
+        super.setViewportView(view);
+        if (view == null || !(view instanceof JTable))
+            throw new IllegalArgumentException("view must be a type of JTable");
+        table = ((JTable) view);
     }
 
     abstract List<T> loadMoreRows(int numberOfRows);
@@ -67,6 +63,10 @@ abstract class TableScrollable<T> extends JScrollPane implements TableFormat<T>,
             }
         });
         fullRead = false;
+    }
+
+    public JTable getTable() {
+        return table;
     }
 
     @Override

@@ -78,7 +78,7 @@ class SearchProvider implements Iterator<Expando> {
         def solr = response.data.response
         def results = solr.docs.collect {
             new Expando(
-                    id: it['id'],
+                    id: api.id(searchKey: it.id),
                     name: it['name'],
                     description: it['description'] ?: '',
                     tags: it['tags'].collect { it['name'] }.sort().join(', ') ?: '',
