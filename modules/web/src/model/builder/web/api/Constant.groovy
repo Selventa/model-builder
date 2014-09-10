@@ -12,5 +12,9 @@ class Constant {
         "$field desc"
     }
 
+    static final String MODEL_TYPE = "model"
+    static final String COMPARISON_TYPE = "comparison"
+    static final String RCR_RESULT_TYPE = "rcr_result"
+
     private Constant() {}
 }

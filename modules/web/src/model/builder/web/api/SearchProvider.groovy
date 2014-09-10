@@ -66,7 +66,8 @@ class SearchProvider implements Iterator<Expando> {
         this.numFound = numFound
         this.resultsRead += MAX_ROWS_PER_REQUEST
         this.resultsPage = results.iterator()
-        return true
+
+        return this.numFound > 0
     }
 
     private static def runSearch(AuthorizedAPI api, Map search) {

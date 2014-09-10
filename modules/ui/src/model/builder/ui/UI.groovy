@@ -37,13 +37,14 @@ import java.awt.Window
 
 import static java.awt.GridBagConstraints.*
 import static model.builder.ui.MessagePopups.errorAccessNotSet
+import static model.builder.web.api.Constant.*
 
 class UI {
 
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
     static def createSet(List initialItems, Closure onCreate) {
-        def swing = Activator.swing ?: new SwingBuilder()
+        def swing = Activator.swing
 
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
         swing.registerBeanFactory('taskPane', JXTaskPane.class)
@@ -175,7 +176,7 @@ class UI {
     }
 
     static def manageSets(APIManager mgr) {
-        def swing = Activator.swing ?: new SwingBuilder()
+        def swing = Activator.swing
         swing.optionPane()
 
         swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
@@ -309,7 +310,7 @@ class UI {
 
     static def configuration(APIManager mgr,
                              Closure doAuthenticate, Closure onSave) {
-        def swing = Activator.swing ?: new SwingBuilder()
+        def swing = Activator.swing
         def dialog = swing.dialog(id: 'the_dialog', title: 'Configure SDP',
                                   defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE) {
 
@@ -457,169 +458,141 @@ class UI {
     }
 
     static JDialog importModel(AuthorizedAPI api, Closure importData) {
+        def swing = Activator.swing
         def tags = {
-            WebResponse res = api.tags(['model'])
+            WebResponse res = api.tags([MODEL_TYPE])
             def facetTags = res.data.facet_counts.facet_fields.tags
             facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
         }
 
-        def search = { data ->
-            def species = []
-            if (data.human) species << '9606'
-            if (data.mouse) species << '10090'
-            if (data.rat) species << '10116'
-
-            api.searchModels([
-                    name: data.name ? "*${data.name}*" : "",
-                    species: species,
-                    tags: (data.tags ?: []) as String[],
-                    rows: 100])
-        }
-
-        def dialog = Activator.swing.dialog(title: 'Import Model')
-        dialog.contentPane.add(modelSearchPanel(Activator.swing, api, tags, importData))
+        def dialog = swing.dialog(title: 'Import Model')
+        dialog.contentPane.add(modelSearchPanel(swing, api, tags, importData))
         dialog.pack()
-        dialog.size = [600, 400]
+        dialog.size = [800, 600]
         dialog.locationRelativeTo = null
         dialog.visible = true
         dialog
     }
 
     static JDialog addComparison(AuthorizedAPI api, Closure importData) {
-        def swing = Activator.swing ?: new SwingBuilder()
-
+        def swing = Activator.swing
         def tags = {
-            WebResponse res = api.tags(['comparison'])
+            WebResponse res = api.tags([COMPARISON_TYPE])
             def facetTags = res.data.facet_counts.facet_fields.tags
             facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
         }
 
-        def search = { data ->
-            api.searchComparisons([
-                name: data.name ? "*${data.name}*" : "",
-                tags: (data.tags ?: []) as String[],
-                rows: 100])
-        }
-
         def dialog = swing.dialog(title: 'Add Comparison')
-        dialog.contentPane.add(searchPanel(swing, api, tags, search, importData))
+        dialog.contentPane.add(searchPanel(COMPARISON_TYPE, swing, api, tags, importData))
         dialog.pack()
-        dialog.size = [600, 400]
+        dialog.size = [800, 600]
         dialog.locationRelativeTo = null
         dialog.visible = true
         dialog
     }
 
     static JDialog addRcr(AuthorizedAPI api, Closure importData) {
-        def swing = Activator.swing ?: new SwingBuilder()
+        def swing = Activator.swing
 
         def tags = {
-            WebResponse res = api.tags(['rcr_result'])
+            WebResponse res = api.tags([RCR_RESULT_TYPE])
             def facetTags = res.data.facet_counts.facet_fields.tags
             facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
         }
 
-        def search = { data ->
-            api.searchRcrResults([
-                    name: data.name ? "*${data.name}*" : "",
-                    tags: (data.tags ?: []) as String[],
-                    rows: 100])
-        }
-
         def dialog = swing.dialog(title: 'Add RCR Result')
-        dialog.contentPane.add(searchPanel(swing, api, tags, search, importData))
+        dialog.contentPane.add(searchPanel(RCR_RESULT_TYPE, swing, api, tags, importData))
         dialog.pack()
-        dialog.size = [600, 400]
+        dialog.size = [800, 600]
         dialog.locationRelativeTo = null
         dialog.visible = true
         dialog
     }
 
-    private static JPanel searchPanel(SwingBuilder swing, AuthorizedAPI api, Closure tagsClosure,
-                                      Closure searchClosure, Closure importClosure) {
+    private static JPanel searchPanel(String type, SwingBuilder swing,
+                                      AuthorizedAPI api, Closure tagsClosure,
+                                      Closure importClosure) {
         swing.panel() {
             def JTextField name
             def JList tags
-            def JTable resultsTable
+            def SearchTableScrollable searchTable
             def JButton addButton
 
-            gridBagLayout()
-            label(text: 'Name',
-                    constraints: gbc(
-                            gridx: 0, gridy: 0, gridwidth: 1, gridheight: 1,
-                            anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
+            borderLayout()
+            splitPane(orientation: JSplitPane.VERTICAL_SPLIT,
+                    dividerLocation: 200,
+                    constraints: BorderLayout.CENTER) {
+                panel {
+                    gridBagLayout()
+                    label(text: 'Name',
+                            constraints: gbc(
+                                    gridx: 0, gridy: 0, gridwidth: 1, gridheight: 1,
+                                    anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.0,
+                                    insets: [0, 15, 0, 0]))
+                    name = textField(constraints: gbc(
+                            gridx: 1, gridy: 0, gridwidth: 1, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.0,
+                            fill: HORIZONTAL))
+                    label(text: 'Tags', constraints: gbc(
+                            gridx: 0, gridy: 1, gridwidth: 1, gridheight: 1,
+                            anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.90,
                             insets: [0, 15, 0, 0]))
-            name = textField(constraints: gbc(
-                    gridx: 1, gridy: 0, gridwidth: 1, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
-                    fill: HORIZONTAL))
-            label(text: 'Tags', constraints: gbc(
-                    gridx: 0, gridy: 1, gridwidth: 1, gridheight: 1,
-                    anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
-                    insets: [0, 15, 0, 0]))
-            scrollPane(constraints: gbc(
-                    gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.35,
-                    fill: BOTH)) {
-                tags = list(items: [])
-            }
-            scrollPane(constraints: gbc(
-                    gridx: 0, gridy: 2, gridwidth: 2, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
-                    fill: BOTH)) {
-                resultsTable = table(id: 'resTable', selectionMode: ListSelectionModel.SINGLE_SELECTION) {
-                    tableModel {
-                        propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                        propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                        propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                        propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                    scrollPane(constraints: gbc(
+                            gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
+                            anchor: FIRST_LINE_START, weightx: 0.8, weighty: 0.90,
+                            fill: BOTH)) {
+                        tags = list(items: [])
                     }
-                    resTable.selectionModel.addListSelectionListener({ evt ->
+                }
+                panel {
+                    borderLayout()
+                    searchTable = searchTableScrollable(constraints: BorderLayout.CENTER)
+                    searchTable.table.selectionModel.addListSelectionListener({ evt ->
                         addButton.enabled = true
                     } as ListSelectionListener)
-                }
-            }
-            panel(constraints: gbc(gridx: 0, gridy: 3, gridwidth: 2, gridheight: 1,
-                    anchor: PAGE_END, weightx: 1.0, weighty: 0.1,
-                    fill: HORIZONTAL)) {
-                flowLayout(alignment: FlowLayout.RIGHT)
-                button(id: 'cancelButton', text: 'Cancel', actionPerformed: {
-                    def p = cancelButton.parent
-                    while (p != null) {
-                        if (p instanceof Window) {
-                            p.dispose()
-                            p = null
-                        } else {
-                            p = p.parent
-                        }
-                    }
-                })
-                button(text: 'Search', actionPerformed: {
-                    swing.doOutside {
-                        WebResponse res = searchClosure.call([name: name.text,
-                                                              tags: tags.selectedValuesList])
-                        def solr = res.data.response
-                        def results = solr.docs.collect {
-                            it.tags = it.tags.collect {it.name}.sort().join(', ') ?: ''
-                            it.id = api.id(searchKey: it.id)
-                            it
-                        }.sort {it.name}
-
-                        swing.edt {
-                            resultsTable.model = tableModel(list: results) {
-                                propertyColumn(header: 'Name' ,propertyName: 'name', editable: false)
-                                propertyColumn(header: 'Tags' ,propertyName: 'tags', editable: false)
-                                propertyColumn(header: 'Created' ,propertyName: 'created_at', editable: false)
-                                propertyColumn(header: 'Updated' ,propertyName: 'updated_at', editable: false)
+                    panel(constraints: BorderLayout.SOUTH) {
+                        flowLayout(alignment: FlowLayout.RIGHT)
+                        button(id: 'cancelButton', text: 'Cancel', actionPerformed: {
+                            def p = cancelButton.parent
+                            while (p != null) {
+                                if (p instanceof Window) {
+                                    p.dispose()
+                                    p = null
+                                } else {
+                                    p = p.parent
+                                }
                             }
-                        }
+                        })
+                        button(text: 'Search', actionPerformed: {
+                            swing.doOutside {
+                                def nameSearch = (name.text ?: "").trim()
+                                if (!(nameSearch.startsWith("*") && nameSearch.endsWith("*"))) {
+                                    nameSearch = "*$nameSearch*"
+                                }
+                                Map search = [
+                                        type: type,
+                                        name: nameSearch,
+                                        tags: tags.selectedValuesList,
+                                        sort: 'name asc'
+                                ]
+                                searchTable.searchProvider = new SearchProvider(api, search)
+                            }
+                        })
+                        addButton = button(text: 'Add', enabled: false, actionPerformed: {
+                            JXTable table = (JXTable) searchTable.getTable()
+                            def data = ((AdvancedTableModel<Expando>) table.model)
+                            def selected = table.selectedRows.collect {
+                                int viewIndex ->
+                                    def modelIndex = table.convertRowIndexToModel(viewIndex)
+                                    data.getElementAt(modelIndex)
+                            }
+
+                            swing.doOutside {
+                                selected.each { importClosure.call(it.id) }
+                            }
+                        })
                     }
-                })
-                addButton = button(text: 'Add', enabled: false, actionPerformed: {
-                    def data = resultsTable.model.rowsModel.value
-                    def selected = resultsTable.selectedRows.collect(data.&get)
-                    selected.each { importClosure.call(it.id) }
-                })
+                }
             }
 
             // load tags outside EDT
@@ -643,91 +616,100 @@ class UI {
             def SearchTableScrollable searchTable
             def JButton addButton
 
-            gridBagLayout()
-            label(text: 'Name',
-                    constraints: gbc(
-                            gridx: 0, gridy: 0, gridwidth: 1, gridheight: 1,
-                            anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
+            borderLayout()
+            splitPane(orientation: JSplitPane.VERTICAL_SPLIT,
+                      dividerLocation: 200,
+                      constraints: BorderLayout.CENTER) {
+                panel {
+                    gridBagLayout()
+                    label(text: 'Name',
+                            constraints: gbc(
+                                    gridx: 0, gridy: 0, gridwidth: 1, gridheight: 1,
+                                    anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.05,
+                                    insets: [0, 15, 0, 0]))
+                    name = textField(constraints: gbc(
+                            gridx: 1, gridy: 0, gridwidth: 3, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.05,
+                            fill: HORIZONTAL))
+                    label(text: 'Species',
+                            constraints: gbc(
+                                    gridx: 0, gridy: 1, gridwidth: 1, gridheight: 1,
+                                    anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.05,
+                                    insets: [0, 15, 0, 0]))
+                    human = checkBox(text: 'Human', constraints: gbc(
+                            gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.05,
+                            fill: HORIZONTAL))
+                    mouse = checkBox(text: 'Mouse', constraints: gbc(
+                            gridx: 2, gridy: 1, gridwidth: 1, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.05,
+                            fill: HORIZONTAL))
+                    rat = checkBox(text: 'Rat', constraints: gbc(
+                            gridx: 3, gridy: 1, gridwidth: 1, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.05,
+                            fill: HORIZONTAL))
+                    label(text: 'Tags', constraints: gbc(
+                            gridx: 0, gridy: 2, gridwidth: 1, gridheight: 1,
+                            anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.90,
                             insets: [0, 15, 0, 0]))
-            name = textField(constraints: gbc(
-                    gridx: 1, gridy: 0, gridwidth: 3, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
-                    fill: HORIZONTAL))
-            label(text: 'Species',
-                    constraints: gbc(
-                            gridx: 0, gridy: 1, gridwidth: 1, gridheight: 1,
-                            anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
-                            insets: [0, 15, 0, 0]))
-            human = checkBox(text: 'Human', constraints: gbc(
-                    gridx: 1, gridy: 1, gridwidth: 1, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
-                    fill: HORIZONTAL))
-            mouse = checkBox(text: 'Mouse', constraints: gbc(
-                    gridx: 2, gridy: 1, gridwidth: 1, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
-                    fill: HORIZONTAL))
-            rat =   checkBox(text: 'Rat', constraints: gbc(
-                    gridx: 3, gridy: 1, gridwidth: 1, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.15,
-                    fill: HORIZONTAL))
-            label(text: 'Tags', constraints: gbc(
-                    gridx: 0, gridy: 2, gridwidth: 1, gridheight: 1,
-                    anchor: FIRST_LINE_START, weightx: 0.05, weighty: 0.15,
-                    insets: [0, 15, 0, 0]))
-            scrollPane(constraints: gbc(
-                    gridx: 1, gridy: 2, gridwidth: 3, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.35,
-                    fill: BOTH)) {
-                tags = list(items: [])
-            }
-            searchTable = searchTableScrollable(constraints: gbc(
-                    gridx: 0, gridy: 3, gridwidth: 4, gridheight: 1,
-                    anchor: PAGE_START, weightx: 0.8, weighty: 0.85,
-                    fill: BOTH))
-            searchTable.table.selectionModel.addListSelectionListener({ evt ->
-                addButton.enabled = true
-            } as ListSelectionListener)
-            panel(constraints: gbc(gridx: 0, gridy: 4, gridwidth: 4, gridheight: 1,
-                    anchor: PAGE_END, weightx: 1.0, weighty: 0.1,
-                    fill: HORIZONTAL)) {
-                flowLayout(alignment: FlowLayout.RIGHT)
-                button(id: 'cancelButton', text: 'Cancel', actionPerformed: {
-                    def p = cancelButton.parent
-                    while (p != null) {
-                        if (p instanceof Window) {
-                            p.dispose()
-                            p = null
-                        } else {
-                            p = p.parent
-                        }
+                    scrollPane(constraints: gbc(
+                            gridx: 1, gridy: 2, gridwidth: 3, gridheight: 1,
+                            anchor: PAGE_START, weightx: 0.8, weighty: 0.90,
+                            fill: BOTH)) {
+                        tags = list(items: [])
                     }
-                })
-                button(text: 'Search', actionPerformed: {
-                    swing.doOutside {
-                        Map modelSearch = [
-                                type: 'model',
-                                name: name.text,
-                                tags: tags.selectedValuesList,
-                                human: human.selected, mouse: mouse.selected,
-                                rat: rat.selected,
-                                sort: 'name asc'
-                        ]
-                        searchTable.searchProvider = new SearchProvider(api, modelSearch)
-                    }
-                })
-                addButton = button(text: 'Import', enabled: false, actionPerformed: {
-                    JXTable table = searchTable.getTable()
-                    def data = ((AdvancedTableModel<Expando>) table.model)
-                    def selected = table.selectedRows.collect {
-                        int viewIndex ->
-                        def modelIndex = table.convertRowIndexToModel(viewIndex)
-                        data.getElementAt(modelIndex)
-                    }
+                }
+                panel {
+                    borderLayout()
+                    searchTable = searchTableScrollable(constraints: BorderLayout.CENTER)
+                    searchTable.table.selectionModel.addListSelectionListener({ evt ->
+                        addButton.enabled = true
+                    } as ListSelectionListener)
+                    panel(constraints: BorderLayout.SOUTH) {
+                        flowLayout(alignment: FlowLayout.RIGHT)
+                        button(id: 'cancelButton', text: 'Cancel', actionPerformed: {
+                            def p = cancelButton.parent
+                            while (p != null) {
+                                if (p instanceof Window) {
+                                    p.dispose()
+                                    p = null
+                                } else {
+                                    p = p.parent
+                                }
+                            }
+                        })
+                        button(text: 'Search', actionPerformed: {
+                            swing.doOutside {
+                                def nameSearch = (name.text ?: "").trim()
+                                if (!(nameSearch.startsWith("*") && nameSearch.endsWith("*"))) {
+                                    nameSearch = "*$nameSearch*"
+                                }
+                                Map modelSearch = [
+                                        type: MODEL_TYPE,
+                                        name: nameSearch,
+                                        tags: tags.selectedValuesList,
+                                        human: human.selected, mouse: mouse.selected,
+                                        rat: rat.selected,
+                                        sort: 'name asc'
+                                ]
+                                searchTable.searchProvider = new SearchProvider(api, modelSearch)
+                            }
+                        })
+                        addButton = button(text: 'Import', enabled: false, actionPerformed: {
+                            JXTable table = (JXTable) searchTable.getTable()
+                            def data = ((AdvancedTableModel<Expando>) table.model)
+                            def selected = table.selectedRows.collect {
+                                int viewIndex ->
+                                    def modelIndex = table.convertRowIndexToModel(viewIndex)
+                                    data.getElementAt(modelIndex)
+                            }
 
-                    swing.doOutside {
-                        importClosure.call(selected)
+                            swing.doOutside {
+                                importClosure.call(selected)
+                            }
+                        })
                     }
-                })
+                }
             }
 
             // load tags outside EDT
