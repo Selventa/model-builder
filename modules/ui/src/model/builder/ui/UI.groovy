@@ -688,10 +688,13 @@ class UI {
                                         type: MODEL_TYPE,
                                         name: nameSearch,
                                         tags: tags.selectedValuesList,
-                                        human: human.selected, mouse: mouse.selected,
-                                        rat: rat.selected,
                                         sort: 'name asc'
                                 ]
+                                def species = []
+                                if (human.selected) species << '9606'
+                                if (mouse.selected) species << '10090'
+                                if (rat.selected) species << '10116'
+                                if (!species.empty) modelSearch['species'] = species
                                 searchTable.searchProvider = new SearchProvider(api, modelSearch)
                             }
                         })
