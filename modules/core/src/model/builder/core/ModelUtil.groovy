@@ -1,11 +1,14 @@
 package model.builder.core
 
 import groovy.json.JsonBuilder
+import groovy.json.JsonException
 import groovy.json.JsonSlurper
 import org.cytoscape.model.CyEdge
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.view.model.CyNetworkView
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static model.builder.core.Util.*
 import static org.cytoscape.model.CyNetwork.*
@@ -23,6 +26,7 @@ class ModelUtil {
     static def EDGE_INELIGIBLE_FIELDS = ['SUID', 'name', 'shared name', 'selected',
                                          'interaction', 'shared interaction', 'kam.id',
                                          'evidence', 'linked']
+    private static final Logger msg = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
     /**
      * Validates model json format and returns a {@link Tuple} two of Boolean and
@@ -161,10 +165,14 @@ class ModelUtil {
             def metadata = scrubMetadata(rowData(cyEdge, cyN, locals), EDGE_INELIGIBLE_FIELDS)
             if (metadata) edge.metadata = metadata
 
-            if (cyN.getRow(cyEdge).isSet('evidence')) {
-                def evTxt = cyN.getRow(cyEdge).get('evidence', String.class)
-                def ev = new JsonSlurper().parseText(evTxt)
-                if (ev) edge.evidence = ev
+            def evidenceText = cyN.getRow(cyEdge).get('evidence', String.class)
+            if (evidenceText != null && !evidenceText.empty) {
+                try {
+                    def ev = new JsonSlurper().parseText(evidenceText)
+                    if (ev) edge.evidence = ev
+                } catch (JsonException ex) {
+                    msg.error("Error parsing evidence text as JSON.", ex)
+                }
             }
 
             edge
