@@ -6,6 +6,8 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
+import org.cytoscape.model.CyTableFactory
+import org.cytoscape.model.CyTableManager
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
@@ -30,6 +32,16 @@ class Util {
         name = "$name"
         table.getColumn(name) ?: (table.createListColumn(name, listElementType, immutable, defaultValue))
         table.getColumn(name)
+    }
+
+    static CyTable createTable(String name, String key, Class<?> type,
+                               boolean pub, boolean mut,
+                               CyTableManager manager, CyTableFactory factory) {
+        def table =
+                manager.getAllTables(false).find { it.title == name } ?:
+                factory.createTable(name, key, type, pub, mut)
+        manager.addTable(table)
+        table
     }
 
     static <T> void setAdd(CyRow row, String name, Class<T> type, T element) {

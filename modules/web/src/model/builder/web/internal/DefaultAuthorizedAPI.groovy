@@ -93,8 +93,8 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
-    WebResponse rcrResult(String id) {
-        get(path: "/api/rcr-results/$id", query: ['navigate': 'subresource'], accept: JSON)
+    WebResponse rcrResult(String id, Map params = [:]) {
+        get(path: "/api/rcr-results/$id", query: params, accept: JSON)
     }
 
     @Override

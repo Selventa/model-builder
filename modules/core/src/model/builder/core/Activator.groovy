@@ -1,7 +1,9 @@
 package model.builder.core
 
+import model.builder.core.model.builder.core.rcr.LoadRcrResourceFactory
 import model.builder.ui.UI
 import model.builder.ui.api.Dialogs
+import model.builder.ui.api.RCRPanelComponent
 import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
@@ -10,6 +12,7 @@ import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
 import org.cytoscape.application.swing.CySwingApplication
+import org.cytoscape.application.swing.CytoPanelComponent
 import org.cytoscape.event.CyEventHelper
 import org.cytoscape.io.read.InputStreamTaskFactory
 import org.cytoscape.io.util.StreamUtil
@@ -51,6 +54,8 @@ class Activator extends AbstractCyActivator {
 
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
+    static Expando CY;
+
     /**
      * {@inheritDoc}
      */
@@ -68,6 +73,7 @@ class Activator extends AbstractCyActivator {
                 OpenBrowser.class, MapTableToNetworkTablesTaskFactory.class,
                 VisualMappingManager.class, VisualStyleFactory.class
             ] as Class<?>[])
+        CY = cyr
 
         VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
@@ -80,6 +86,15 @@ class Activator extends AbstractCyActivator {
         registerService(bc, JsonNetworkReaderFactory.create(cyr, util), InputStreamTaskFactory.class,
             [readerId: 'modelJSONReader', readerDescription: 'Model JSON reader'] as Properties)
         registerAllServices(bc, JsonNetworkWriterFactory.create(util), [:] as Properties)
+
+        // Cyto Panels
+        RCRPanelComponent rcrPanel = new RCRPanelComponent(apiManager, { rcrId ->
+            if (apiManager.default) {
+                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
+                cyr.dialogTaskManager.execute(new LoadRcrResourceFactory(api, rcrId).createTaskIterator())
+            }
+        })
+        registerService(bc, rcrPanel, CytoPanelComponent.class, [:] as Properties)
 
         // ... Apps > SDP Menu Actions ...
 
@@ -115,7 +130,7 @@ class Activator extends AbstractCyActivator {
                     return
                 }
                 def importData = { id ->
-                    WebResponse res = api.rcrResult(id)
+                    WebResponse res = api.rcrResult(id, [navigate: 'subresource'])
                     cyr.dialogTaskManager.execute(
                             new AddRcrResultTableFactory(res.data, cyr, dMapFac, pMapFac).createTaskIterator())
                 }

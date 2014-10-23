@@ -509,7 +509,19 @@ class UI {
         dialog
     }
 
-    private static JPanel searchPanel(String type, SwingBuilder swing,
+    static JPanel rcrSearchPanel(AuthorizedAPI api, Closure onView) {
+        def swing = Activator.swing
+
+        def tags = {
+            WebResponse res = api.tags([RCR_RESULT_TYPE])
+            def facetTags = res.data.facet_counts.facet_fields.tags
+            facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
+        }
+
+        searchPanel(RCR_RESULT_TYPE, swing, api, tags, onView)
+    }
+
+    static JPanel searchPanel(String type, SwingBuilder swing,
                                       AuthorizedAPI api, Closure tagsClosure,
                                       Closure importClosure) {
         swing.panel() {
