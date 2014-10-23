@@ -41,8 +41,12 @@ class ApplyRcrResultStyle extends AbstractTask {
         cyRef.visualMappingManager.allVisualStyles.findAll {
             it.title == 'RCR Mechanisms - By Concordance'
         }.each(cyRef.visualMappingManager.&removeVisualStyle)
+
         def rcrVs = cyRef.visualStyleFactory.createVisualStyle(kamVs)
         rcrVs.title = 'RCR Mechanisms - By Concordance'
+
+        def lock = rcrVs.allVisualPropertyDependencies.find { it.idString == 'nodeSizeLocked' }
+        if (lock) lock.setDependency(false)
 
         DiscreteMapping selectColorMapping = dMapFac.createVisualMappingFunction(
                 'selected', Boolean.class, NODE_SELECTED_PAINT) as DiscreteMapping
