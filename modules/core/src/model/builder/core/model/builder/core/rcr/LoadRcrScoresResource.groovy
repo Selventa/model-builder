@@ -18,9 +18,6 @@ import static org.cytoscape.model.CyIdentifiable.SUID;
 
 /**
  * Task to load an SDP RCR scores resource into a Cytoscape table.
- * <br><br>
- * This task does not load subresources (e.g. scores, state changes) from the
- * RCR item.
  */
 class LoadRcrScoresResource extends AbstractTask {
 

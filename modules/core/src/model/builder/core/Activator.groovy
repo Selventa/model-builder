@@ -92,9 +92,10 @@ class Activator extends AbstractCyActivator {
         }
         RCRPanelComponent rcrPanel = new RCRPanelComponent(api,
                 {
-                    AuthorizedAPI currentAPI, String rcrId ->
+                    AuthorizedAPI currentAPI, List<String> rcrUIDs ->
+                    String id = rcrUIDs.first()
                     cyr.dialogTaskManager.execute(
-                            new LoadRcrResourceFactory(currentAPI, rcrId).createTaskIterator())
+                            new LoadRcrResourceFactory(currentAPI, id).createTaskIterator())
                 }
         )
         registerAllServices(bc, rcrPanel, [:] as Properties)

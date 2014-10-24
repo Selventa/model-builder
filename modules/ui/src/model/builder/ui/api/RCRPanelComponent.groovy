@@ -141,7 +141,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                             }
 
                             swing.doOutside {
-                                selected.each { onViewDetail.call(api, it.id) }
+                                onViewDetail.call(api, selected.collect { it.id })
                             }
                         })
                     }
