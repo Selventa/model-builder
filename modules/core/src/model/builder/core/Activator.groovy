@@ -1,6 +1,7 @@
 package model.builder.core
 
 import model.builder.core.model.builder.core.rcr.LoadRcrResourceFactory
+import model.builder.core.model.builder.core.rcr.PaintRcrScoresResourceFactory
 import model.builder.ui.UI
 import model.builder.ui.api.Dialogs
 import model.builder.ui.api.RCRPanelComponent
@@ -72,9 +73,10 @@ class Activator extends AbstractCyActivator {
                 VisualMappingManager.class, VisualStyleFactory.class
             ] as Class<?>[])
         CY = cyr
+        CY.passthroughMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)")
+        CY.discreteMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)")
+        CY.continuousMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)")
 
-        VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-        VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
@@ -96,7 +98,13 @@ class Activator extends AbstractCyActivator {
                     String id = rcrUIDs.first()
                     cyr.dialogTaskManager.execute(
                             new LoadRcrResourceFactory(currentAPI, id).createTaskIterator())
-                }
+                },
+                {
+                    AuthorizedAPI currentAPI, List<String> rcrUIDs ->
+                        String id = rcrUIDs.first()
+                        cyr.dialogTaskManager.execute(
+                                new PaintRcrScoresResourceFactory(currentAPI, id).createTaskIterator())
+                },
         )
         registerAllServices(bc, rcrPanel, [:] as Properties)
 

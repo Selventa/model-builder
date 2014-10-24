@@ -31,17 +31,19 @@ import static model.builder.web.api.Constant.RCR_RESULT_TYPE
 
 public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessInformationListener {
 
-    private SwingBuilder  swing;
-    private AuthorizedAPI api;
-    private JPanel        panel;
-    private JList         tags;
-    private Closure       onViewDetail;
+    private SwingBuilder  swing
+    private AuthorizedAPI api
+    private JPanel        panel
+    private JList         tags
+    private Closure       onViewDetail
+    private Closure       onPaintScores
 
-    RCRPanelComponent(AuthorizedAPI api, Closure onViewDetail) {
+    RCRPanelComponent(AuthorizedAPI api, Closure onViewDetail, Closure onPaintScores) {
         this.swing = Activator.swing
         this.api = api
-        this.onViewDetail = onViewDetail
-        this.panel = initUI();
+        this.onViewDetail  = onViewDetail
+        this.onPaintScores = onPaintScores
+        this.panel = initUI()
     }
 
     @Override
@@ -78,7 +80,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
         swing.panel() {
             def JTextField name
             def SearchTableScrollable searchTable
-            def JButton addButton
+            def JButton viewButton, paintButton
 
             borderLayout()
             splitPane(orientation: JSplitPane.VERTICAL_SPLIT,
@@ -110,7 +112,8 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                     borderLayout()
                     searchTable = searchTableScrollable(constraints: BorderLayout.CENTER)
                     searchTable.table.selectionModel.addListSelectionListener({ evt ->
-                        addButton.enabled = true
+                        viewButton.enabled = true
+                        paintButton.enabled = true
                     } as ListSelectionListener)
                     panel(constraints: BorderLayout.SOUTH) {
                         flowLayout(alignment: FlowLayout.RIGHT)
@@ -131,7 +134,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                                 }
                             }
                         })
-                        addButton = button(text: 'View Detail', enabled: false, actionPerformed: {
+                        viewButton = button(text: 'View', enabled: false, actionPerformed: {
                             JXTable table = (JXTable) searchTable.getTable()
                             def data = ((AdvancedTableModel<Expando>) table.model)
                             def selected = table.selectedRows.collect {
@@ -142,6 +145,19 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
 
                             swing.doOutside {
                                 onViewDetail.call(api, selected.collect { it.id })
+                            }
+                        })
+                        paintButton = button(text: 'Paint Scores', enabled: false, actionPerformed: {
+                            JXTable table = (JXTable) searchTable.getTable()
+                            def data = ((AdvancedTableModel<Expando>) table.model)
+                            def selected = table.selectedRows.collect {
+                                int viewIndex ->
+                                    def modelIndex = table.convertRowIndexToModel(viewIndex)
+                                    data.getElementAt(modelIndex)
+                            }
+
+                            swing.doOutside {
+                                onPaintScores.call(api, selected.collect { it.id })
                             }
                         })
                     }
