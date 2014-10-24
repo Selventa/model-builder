@@ -24,7 +24,7 @@ class LoadRcrResourceFactory implements TaskFactory {
 
     @Override
     TaskIterator createTaskIterator() {
-        new TaskIterator(new LoadRcrResource(api, id))
+        new TaskIterator(new LoadRcrResource(api, id), new LoadRcrScoresResource(api, id))
     }
 
     @Override
