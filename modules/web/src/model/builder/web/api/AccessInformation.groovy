@@ -1,10 +1,12 @@
 package model.builder.web.api
 
+import groovy.transform.AutoClone
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.TupleConstructor
 
 @TupleConstructor
 @EqualsAndHashCode(cache = true)
+@AutoClone
 class AccessInformation {
 
     boolean defaultAccess

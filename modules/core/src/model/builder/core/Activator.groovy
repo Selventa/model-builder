@@ -12,7 +12,6 @@ import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
 import org.cytoscape.application.swing.CySwingApplication
-import org.cytoscape.application.swing.CytoPanelComponent
 import org.cytoscape.event.CyEventHelper
 import org.cytoscape.io.read.InputStreamTaskFactory
 import org.cytoscape.io.util.StreamUtil
@@ -37,7 +36,6 @@ import org.cytoscape.view.vizmap.VisualStyleFactory
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
-import org.openbel.ws.api.WsManager
 import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,7 +45,7 @@ import java.awt.event.ActionEvent
 
 import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.common.Constant.setLoggingExceptionHandler
-import static model.builder.core.Util.cyReference
+import static model.builder.common.Util.cyReference
 import static model.builder.ui.MessagePopups.errorAccessNotSet;
 
 class Activator extends AbstractCyActivator {
@@ -88,30 +86,35 @@ class Activator extends AbstractCyActivator {
         registerAllServices(bc, JsonNetworkWriterFactory.create(util), [:] as Properties)
 
         // Cyto Panels
-        RCRPanelComponent rcrPanel = new RCRPanelComponent(apiManager, { rcrId ->
-            if (apiManager.default) {
-                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
-                cyr.dialogTaskManager.execute(new LoadRcrResourceFactory(api, rcrId).createTaskIterator())
-            }
-        })
-        registerService(bc, rcrPanel, CytoPanelComponent.class, [:] as Properties)
+        AuthorizedAPI api = null
+        if (apiManager.default) {
+            api = apiManager.byAccess(apiManager.default)
+        }
+        RCRPanelComponent rcrPanel = new RCRPanelComponent(api,
+                {
+                    AuthorizedAPI currentAPI, String rcrId ->
+                    cyr.dialogTaskManager.execute(
+                            new LoadRcrResourceFactory(currentAPI, rcrId).createTaskIterator())
+                }
+        )
+        registerAllServices(bc, rcrPanel, [:] as Properties)
 
         // ... Apps > SDP Menu Actions ...
 
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
-                if (!api) {
+                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
+                if (!currentAPI) {
                     errorAccessNotSet()
                     return
                 }
                 def importData = { id ->
-                    WebResponse res = api.comparison(id)
+                    WebResponse res = currentAPI.comparison(id)
                     cyr.dialogTaskManager.execute(
                             new AddComparisonTableFactory(res.data, cyr).createTaskIterator())
                 }
-                UI.addComparison(api, importData)
+                UI.addComparison(currentAPI, importData)
             }
         }
         importComparison.menuGravity = 0.0
@@ -124,17 +127,17 @@ class Activator extends AbstractCyActivator {
         // ... Add RCR Result
         AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
-                if (!api) {
+                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
+                if (!currentAPI) {
                     errorAccessNotSet()
                     return
                 }
                 def importData = { id ->
-                    WebResponse res = api.rcrResult(id, [navigate: 'subresource'])
+                    WebResponse res = currentAPI.rcrResult(id, [navigate: 'subresource'])
                     cyr.dialogTaskManager.execute(
                             new AddRcrResultTableFactory(res.data, cyr, dMapFac, pMapFac).createTaskIterator())
                 }
-                UI.addRcr(api, importData)
+                UI.addRcr(currentAPI, importData)
             }
         }
         importRCR.menuGravity = 0.0
@@ -147,8 +150,8 @@ class Activator extends AbstractCyActivator {
         // ... Import Model
         AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {
-                AuthorizedAPI api = apiManager.byAccess(apiManager.default);
-                if (!api) {
+                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
+                if (!currentAPI) {
                     errorAccessNotSet()
                     return
                 }
@@ -171,7 +174,7 @@ class Activator extends AbstractCyActivator {
                         msg.error("Error retrieving ${it.name}", e)
                     }
                 }
-                UI.importModel(api, importModel)
+                UI.importModel(currentAPI, importModel)
             }
         }
         importModel.acceleratorKeyStroke = getKeyStroke('control alt M')
@@ -246,12 +249,12 @@ class Activator extends AbstractCyActivator {
         Dialogs dialogs = getService(bc, Dialogs.class)
         AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI api = apiManager.byAccess(apiManager.default)
-                if (!api) {
+                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default)
+                if (!currentAPI) {
                     errorAccessNotSet()
                     return
                 }
-                dialogs.pathSearch(cyr.cyApplicationManager, api, [:], { edges ->
+                dialogs.pathSearch(cyr.cyApplicationManager, currentAPI, [:], { edges ->
                     def cyN = cyr.cyApplicationManager.currentNetwork
                     edges.collect {
                         [it.source_node.label, it.relationship, it.target_node.label]

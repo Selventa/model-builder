@@ -209,16 +209,6 @@ class Util {
         }
     }
 
-    static Expando cyReference(BundleContext bc, Closure cyAct, Class<?>[] cyInterfaces) {
-        Expando e = new Expando()
-        cyInterfaces.each {
-            def impl = cyAct.call(bc, it)
-            def name = it.simpleName
-            e.setProperty(name[0].toLowerCase() + name[1..-1], impl)
-        }
-        e
-    }
-
     static def getOrCreateNode(CyNetwork cyN, String label) {
         getNode(cyN, label) ?: createNode(cyN, label)
     }

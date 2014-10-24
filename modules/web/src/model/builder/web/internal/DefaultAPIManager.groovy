@@ -4,6 +4,10 @@ import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.OpenAPI
+import model.builder.web.api.event.AddedAccessInformationEvent
+import model.builder.web.api.event.RemovedAccessInformationEvent
+import model.builder.web.api.event.SetDefaultAccessInformationEvent
+import org.cytoscape.event.CyEventHelper
 import org.openbel.ws.api.WsManager
 
 import static String.format;
@@ -15,11 +19,13 @@ class DefaultAPIManager implements APIManager {
     final File configDir
     final WsManager wsManager
 
-    def authorizedAccess = [] as Set<AccessInformation>
-    def openMap = [:] as Map<String, OpenAPI>
+    Set<AccessInformation> authorizedAccess = [] as Set<AccessInformation>
+    Map<String, OpenAPI> openMap = [:] as Map<String, OpenAPI>
+    CyEventHelper evtHelper
 
-    DefaultAPIManager(File configDir, WsManager wsManager = null) {
+    DefaultAPIManager(File configDir, CyEventHelper evtHelper, WsManager wsManager = null) {
         this.configDir = configDir
+        this.evtHelper = evtHelper
         this.wsManager = wsManager
         if (!configDir.exists()) {
             configDir.mkdirs()
@@ -60,14 +66,38 @@ class DefaultAPIManager implements APIManager {
 
     @Override
     Set<AccessInformation> all() {
-        authorizedAccess
+        authorizedAccess.collect { it.clone() }
     }
 
     @Override
     public void saveConfiguration(Set<AccessInformation> accessSet) {
+        // fire changes
+        fireEventsOnChange(evtHelper, this, authorizedAccess, accessSet)
+
+        // stateful change
         authorizedAccess = accessSet
+
+        // save
         write(new File(configDir, 'config.props'))
         syncWsManager()
+    }
+
+    protected static void fireEventsOnChange(CyEventHelper evtHelper,
+                                             APIManager mgr,
+                                             Set<AccessInformation> cur,
+                                             Set<AccessInformation> next) {
+        next.minus(cur).each {
+            evtHelper.fireEvent(new AddedAccessInformationEvent(mgr, it))
+        }
+        cur.minus(next).each {
+            evtHelper.fireEvent(new RemovedAccessInformationEvent(mgr, it))
+        }
+
+        AccessInformation curDefault = cur.find { it.defaultAccess }
+        AccessInformation nextDefault = next.find { it.defaultAccess }
+        if (!nextDefault.equals(curDefault)) {
+            evtHelper.fireEvent(new SetDefaultAccessInformationEvent(mgr, curDefault, nextDefault))
+        }
     }
 
     private void read(File configFile) {

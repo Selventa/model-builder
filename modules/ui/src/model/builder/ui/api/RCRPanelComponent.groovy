@@ -5,9 +5,12 @@ import groovy.swing.SwingBuilder
 import model.builder.ui.Activator
 import model.builder.ui.SearchTableScrollable
 import model.builder.web.api.APIManager
+import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.SearchProvider
 import model.builder.web.api.WebResponse
+import model.builder.web.api.event.SetDefaultAccessInformationEvent
+import model.builder.web.api.event.SetDefaultAccessInformationListener
 import org.cytoscape.application.swing.CytoPanelComponent
 import org.cytoscape.application.swing.CytoPanelName
 import org.jdesktop.swingx.JXTable
@@ -26,17 +29,29 @@ import java.awt.FlowLayout
 import static CytoPanelName.WEST
 import static model.builder.web.api.Constant.RCR_RESULT_TYPE
 
-public class RCRPanelComponent implements CytoPanelComponent {
+public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessInformationListener {
 
-    private APIManager apiManager;
-    private JPanel panel;
-    private Closure onViewDetail;
+    private SwingBuilder  swing;
+    private AuthorizedAPI api;
+    private JPanel        panel;
+    private JList         tags;
+    private Closure       onViewDetail;
 
-    RCRPanelComponent(APIManager apiManager, Closure onViewDetail) {
-        this.apiManager = apiManager
+    RCRPanelComponent(AuthorizedAPI api, Closure onViewDetail) {
+        this.swing = Activator.swing
+        this.api = api
         this.onViewDetail = onViewDetail
-
         this.panel = initUI();
+    }
+
+    @Override
+    void handleEvent(SetDefaultAccessInformationEvent event) {
+        APIManager mgr = event.source
+        AccessInformation newDefault = event.payloadCollection[1]
+        if (mgr && newDefault) {
+            api = mgr.byAccess(newDefault)
+            loadTags()
+        }
     }
 
     @Override
@@ -60,24 +75,8 @@ public class RCRPanelComponent implements CytoPanelComponent {
     }
 
     private JPanel initUI() {
-        SwingBuilder swing = Activator.swing
-
-        def tags = {
-            AuthorizedAPI api = apiManager.byAccess(apiManager.default)
-            WebResponse res = api.tags([RCR_RESULT_TYPE])
-            def facetTags = res.data.facet_counts.facet_fields.tags
-            facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
-        }
-
-        searchPanel(RCR_RESULT_TYPE, swing, apiManager, tags, onViewDetail)
-    }
-
-    static JPanel searchPanel(String type, SwingBuilder swing,
-                              APIManager apiManager, Closure loadTags,
-                              Closure onViewDetail) {
         swing.panel() {
             def JTextField name
-            def JList tags
             def SearchTableScrollable searchTable
             def JButton addButton
 
@@ -117,15 +116,13 @@ public class RCRPanelComponent implements CytoPanelComponent {
                         flowLayout(alignment: FlowLayout.RIGHT)
                         button(text: 'Search', actionPerformed: {
                             swing.doOutside {
-                                if (apiManager.byAccess(apiManager.default)) {
-                                    AuthorizedAPI api = apiManager.byAccess(apiManager.default)
-
+                                if (api) {
                                     def nameSearch = (name.text ?: "").trim()
                                     if (!(nameSearch.startsWith("*") && nameSearch.endsWith("*"))) {
                                         nameSearch = "*$nameSearch*"
                                     }
                                     Map search = [
-                                            type: type,
+                                            type: RCR_RESULT_TYPE,
                                             name: nameSearch,
                                             tags: tags.selectedValuesList,
                                             sort: 'name asc'
@@ -144,19 +141,25 @@ public class RCRPanelComponent implements CytoPanelComponent {
                             }
 
                             swing.doOutside {
-                                selected.each { onViewDetail.call(it.id) }
+                                selected.each { onViewDetail.call(api, it.id) }
                             }
                         })
                     }
                 }
             }
 
-            // load tags outside EDT
-            swing.doOutside {
-                def tagData = loadTags.call()
-                swing.edt {
-                    tags.listData = tagData
-                }
+            loadTags()
+        }
+    }
+
+    private void loadTags() {
+        // load tags outside EDT
+        swing.doOutside {
+            WebResponse res = api.tags([RCR_RESULT_TYPE])
+            def facetTags = res.data.facet_counts.facet_fields.tags
+            def tagData = facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
+            swing.edt {
+                tags.listData = tagData
             }
         }
     }
