@@ -42,6 +42,8 @@ class Tunables {
                     toString: { "All Networks" }
             )
         )
+        networkTunable.setPossibleValues(choices)
+        networkTunable.setSelectedValue(choices.first())
         networkTunable
     }
 
