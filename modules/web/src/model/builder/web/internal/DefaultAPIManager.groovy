@@ -10,7 +10,7 @@ import model.builder.web.api.event.SetDefaultAccessInformationEvent
 import org.cytoscape.event.CyEventHelper
 import org.openbel.ws.api.WsManager
 
-import static String.format;
+import static String.format
 
 class DefaultAPIManager implements APIManager {
 

@@ -1,17 +1,18 @@
 package model.builder.core
 
+import groovy.transform.TupleConstructor
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping
+import org.cytoscape.work.AbstractTask
+import org.cytoscape.work.TaskMonitor
 
-import java.awt.Color
+import java.awt.*
 
 import static model.builder.core.Util.concordanceColor
 import static model.builder.core.Util.createColumn
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*
-import groovy.transform.TupleConstructor
-import org.cytoscape.work.AbstractTask
-import org.cytoscape.work.TaskMonitor
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT
 
 @TupleConstructor
 class ApplyRcrResultStyle extends AbstractTask {

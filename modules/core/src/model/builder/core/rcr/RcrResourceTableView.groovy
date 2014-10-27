@@ -6,7 +6,7 @@ import org.cytoscape.model.CyTable
 import static model.builder.core.Activator.CY
 import static model.builder.core.Util.createColumn
 import static model.builder.core.Util.createTable
-import static Constant.*
+import static model.builder.core.rcr.Constant.*
 
 class RcrResourceTableView extends AbstractCyTableView<String, Map> {
 

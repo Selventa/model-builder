@@ -186,6 +186,7 @@ project('modules/core') {
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
         org.openbel.kamnav.core;version="[1,2)",
+        org.openbel.ws.api,
         model.builder.common,
         model.builder.ui,
         model.builder.ui.api,

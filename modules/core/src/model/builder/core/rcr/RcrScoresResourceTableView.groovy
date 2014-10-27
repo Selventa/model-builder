@@ -4,7 +4,8 @@ import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
 
 import static model.builder.core.Activator.CY
-import static model.builder.core.Util.*
+import static model.builder.core.Util.createColumn
+import static model.builder.core.Util.createTable
 import static model.builder.core.rcr.Constant.*
 
 class RcrScoresResourceTableView extends AbstractCyTableView<String, Map> {

@@ -1,6 +1,5 @@
 package model.builder.core
 
-import static org.cytoscape.model.CyNetwork.NAME
 import groovy.transform.TupleConstructor
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
@@ -10,6 +9,8 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskFactory
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.TaskMonitor
+
+import static org.cytoscape.model.CyNetwork.NAME
 
 @TupleConstructor
 class AddRcrResultTableFactory implements TaskFactory {

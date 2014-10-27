@@ -2,6 +2,7 @@ package model.builder.core
 
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.work.util.ListSingleSelection
+
 import static model.builder.core.Activator.CY
 import static org.cytoscape.model.CyNetwork.NAME
 import static org.cytoscape.model.CyNetwork.SELECTED

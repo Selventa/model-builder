@@ -4,8 +4,7 @@ import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 
-import java.awt.Color
-import java.awt.Paint
+import java.awt.*
 
 import static model.builder.core.Activator.CY
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR

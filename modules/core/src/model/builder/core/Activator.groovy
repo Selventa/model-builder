@@ -17,13 +17,8 @@ import org.cytoscape.application.swing.CySwingApplication
 import org.cytoscape.event.CyEventHelper
 import org.cytoscape.io.read.InputStreamTaskFactory
 import org.cytoscape.io.util.StreamUtil
-import org.cytoscape.model.CyNetworkFactory
-import org.cytoscape.model.CyNetworkManager
-import org.cytoscape.model.CyNetworkTableManager
-import org.cytoscape.model.CyTableFactory
-import org.cytoscape.model.CyTableManager
+import org.cytoscape.model.*
 import org.cytoscape.service.util.AbstractCyActivator
-import org.cytoscape.session.events.SessionLoadedListener
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.NetworkViewTaskFactory
 import org.cytoscape.task.NodeViewTaskFactory
@@ -40,6 +35,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
 import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
+import org.openbel.ws.api.WsManager
 import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -51,7 +47,7 @@ import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.common.Constant.setLoggingExceptionHandler
 import static model.builder.common.Util.cyReference
 import static model.builder.core.Util.contributeVisualStyles
-import static model.builder.ui.MessagePopups.errorAccessNotSet;
+import static model.builder.ui.MessagePopups.errorAccessNotSet
 
 class Activator extends AbstractCyActivator {
 
@@ -81,6 +77,7 @@ class Activator extends AbstractCyActivator {
         CY.discreteMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)")
         CY.continuousMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)")
         CY.loadVizmapFileTaskFactory = getService(bc, LoadVizmapFileTaskFactory.class)
+        CY.wsManager = getService(bc, WsManager.class)
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)

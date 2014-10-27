@@ -1,18 +1,10 @@
 package model.builder.core.rcr
 
-import model.builder.core.Activator
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyRow
-import org.cytoscape.model.CyTable
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-
-import static model.builder.core.Util.createColumn
-import static model.builder.core.Util.createTable
-import static Constant.SDP_UID_COLUMN
-import static Constant.SDP_URI_COLUMN
-import static Constant.SDP_RCR_RESOURCE_TABLE
 
 /**
  * Task to load an SDP RCR resource into a Cytoscape table.

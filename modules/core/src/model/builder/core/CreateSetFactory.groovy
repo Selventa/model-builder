@@ -1,21 +1,21 @@
 package model.builder.core
 
+import groovy.transform.TupleConstructor
 import model.builder.ui.UI
 import model.builder.web.api.APIManager
 import model.builder.web.api.WebResponse
-import org.cytoscape.work.Task
-
-import static org.cytoscape.model.CyTableUtil.getNodesInState
-import groovy.transform.TupleConstructor
 import org.cytoscape.model.CyNode
 import org.cytoscape.task.AbstractNodeViewTaskFactory
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.model.View
+import org.cytoscape.work.Task
 import org.cytoscape.work.TaskIterator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import static org.cytoscape.model.CyNetwork.*
+
 import static model.builder.ui.MessagePopups.errorAccessNotSet
+import static org.cytoscape.model.CyNetwork.NAME
+import static org.cytoscape.model.CyTableUtil.getNodesInState
 
 @TupleConstructor
 class CreateSetFactory extends AbstractNodeViewTaskFactory {

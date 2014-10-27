@@ -11,8 +11,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static model.builder.core.Util.*
-import static org.cytoscape.model.CyNetwork.*
 import static org.cytoscape.model.CyEdge.INTERACTION
+import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
+import static org.cytoscape.model.CyNetwork.NAME
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION
 

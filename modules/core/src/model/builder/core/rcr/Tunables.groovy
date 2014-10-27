@@ -1,9 +1,7 @@
 package model.builder.core.rcr
 
-import org.cytoscape.model.CyTable
 import org.cytoscape.work.util.ListSingleSelection
-import static model.builder.core.Activator.CY
-import static model.builder.core.rcr.Constant.SDP_RCR_SCORES_TABLE_PREFIX
+
 import static model.builder.core.rcr.Constant.SDP_URI_COLUMN
 
 class Tunables {

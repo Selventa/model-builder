@@ -5,11 +5,12 @@ import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
 
-import java.awt.Color
+import java.awt.*
 
-import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.Activator.CY
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*
+import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT
 
 class SdpWebRCRPaint implements RCRPaint {
 

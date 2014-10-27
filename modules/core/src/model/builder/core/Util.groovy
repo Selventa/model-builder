@@ -1,24 +1,19 @@
 package model.builder.core
 
-import org.cytoscape.model.CyColumn
-import org.cytoscape.model.CyIdentifiable
-import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNode
-import org.cytoscape.model.CyRow
-import org.cytoscape.model.CyTable
-import org.cytoscape.model.CyTableFactory
-import org.cytoscape.model.CyTableManager
+import org.cytoscape.model.*
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
 
-import static Constant.*
 import static model.builder.core.Activator.CY
-import static org.cytoscape.model.CyNetwork.NAME
+import static model.builder.core.Constant.STYLE_NAMES
+import static model.builder.core.Constant.STYLE_PATH
 import static org.cytoscape.model.CyEdge.INTERACTION
 import static org.cytoscape.model.CyEdge.Type.DIRECTED
+import static org.cytoscape.model.CyNetwork.NAME
 import static org.openbel.framework.common.bel.parser.BELParser.parseTerm
-import static org.openbel.framework.common.enums.RelationshipType.*
+import static org.openbel.framework.common.enums.RelationshipType.fromAbbreviation
+import static org.openbel.framework.common.enums.RelationshipType.fromString
 
 class Util {
 

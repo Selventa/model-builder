@@ -1,12 +1,11 @@
 package model.builder.core
 
-import org.cytoscape.model.CyNode
-import wslite.json.JSONObject
-
 import groovy.transform.TupleConstructor
+import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyTable
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
+import wslite.json.JSONObject
 
 import static model.builder.core.Util.createColumn
 

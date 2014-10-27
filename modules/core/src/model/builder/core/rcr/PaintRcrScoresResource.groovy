@@ -8,16 +8,16 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 import org.cytoscape.work.util.ListSingleSelection
+
 import static MechanismPaintField.fromField
+import static model.builder.core.Activator.CY
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
 import static model.builder.core.Util.createColumn
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
-import static model.builder.core.rcr.MechanismPaintField.CONCORDANCE
-import static model.builder.core.rcr.MechanismPaintField.DIRECTION
-import static model.builder.core.rcr.MechanismPaintField.RICHNESS
+import static model.builder.core.rcr.MechanismPaintField.*
 import static model.builder.core.rcr.Tunables.tunableRcrField
 import static org.cytoscape.model.CyNetwork.NAME
 
@@ -79,6 +79,18 @@ class PaintRcrScoresResource extends AbstractTask {
         if (networkCol) {
             int increment = 1.0 / networkCol.size()
             networkCol.each { CyNetwork cyN ->
+                // FIXME Cannot resolve nodes; maybe error not passing fx per node?
+//                IntersectOperation<String, Set<String>> intOp = new EquivalenceIntersectOperation(
+//                        'Full - Human',
+//                        CY.wsManager.get(CY.wsManager.default)
+//                )
+//                Set<String> networkNodes = cyN.nodeList.collect {
+//                    cyN.getRow(it).get(NAME, String.class)
+//                }.toSet()
+//                Set<String> mechNodes    = scoresTable.allRows.collect {
+//                    it.get('sdp_mechanism', String.class)
+//                }.toSet()
+//                Set<String> matches      = intOp.intersect(networkNodes, mechNodes)
                 tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
                 copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
                         cyN.defaultNodeTable.getColumn(NAME), false)
