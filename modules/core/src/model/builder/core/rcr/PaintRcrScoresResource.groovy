@@ -60,7 +60,8 @@ class PaintRcrScoresResource extends AbstractTask {
     }
 
     @Override
-    void run(TaskMonitor tm) throws Exception {
+    void run(final TaskMonitor tm) throws Exception {
+        tm.title = "Painting RCR Scores for \"${rcr.name}\""
         Expando rcr = loadRcrScoresToTable(api, id)
 
         CyTable scoresTable = rcr.table
@@ -71,7 +72,9 @@ class PaintRcrScoresResource extends AbstractTask {
 
         RCRPaint painter = new SdpWebRCRPaint()
         Collection<CyNetwork> networkCol = network.networks
+        int increment = 1.0 / networkCol.size()
         networkCol.each { CyNetwork cyN ->
+            tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
             copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
                     cyN.defaultNodeTable.getColumn(NAME), false)
 
@@ -120,6 +123,7 @@ class PaintRcrScoresResource extends AbstractTask {
                 it.set(SDP_RCR_FILL_COLOR_COLUMN, '#AAAAAA')
             }
 
+            tm.progress += increment
         }
         painter.paintMechanisms(paintBy, networkCol)
     }
