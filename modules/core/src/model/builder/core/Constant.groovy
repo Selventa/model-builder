@@ -13,17 +13,12 @@ class Constant {
     /**
      * Colorful visualization for Navigator.
      */
-    static final String NAV_VIS = 'KAM Visualization'
-
-    /**
-     * Black and white visualization for Navigator.
-     */
-    static final String NAV_VIS_MINIMAL = 'KAM Visualization Minimal'
+    static final String SDP_RCR = 'SDP RCR'
 
     /**
      * Additional visual style names.
      */
-    static final String[] STYLE_NAMES = [NAV_VIS, NAV_VIS_MINIMAL]
+    static final String[] STYLE_NAMES = [SDP_RCR]
 
     private Constant() {/* private accessors only */}
 }

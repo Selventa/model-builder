@@ -1,7 +1,8 @@
 package model.builder.core
 
-import model.builder.core.model.builder.core.rcr.LoadRcrResourceFactory
-import model.builder.core.model.builder.core.rcr.PaintRcrScoresResourceFactory
+import model.builder.core.event.SessionLoadListener
+import model.builder.core.rcr.LoadRcrResourceFactory
+import model.builder.core.rcr.PaintRcrScoresResourceFactory
 import model.builder.ui.UI
 import model.builder.ui.api.Dialogs
 import model.builder.ui.api.RCRPanelComponent
@@ -22,10 +23,12 @@ import org.cytoscape.model.CyNetworkTableManager
 import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.service.util.AbstractCyActivator
+import org.cytoscape.session.events.SessionLoadedListener
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.NetworkViewTaskFactory
 import org.cytoscape.task.NodeViewTaskFactory
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager
@@ -47,6 +50,7 @@ import java.awt.event.ActionEvent
 import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.common.Constant.setLoggingExceptionHandler
 import static model.builder.common.Util.cyReference
+import static model.builder.core.Util.contributeVisualStyles
 import static model.builder.ui.MessagePopups.errorAccessNotSet;
 
 class Activator extends AbstractCyActivator {
@@ -76,6 +80,7 @@ class Activator extends AbstractCyActivator {
         CY.passthroughMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)")
         CY.discreteMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)")
         CY.continuousMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)")
+        CY.loadVizmapFileTaskFactory = getService(bc, LoadVizmapFileTaskFactory.class)
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
         APIManager apiManager = getService(bc, APIManager.class)
@@ -298,6 +303,10 @@ class Activator extends AbstractCyActivator {
                 menuGravity: 11.0,
                 title: "Create Set from Selected Nodes"
             ] as Properties)
+
+        // manage styles
+        registerAllServices(bc, new SessionLoadListener(), [:] as Properties)
+        contributeVisualStyles()
 
         setLoggingExceptionHandler()
     }

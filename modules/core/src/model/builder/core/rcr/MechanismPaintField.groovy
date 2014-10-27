@@ -1,4 +1,4 @@
-package model.builder.core.model.builder.core.rcr
+package model.builder.core.rcr
 
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping
@@ -8,6 +8,7 @@ import java.awt.Color
 import java.awt.Paint
 
 import static model.builder.core.Activator.CY
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT
 
 public enum MechanismPaintField {
@@ -33,7 +34,7 @@ public enum MechanismPaintField {
 
     static DiscreteMapping createDirectionFunction() {
         DiscreteMapping fx = CY.discreteMapping.createVisualMappingFunction(
-                DIRECTION.field, DIRECTION.type, NODE_PAINT) as DiscreteMapping
+                DIRECTION.field, DIRECTION.type, NODE_FILL_COLOR) as DiscreteMapping
         fx.putMapValue(null,   new Color(0xAAAAAA))
         fx.putMapValue('',     new Color(0xAAAAAA))
         fx.putMapValue('None', new Color(0xFFFFFF))

@@ -86,17 +86,21 @@ class DefaultAPIManager implements APIManager {
                                              APIManager mgr,
                                              Set<AccessInformation> cur,
                                              Set<AccessInformation> next) {
-        next.minus(cur).each {
-            evtHelper.fireEvent(new AddedAccessInformationEvent(mgr, it))
-        }
-        cur.minus(next).each {
-            evtHelper.fireEvent(new RemovedAccessInformationEvent(mgr, it))
-        }
+        final Set<AccessInformation> cloneCur = cur.clone()
+        final Set<AccessInformation> cloneNext = next.clone()
+        Thread.start {
+            (cloneNext - cloneCur).each {
+                evtHelper.fireEvent(new AddedAccessInformationEvent(mgr, it))
+            }
+            (cloneCur - cloneNext).each {
+                evtHelper.fireEvent(new RemovedAccessInformationEvent(mgr, it))
+            }
 
-        AccessInformation curDefault = cur.find { it.defaultAccess }
-        AccessInformation nextDefault = next.find { it.defaultAccess }
-        if (!nextDefault.equals(curDefault)) {
-            evtHelper.fireEvent(new SetDefaultAccessInformationEvent(mgr, curDefault, nextDefault))
+            AccessInformation curDefault =  cloneCur.find  { it.defaultAccess }
+            AccessInformation nextDefault = cloneNext.find { it.defaultAccess }
+            if (!nextDefault.equals(curDefault)) {
+                    evtHelper.fireEvent(new SetDefaultAccessInformationEvent(mgr, curDefault, nextDefault))
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package model.builder.core.model.builder.core.rcr
+package model.builder.core.rcr
 
 import model.builder.web.api.AuthorizedAPI
 import org.cytoscape.work.TaskFactory

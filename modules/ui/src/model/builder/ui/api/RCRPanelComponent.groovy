@@ -21,6 +21,7 @@ import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.JTextField
+import javax.swing.ListSelectionModel
 import javax.swing.event.ListSelectionListener
 import java.awt.BorderLayout
 import java.awt.Component
@@ -31,12 +32,13 @@ import static model.builder.web.api.Constant.RCR_RESULT_TYPE
 
 public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessInformationListener {
 
-    private SwingBuilder  swing
-    private AuthorizedAPI api
-    private JPanel        panel
-    private JList         tags
-    private Closure       onViewDetail
-    private Closure       onPaintScores
+    private SwingBuilder          swing
+    private AuthorizedAPI         api
+    private JPanel                panel
+    private JList                 tags
+    private SearchTableScrollable searchTable
+    private Closure               onViewDetail
+    private Closure               onPaintScores
 
     RCRPanelComponent(AuthorizedAPI api, Closure onViewDetail, Closure onPaintScores) {
         this.swing = Activator.swing
@@ -52,6 +54,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
         AccessInformation newDefault = event.payloadCollection[1]
         if (mgr && newDefault) {
             api = mgr.byAccess(newDefault)
+            searchTable.clearRows()
             loadTags()
         }
     }
@@ -79,7 +82,6 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
     private JPanel initUI() {
         swing.panel() {
             def JTextField name
-            def SearchTableScrollable searchTable
             def JButton viewButton, paintButton
 
             borderLayout()
@@ -111,6 +113,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                 panel {
                     borderLayout()
                     searchTable = searchTableScrollable(constraints: BorderLayout.CENTER)
+                    searchTable.table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
                     searchTable.table.selectionModel.addListSelectionListener({ evt ->
                         viewButton.enabled = true
                         paintButton.enabled = true

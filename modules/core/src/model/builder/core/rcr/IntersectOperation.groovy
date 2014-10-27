@@ -1,4 +1,4 @@
-package model.builder.core.model.builder.core.rcr
+package model.builder.core.rcr
 
 /**
  * Defines an intersection operation between two {@link Collection collections}

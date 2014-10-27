@@ -1,9 +1,8 @@
-package model.builder.core.model.builder.core.rcr
+package model.builder.core.rcr
 
 import model.builder.web.api.AuthorizedAPI
 import org.cytoscape.work.TaskFactory
 import org.cytoscape.work.TaskIterator
-import static model.builder.core.Activator.CY
 
 /**
  * Task factory to paint SDP RCR scores resource onto one or more networks.
@@ -23,9 +22,7 @@ class PaintRcrScoresResourceFactory implements TaskFactory {
     @Override
     TaskIterator createTaskIterator() {
         new TaskIterator(
-                new LoadRcrResource(api, id),
-                new LoadRcrScoresResource(api, id),
-                new PaintRcrScoresResource()
+                new PaintRcrScoresResource(api, id)
         )
     }
 

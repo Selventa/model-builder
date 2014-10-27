@@ -11,8 +11,9 @@ import org.cytoscape.model.CyTableManager
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
-import org.osgi.framework.BundleContext
 
+import static Constant.*
+import static model.builder.core.Activator.CY
 import static org.cytoscape.model.CyNetwork.NAME
 import static org.cytoscape.model.CyEdge.INTERACTION
 import static org.cytoscape.model.CyEdge.Type.DIRECTED
@@ -20,6 +21,14 @@ import static org.openbel.framework.common.bel.parser.BELParser.parseTerm
 import static org.openbel.framework.common.enums.RelationshipType.*
 
 class Util {
+
+    static contributeVisualStyles() {
+        // delete/add knowledge network styles (idempotent)
+        def vmm = CY.visualMappingManager
+        def lvf = CY.loadVizmapFileTaskFactory
+        vmm.allVisualStyles.findAll { it.title in STYLE_NAMES }.each(vmm.&removeVisualStyle)
+        lvf.loadStyles(Util.class.getResourceAsStream(STYLE_PATH))
+    }
 
     static CyColumn createColumn(table, name, type, immutable, defaultValue) {
         name = "$name"
@@ -34,7 +43,7 @@ class Util {
         table.getColumn(name)
     }
 
-    static CyTable createTable(String name, String key, Class<?> type,
+    static synchronized CyTable createTable(String name, String key, Class<?> type,
                                boolean pub, boolean mut,
                                CyTableManager manager, CyTableFactory factory) {
         def table =
@@ -42,6 +51,51 @@ class Util {
                 factory.createTable(name, key, type, pub, mut)
         manager.addTable(table)
         table
+    }
+
+    static CyTable getTable(String name) {
+        CY.cyTableManager.getAllTables(false).find { name == it.title }
+    }
+
+    static void copyColumns(CyTable from, CyColumn fromKey,
+                            CyTable to, CyColumn toKey, Boolean immutable = null) {
+        from.columns.each {
+            CyColumn fromCol ->
+                if (to.getColumn(fromCol.name)) {
+                    to.deleteColumn(fromCol.name)
+                }
+                to.createColumn(fromCol.name, fromCol.type,
+                        (immutable != null ? immutable : fromCol.immutable),
+                        fromCol.defaultValue)
+        }
+
+        to.allRows.each {
+            CyRow toRow ->
+                blankCells(toRow, from)
+                Object toKeyValue = toRow.get(toKey.name, toKey.type)
+                Collection<CyRow> matches = from.getMatchingRows(fromKey.name, toKeyValue)
+                if (matches) {
+                    CyRow fromRow = matches.first()
+                    fromRow.getAllValues().each {
+                        toRow.set(it.key, it.value)
+                    }
+                }
+        }
+    }
+
+    static void removeColumns(CyTable from, CyTable containedIn) {
+        containedIn.columns.each {
+            CyColumn targetCol ->
+                from.deleteColumn(targetCol.name)
+        }
+    }
+
+    static void blankCells(CyRow row, CyTable columnsFrom) {
+        columnsFrom.columns.each {
+            if (row.isSet(it.name)) {
+                row.set(it.name, null)
+            }
+        }
     }
 
     static <T> void setAdd(CyRow row, String name, Class<T> type, T element) {

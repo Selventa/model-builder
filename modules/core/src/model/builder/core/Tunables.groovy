@@ -43,7 +43,25 @@ class Tunables {
             )
         )
         networkTunable.setPossibleValues(choices)
-        networkTunable.setSelectedValue(choices.first())
+
+        // set current selected value based on CyNetwork selection
+        List<CyNetwork> selNetworks = CY.cyApplicationManager.selectedNetworks
+        if (selNetworks) {
+            if (selNetworks.size() == 1) {
+                CyNetwork cyN = selNetworks.first()
+                networkTunable.selectedValue = new Expando(
+                        networks: [cyN],
+                        toString: {
+                            cyN.getRow(cyN).get(NAME, String.class)
+                        }
+                )
+            } else {
+                networkTunable.selectedValue = networkTunable.possibleValues.find {
+                    it.toString() == 'Selected Networks'
+                }
+            }
+        }
+
         networkTunable
     }
 

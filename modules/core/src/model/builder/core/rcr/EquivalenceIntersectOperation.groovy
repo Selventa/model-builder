@@ -1,4 +1,4 @@
-package model.builder.core.model.builder.core.rcr
+package model.builder.core.rcr
 
 import org.openbel.ws.api.WsAPI
 
