@@ -70,62 +70,68 @@ class PaintRcrScoresResource extends AbstractTask {
             return
         }
 
+        if (!network?.networks) {
+            throw new IllegalStateException("The selected network(s) do not exist.")
+        }
+
         RCRPaint painter = new SdpWebRCRPaint()
         Collection<CyNetwork> networkCol = network.networks
-        int increment = 1.0 / networkCol.size()
-        networkCol.each { CyNetwork cyN ->
-            tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
-            copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
-                    cyN.defaultNodeTable.getColumn(NAME), false)
+        if (networkCol) {
+            int increment = 1.0 / networkCol.size()
+            networkCol.each { CyNetwork cyN ->
+                tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
+                copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
+                        cyN.defaultNodeTable.getColumn(NAME), false)
 
-            // create column if needed; clear fill values
-            if (cyN.defaultNodeTable.getColumn(SDP_RCR_FILL_COLOR_COLUMN)) {
-                cyN.defaultNodeTable.deleteColumn(SDP_RCR_FILL_COLOR_COLUMN)
-            }
-            createColumn(cyN.defaultNodeTable, SDP_RCR_FILL_COLOR_COLUMN, String.class, false, null)
+                // create column if needed; clear fill values
+                if (cyN.defaultNodeTable.getColumn(SDP_RCR_FILL_COLOR_COLUMN)) {
+                    cyN.defaultNodeTable.deleteColumn(SDP_RCR_FILL_COLOR_COLUMN)
+                }
+                createColumn(cyN.defaultNodeTable, SDP_RCR_FILL_COLOR_COLUMN, String.class, false, null)
 
-            Map significant = cyN.defaultNodeTable.allRows.groupBy {
-                CyRow row ->
-                    Double concordance = row.get('sdp_concordance', Double.class)
-                    Double richness    = row.get('sdp_richness', Double.class)
-                    if (!concordance && !richness) {
-                        return null
-                    }
-                    return (concordance <= concordanceCutoff) && (richness <= richnessCutoff)
-            }
-
-            // set significant color based on scales
-            significant[true].each {
-                CyRow row ->
-                    if (paintBy == DIRECTION) {
-                        String dir = row.get('sdp_direction', String.class)
-                        row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
-                    } else if (paintBy == CONCORDANCE) {
-                        String dir = row.get('sdp_direction', String.class)
+                Map significant = cyN.defaultNodeTable.allRows.groupBy {
+                    CyRow row ->
                         Double concordance = row.get('sdp_concordance', Double.class)
-                        row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
-                    } else if (paintBy == RICHNESS) {
-                        String dir = row.get('sdp_direction', String.class)
                         Double richness = row.get('sdp_richness', Double.class)
-                        row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
-                    }
-            }
+                        if (!concordance && !richness) {
+                            return null
+                        }
+                        return (concordance <= concordanceCutoff) && (richness <= richnessCutoff)
+                }
 
-            // special color for not significant if desired; otherwise show as unmeasured
-            String notSignificantColor = paintNotSignificant ? '#FFC2C2' : '#AAAAAA'
-            significant[false].each {
-                CyRow row ->
-                    row.set(SDP_RCR_FILL_COLOR_COLUMN, notSignificantColor)
-            }
+                // set significant color based on scales
+                significant[true].each {
+                    CyRow row ->
+                        if (paintBy == DIRECTION) {
+                            String dir = row.get('sdp_direction', String.class)
+                            row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
+                        } else if (paintBy == CONCORDANCE) {
+                            String dir = row.get('sdp_direction', String.class)
+                            Double concordance = row.get('sdp_concordance', Double.class)
+                            row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
+                        } else if (paintBy == RICHNESS) {
+                            String dir = row.get('sdp_direction', String.class)
+                            Double richness = row.get('sdp_richness', Double.class)
+                            row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
+                        }
+                }
 
-            // unmeasured
-            significant[null].each {
-                it.set(SDP_RCR_FILL_COLOR_COLUMN, '#AAAAAA')
-            }
+                // special color for not significant if desired; otherwise show as unmeasured
+                String notSignificantColor = paintNotSignificant ? '#FFC2C2' : '#AAAAAA'
+                significant[false].each {
+                    CyRow row ->
+                        row.set(SDP_RCR_FILL_COLOR_COLUMN, notSignificantColor)
+                }
 
-            tm.progress += increment
+                // unmeasured
+                significant[null].each {
+                    it.set(SDP_RCR_FILL_COLOR_COLUMN, '#AAAAAA')
+                }
+
+                tm.progress += increment
+            }
+            painter.paintMechanisms(paintBy, networkCol)
         }
-        painter.paintMechanisms(paintBy, networkCol)
     }
 
     /* Tunables */
