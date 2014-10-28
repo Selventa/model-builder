@@ -173,12 +173,18 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
 
     private void loadTags() {
         // load tags outside EDT
-        swing.doOutside {
-            WebResponse res = api.tags([RCR_RESULT_TYPE])
-            def facetTags = res.data.facet_counts.facet_fields.tags
-            def tagData = facetTags.collate(2).findAll {it[1] > 0}.collect {it[0]}.sort()
-            swing.edt {
-                tags.listData = tagData
+        if (api) {
+            swing.doOutside {
+                WebResponse res = api.tags([RCR_RESULT_TYPE])
+
+                def facetTags = res.data.facet_counts.facet_fields.tags
+                def tagData = facetTags.collate(2).findAll {
+                    it[1] > 0
+                }.collect { it[0] }.sort()
+
+                swing.edt {
+                    tags.listData = tagData
+                }
             }
         }
     }
