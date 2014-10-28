@@ -46,9 +46,15 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
             def (type, id) = data.searchKey.split(/:/)
             return "${client.url}/api/$type/$id"
         }
-
         if (data.path) {
             return client.url + data.path
+        }
+        if (data.resource) {
+            def path = "${client.url}/api/${data.resource}"
+            if (data.uid) {
+                path = "$path/${data.uid}"
+            }
+            return path
         }
 
         def msg = "data map should contain either \"searchKey\" or \"path\""
@@ -94,7 +100,12 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
 
     @Override
     WebResponse rcrResult(String id) {
-        get(path: "/api/rcr-results/$id", query: ['navigate': 'subresource'], accept: JSON)
+        get(path: "/api/rcr-results/$id", accept: JSON)
+    }
+
+    @Override
+    WebResponse rcrResultScores(String id) {
+        get(path: "/api/rcr-results/$id/scores", accept: JSON)
     }
 
     @Override

@@ -5,8 +5,9 @@ import org.cytoscape.model.CyTableFactory
 import org.cytoscape.model.CyTableManager
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
+
 import static model.builder.core.Util.*
-import static org.cytoscape.model.SavePolicy.*
+import static org.cytoscape.model.SavePolicy.SESSION_FILE
 
 @TupleConstructor
 class AddRevisionsTable extends AbstractTask {

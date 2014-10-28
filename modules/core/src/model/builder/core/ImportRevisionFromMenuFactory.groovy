@@ -2,7 +2,6 @@ package model.builder.core
 
 import groovy.transform.TupleConstructor
 import model.builder.web.api.APIManager
-import model.builder.web.api.AuthorizedAPI
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.work.TaskIterator

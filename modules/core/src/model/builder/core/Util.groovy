@@ -1,23 +1,29 @@
 package model.builder.core
 
-import org.cytoscape.model.CyColumn
-import org.cytoscape.model.CyIdentifiable
-import org.cytoscape.model.CyNetwork
-import org.cytoscape.model.CyNode
-import org.cytoscape.model.CyRow
-import org.cytoscape.model.CyTable
+import org.cytoscape.model.*
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
-import org.osgi.framework.BundleContext
 
-import static org.cytoscape.model.CyNetwork.NAME
+import static model.builder.core.Activator.CY
+import static model.builder.core.Constant.STYLE_NAMES
+import static model.builder.core.Constant.STYLE_PATH
 import static org.cytoscape.model.CyEdge.INTERACTION
 import static org.cytoscape.model.CyEdge.Type.DIRECTED
+import static org.cytoscape.model.CyNetwork.NAME
 import static org.openbel.framework.common.bel.parser.BELParser.parseTerm
-import static org.openbel.framework.common.enums.RelationshipType.*
+import static org.openbel.framework.common.enums.RelationshipType.fromAbbreviation
+import static org.openbel.framework.common.enums.RelationshipType.fromString
 
 class Util {
+
+    static contributeVisualStyles() {
+        // delete/add knowledge network styles (idempotent)
+        def vmm = CY.visualMappingManager
+        def lvf = CY.loadVizmapFileTaskFactory
+        vmm.allVisualStyles.findAll { it.title in STYLE_NAMES }.each(vmm.&removeVisualStyle)
+        lvf.loadStyles(Util.class.getResourceAsStream(STYLE_PATH))
+    }
 
     static CyColumn createColumn(table, name, type, immutable, defaultValue) {
         name = "$name"
@@ -30,6 +36,61 @@ class Util {
         name = "$name"
         table.getColumn(name) ?: (table.createListColumn(name, listElementType, immutable, defaultValue))
         table.getColumn(name)
+    }
+
+    static synchronized CyTable createTable(String name, String key, Class<?> type,
+                               boolean pub, boolean mut,
+                               CyTableManager manager, CyTableFactory factory) {
+        def table =
+                manager.getAllTables(false).find { it.title == name } ?:
+                factory.createTable(name, key, type, pub, mut)
+        manager.addTable(table)
+        table
+    }
+
+    static CyTable getTable(String name) {
+        CY.cyTableManager.getAllTables(false).find { name == it.title }
+    }
+
+    static void copyColumns(CyTable from, CyColumn fromKey,
+                            CyTable to, CyColumn toKey, Boolean immutable = null) {
+        from.columns.each {
+            CyColumn fromCol ->
+                if (to.getColumn(fromCol.name)) {
+                    to.deleteColumn(fromCol.name)
+                }
+                to.createColumn(fromCol.name, fromCol.type,
+                        (immutable != null ? immutable : fromCol.immutable),
+                        fromCol.defaultValue)
+        }
+
+        to.allRows.each {
+            CyRow toRow ->
+                blankCells(toRow, from)
+                Object toKeyValue = toRow.get(toKey.name, toKey.type)
+                Collection<CyRow> matches = from.getMatchingRows(fromKey.name, toKeyValue)
+                if (matches) {
+                    CyRow fromRow = matches.first()
+                    fromRow.getAllValues().each {
+                        toRow.set(it.key, it.value)
+                    }
+                }
+        }
+    }
+
+    static void removeColumns(CyTable from, CyTable containedIn) {
+        containedIn.columns.each {
+            CyColumn targetCol ->
+                from.deleteColumn(targetCol.name)
+        }
+    }
+
+    static void blankCells(CyRow row, CyTable columnsFrom) {
+        columnsFrom.columns.each {
+            if (row.isSet(it.name)) {
+                row.set(it.name, null)
+            }
+        }
     }
 
     static <T> void setAdd(CyRow row, String name, Class<T> type, T element) {
@@ -197,16 +258,6 @@ class Util {
         }
     }
 
-    static Expando cyReference(BundleContext bc, Closure cyAct, Class<?>[] cyInterfaces) {
-        Expando e = new Expando()
-        cyInterfaces.each {
-            def impl = cyAct.call(bc, it)
-            def name = it.simpleName
-            e.setProperty(name[0].toLowerCase() + name[1..-1], impl)
-        }
-        e
-    }
-
     static def getOrCreateNode(CyNetwork cyN, String label) {
         getNode(cyN, label) ?: createNode(cyN, label)
     }
@@ -276,6 +327,44 @@ class Util {
         } catch (InvalidArgument e) {
             // parse failure; cannot resolve so return
             return [:]
+        }
+    }
+
+    static Integer convertToInteger(Object obj) {
+        if (obj instanceof Integer) {
+            ((Integer) obj)
+        } else if (obj instanceof BigDecimal) {
+            ((BigDecimal) obj).intValue()
+        } else if (obj instanceof Double) {
+            ((Double) obj).intValue()
+        } else if (obj instanceof Float) {
+            ((Float) obj).intValue()
+        } else if (obj instanceof String) {
+            try {
+                ((String) obj).toInteger()
+            } catch (NumberFormatException e) {
+                return null
+            }
+        } else {
+            null
+        }
+    }
+
+    static Double convertToDouble(Object obj) {
+        if (obj instanceof Double) {
+            ((Double) obj)
+        } else if (obj instanceof BigDecimal) {
+            ((BigDecimal) obj).doubleValue()
+        } else if (obj instanceof Float) {
+            ((Float) obj).doubleValue()
+        } else if (obj instanceof String) {
+            try {
+                ((String) obj).toDouble()
+            } catch (NumberFormatException e) {
+                return null
+            }
+        } else {
+            null
         }
     }
 }

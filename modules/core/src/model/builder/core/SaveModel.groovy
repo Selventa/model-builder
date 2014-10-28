@@ -13,16 +13,12 @@ import org.cytoscape.work.Tunable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.swing.JOptionPane
+import javax.swing.*
 import java.util.regex.Pattern
 
-import static model.builder.core.ModelUtil.addModelRevisionColumns
-import static model.builder.core.ModelUtil.fromRevision
-import static model.builder.core.ModelUtil.fromView
-import static model.builder.ui.MessagePopups.errorAccessNotSet
-import static model.builder.ui.MessagePopups.errorMessage
-import static model.builder.ui.MessagePopups.successMessage
 import static Util.createColumn
+import static model.builder.core.ModelUtil.*
+import static model.builder.ui.MessagePopups.*
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS
 
 class SaveModel extends AbstractNetworkViewTask {

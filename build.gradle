@@ -87,6 +87,7 @@ project('modules/common') {
         com.fasterxml.jackson.databind;version="[2.2,3)",
         groovy.lang;version="[2.1,3)",
         groovy.transform;version="[2.1,3)",
+        groovy.util;version="[2.1,3)",
         groovy.util.slurpersupport;version="[2.1,3)",
         org.apache.http;version="[4.2,5)",
         org.apache.http.client.utils;version="[4.2,5)",
@@ -96,6 +97,7 @@ project('modules/common') {
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
         org.codehaus.groovy.runtime.typehandling;version="[2.1,3)",
         org.codehaus.groovy.vmplugin.v7;version="[2.1,3)",
+        org.cytoscape.event;version="[3,4)",
         org.cytoscape.model;version="[3,4)",
         org.openbel.framework.common;version="[3,4)",
         org.openbel.framework.common.bel.parser;version="[3,4)",
@@ -184,8 +186,10 @@ project('modules/core') {
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
         org.openbel.kamnav.core;version="[1,2)",
+        org.openbel.ws.api,
         model.builder.common,
         model.builder.ui,
+        model.builder.ui.api,
         model.builder.web.api,
         org.osgi.framework,
         org.osgi.service.event,
@@ -250,6 +254,7 @@ project('modules/ui') {
         model.builder.common,
         model.builder.common.facet,
         model.builder.web.api,
+        model.builder.web.api.event,
         org.codehaus.groovy.reflection;version="[2.1,3)",
         org.codehaus.groovy.runtime;version="[2.1,3)",
         org.codehaus.groovy.runtime.callsite;version="[2.1,3)",
@@ -258,6 +263,7 @@ project('modules/ui') {
         org.codehaus.groovy.vmplugin.v7;version="[2.1,3)",
         org.cytoscape.application;version="[3,4)",
         org.cytoscape.application.swing;version="[3,4)",
+        org.cytoscape.event;version="[3,4)",
         org.cytoscape.io.webservice;version="[3,4)",
         org.cytoscape.io.webservice.swing;version="[3,4)",
         org.cytoscape.model;version="[3,4)",
@@ -325,6 +331,7 @@ project('modules/web') {
         org.codehaus.groovy.util;version="[2.1,3)",
         org.codehaus.groovy.vmplugin.v7;version="[2.1,3)",
         org.cytoscape.application;version="[3,4)",
+        org.cytoscape.event;version="[3,4)",
         org.cytoscape.model;version="[3,4)",
         org.cytoscape.property;version="[3,4)",
         org.cytoscape.service.util;version="[3,4)",
@@ -347,7 +354,10 @@ project('modules/web') {
       '''
       instruction 'Bundle-Activator', 'model.builder.web.Activator'
       instruction 'Private-Package', 'model.builder.web.internal'
-      instruction 'Export-Package', 'model.builder.web.api'
+      instruction 'Export-Package', '''
+        model.builder.web.api,
+        model.builder.web.api.event
+      '''
     }
   }
 }

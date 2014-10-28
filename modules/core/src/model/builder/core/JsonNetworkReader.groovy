@@ -8,7 +8,9 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-import static ModelUtil.*
+
+import static model.builder.core.ModelUtil.fromNetwork
+import static model.builder.core.ModelUtil.validateJsonFormat
 
 @TupleConstructor
 class JsonNetworkReader extends AbstractTask implements CyNetworkReader {
