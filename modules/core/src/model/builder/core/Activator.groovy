@@ -135,29 +135,6 @@ class Activator extends AbstractCyActivator {
                 id: 'apps_sdp.data.add_comparison'
         ] as Properties)
 
-        // ... Add RCR Result
-        AbstractCyAction importRCR = new AbstractCyAction('Add RCR Result') {
-            void actionPerformed(ActionEvent e) {
-                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
-                if (!currentAPI) {
-                    errorAccessNotSet()
-                    return
-                }
-                def importData = { id ->
-                    WebResponse res = currentAPI.rcrResult(id, [navigate: 'subresource'])
-                    cyr.dialogTaskManager.execute(
-                            new AddRcrResultTableFactory(res.data, cyr, dMapFac, pMapFac).createTaskIterator())
-                }
-                UI.addRcr(currentAPI, importData)
-            }
-        }
-        importRCR.menuGravity = 0.0
-        importRCR.preferredMenu = 'Apps.SDP.Data'
-        importRCR.acceleratorKeyStroke = getKeyStroke('control alt R')
-        registerService(bc, importRCR, CyAction.class, [
-                id: 'apps_sdp.data.add_rcr_result'
-        ] as Properties)
-
         // ... Import Model
         AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {

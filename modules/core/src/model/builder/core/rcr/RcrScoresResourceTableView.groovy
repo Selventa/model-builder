@@ -4,6 +4,8 @@ import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
 
 import static model.builder.core.Activator.CY
+import static model.builder.core.Util.convertToDouble
+import static model.builder.core.Util.convertToInteger
 import static model.builder.core.Util.createColumn
 import static model.builder.core.Util.createTable
 import static model.builder.core.rcr.Constant.*
@@ -46,16 +48,16 @@ class RcrScoresResourceTableView extends AbstractCyTableView<String, Map> {
     @Override
     CyRow addObject(Map obj) {
         CyRow row = getTable().getRow(obj.mechanism)
-        row.set(SDP_URI_COLUMN, uri                        )
-        row.set(SDP_UID_COLUMN, uid                        )
-        row.set('sdp_ambiguous',    obj.ambiguous   ?: 0   )
-        row.set('sdp_concordance',  obj.concordance ?: 0.0 )
-        row.set('sdp_contra',       obj.contra      ?: 0   )
-        row.set('sdp_correct',      obj.correct     ?: 0   )
-        row.set('sdp_direction',    obj.direction   ?: ''  )
-        row.set('sdp_observed',     obj.observed    ?: 0   )
-        row.set('sdp_possible',     obj.possible    ?: 0   )
-        row.set('sdp_richness',     obj.richness    ?: 0.0 )
+        row.set(SDP_URI_COLUMN, uri                                          )
+        row.set(SDP_UID_COLUMN, uid                                          )
+        row.set('sdp_ambiguous',    convertToInteger(obj.ambiguous   ?: 0   ))
+        row.set('sdp_concordance',  convertToDouble (obj.concordance ?: 0.0 ))
+        row.set('sdp_contra',       convertToInteger(obj.contra      ?: 0   ))
+        row.set('sdp_correct',      convertToInteger(obj.correct     ?: 0   ))
+        row.set('sdp_direction',    obj.direction   ?: ''                    )
+        row.set('sdp_observed',     convertToInteger(obj.observed    ?: 0   ))
+        row.set('sdp_possible',     convertToInteger(obj.possible    ?: 0   ))
+        row.set('sdp_richness',     convertToDouble (obj.richness    ?: 0.0 ))
         row
     }
 

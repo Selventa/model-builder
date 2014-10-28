@@ -49,8 +49,9 @@ class PaintRcrScoresResource extends AbstractTask {
         if (rcrLoad) {
             tRcr = tunableRcrField()
             rcr = new Expando(
-                    name: rcrLoad.name,
-                    uri : rcrLoad.uri ,
+                    name:             rcrLoad.name,
+                    knowledgeNetwork: rcrLoad.knowledge_network,
+                    uri:              rcrLoad.uri ,
                     toString: {
                         "${rcrLoad.name} (${rcrLoad.uri})"
                     }
@@ -79,18 +80,6 @@ class PaintRcrScoresResource extends AbstractTask {
         if (networkCol) {
             int increment = 1.0 / networkCol.size()
             networkCol.each { CyNetwork cyN ->
-                // FIXME Cannot resolve nodes; maybe error not passing fx per node?
-//                IntersectOperation<String, Set<String>> intOp = new EquivalenceIntersectOperation(
-//                        'Full - Human',
-//                        CY.wsManager.get(CY.wsManager.default)
-//                )
-//                Set<String> networkNodes = cyN.nodeList.collect {
-//                    cyN.getRow(it).get(NAME, String.class)
-//                }.toSet()
-//                Set<String> mechNodes    = scoresTable.allRows.collect {
-//                    it.get('sdp_mechanism', String.class)
-//                }.toSet()
-//                Set<String> matches      = intOp.intersect(networkNodes, mechNodes)
                 tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
                 copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
                         cyN.defaultNodeTable.getColumn(NAME), false)

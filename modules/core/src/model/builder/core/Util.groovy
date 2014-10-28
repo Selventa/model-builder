@@ -329,4 +329,42 @@ class Util {
             return [:]
         }
     }
+
+    static Integer convertToInteger(Object obj) {
+        if (obj instanceof Integer) {
+            ((Integer) obj)
+        } else if (obj instanceof BigDecimal) {
+            ((BigDecimal) obj).intValue()
+        } else if (obj instanceof Double) {
+            ((Double) obj).intValue()
+        } else if (obj instanceof Float) {
+            ((Float) obj).intValue()
+        } else if (obj instanceof String) {
+            try {
+                ((String) obj).toInteger()
+            } catch (NumberFormatException e) {
+                return null
+            }
+        } else {
+            null
+        }
+    }
+
+    static Double convertToDouble(Object obj) {
+        if (obj instanceof Double) {
+            ((Double) obj)
+        } else if (obj instanceof BigDecimal) {
+            ((BigDecimal) obj).doubleValue()
+        } else if (obj instanceof Float) {
+            ((Float) obj).doubleValue()
+        } else if (obj instanceof String) {
+            try {
+                ((String) obj).toDouble()
+            } catch (NumberFormatException e) {
+                return null
+            }
+        } else {
+            null
+        }
+    }
 }
