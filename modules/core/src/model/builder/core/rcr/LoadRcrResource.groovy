@@ -30,16 +30,21 @@ class LoadRcrResource extends AbstractTask {
     }
 
     static Map loadRcrToTable(AuthorizedAPI api, String id) {
-        WebResponse response = api.rcrResult(id)
-
-        if (response.statusCode != 200) {
-            throw new RuntimeException('Error loading SDP RCR')
-        }
-
         String uri = api.uri(resource: 'rcr-results', uid: id)
         RcrResourceTableView rtv = new RcrResourceTableView()
-        CyRow row = rtv.addObject(response.data)
-        assert row, "CyRow does not exist after adding rcr result to view"
-        rtv.getObj(uri)
+
+        if (rtv.exists(uri)) {
+            rtv.getObj(uri)
+        } else {
+            WebResponse response = api.rcrResult(id)
+
+            if (response.statusCode != 200) {
+                throw new RuntimeException('Error loading SDP RCR')
+            }
+
+            CyRow row = rtv.addObject(response.data)
+            assert row, "CyRow does not exist after adding rcr result to view"
+            rtv.getObj(uri)
+        }
     }
 }

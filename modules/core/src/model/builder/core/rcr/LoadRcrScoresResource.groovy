@@ -5,7 +5,6 @@ import model.builder.web.api.WebResponse
 import org.cytoscape.model.CyRow
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
-import org.openbel.framework.ws.model.FunctionType
 import org.openbel.ws.api.WsAPI
 
 import static model.builder.core.Util.inferOpenBELWsAPI
@@ -34,48 +33,51 @@ class LoadRcrScoresResource extends AbstractTask {
     }
 
     static Expando loadRcrScoresToTable(AuthorizedAPI api, String id, TaskMonitor tm) {
-        // load rcr and scores
+        // load rcr
         def rcr = loadRcrToTable(api, id)
+
+        // check if rcr scores were loaded/resolved
         String uri = api.uri(resource: 'rcr-results', uid: id)
         RcrScoresResourceTableView rstv = new RcrScoresResourceTableView(rcr.name, uri, id)
-        WebResponse res = api.rcrResultScores(id)
-        if (res.statusCode != 200) {
-            throw new RuntimeException('Error loading SDP RCR scores')
+        List<Map> scores = rstv.getAll()
+        if (scores.empty) {
+            //...need to fetch rcr scores
+            WebResponse res = api.rcrResultScores(id)
+            if (res.statusCode != 200) {
+                throw new RuntimeException('Error loading SDP RCR scores')
+            }
+            scores = (List<Map>) res.data
+
+            //...resolve score nodes to rcr knowledge network
+            List<String> mechanisms = scores.collect {
+                it.get('mechanism').toString() ?: ''
+            }
+            WsAPI wsAPI = inferOpenBELWsAPI(api.access().host)
+            Map<String, Map> mechanismIds = [:]
+            Iterator<Map> resolvedMechanisms = wsAPI.resolveNodes(mechanisms, rcr.knowledge_network).iterator()
+            if (resolvedMechanisms && resolvedMechanisms.hasNext()) {
+                mechanisms.each {
+                    if (!resolvedMechanisms.hasNext()) return null
+                    def node = resolvedMechanisms.next()
+                    if (node) {
+                        mechanismIds.put(it, node)
+                    }
+                }
+            }
+
+            //...add to table
+            scores = scores.collect {
+                Map node = mechanismIds.get(it.get('mechanism') ?: '')
+                it.put('kam_id', node?.id)
+                CyRow row = rstv.addObject(it)
+                assert row, "CyRow does not exist after adding rcr score to view"
+                row
+            }.collect {
+                rstv.getObj(it.get('sdp_mechanism', String.class))
+            }
         }
         tm.progress = 0.5
 
-        // resolve score nodes to rcr knowledge network
-        List<Map> scores = (List<Map>) res.data
-        List<String> mechanisms = scores.collect {
-            it.get('mechanism') ?: ''
-        }
-        WsAPI wsAPI = inferOpenBELWsAPI(api.access().host)
-        Map<String, Map> mechanismIds = [:]
-        Iterator<Map> resolvedMechanisms = wsAPI.resolveNodes(mechanisms, rcr.knowledge_network).iterator()
-        if (resolvedMechanisms && resolvedMechanisms.hasNext()) {
-            mechanisms.each {
-                if (!resolvedMechanisms.hasNext()) return null
-                def node = resolvedMechanisms.next()
-                if (node) {
-                    mechanismIds.put(it, node)
-                }
-            }
-        }
-
-        new Expando(
-                table : rstv.table,
-                scores:
-                        scores.collect {
-                            // Add kam_id for the mechanism
-                            Map node = mechanismIds.get(it.get('mechanism') ?: '')
-                            it.put('kam_id', node?.id)
-
-                            CyRow row = rstv.addObject(it)
-                            assert row, "CyRow does not exist after adding rcr score to view"
-                            row
-                        }.collect {
-                            rstv.getObj(it.get('sdp_mechanism', String.class))
-                        }
-        )
+        new Expando(table : rstv.table, scores: scores)
     }
 }
