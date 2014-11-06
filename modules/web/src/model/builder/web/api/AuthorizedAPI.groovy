@@ -2,6 +2,14 @@ package model.builder.web.api
 
 interface AuthorizedAPI {
 
+    /**
+     * Returns a cloned {@link AccessInformation} object. Changes to the returned
+     * object will not affect this {@link AuthorizedAPI} instance.
+     *
+     * @return cloned {@link AccessInformation}
+     */
+    AccessInformation access()
+
     String uri(Map data)
 
     String id(Map data)

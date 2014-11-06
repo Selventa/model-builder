@@ -1,9 +1,11 @@
 package model.builder.core
 
+import model.builder.web.api.AccessInformation
 import org.cytoscape.model.*
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
+import org.openbel.ws.api.WsAPI
 
 import static model.builder.core.Activator.CY
 import static model.builder.core.Constant.STYLE_NAMES
@@ -366,5 +368,20 @@ class Util {
         } else {
             null
         }
+    }
+
+    static WsAPI inferOpenBELWsAPI(String host = null) {
+        if (!host) {
+            AccessInformation access = CY.apiManager.default
+            if (!access) return null
+            host = access.host
+        }
+        URI openbelURI = CY.wsManager.all.findAll().find() {
+            it.toString().contains(host)
+        }
+        if (!openbelURI) {
+            openbelURI = "https://$host/openbel-ws/belframework.wsdl".toURI()
+        }
+        CY.wsManager.get(openbelURI)
     }
 }

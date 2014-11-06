@@ -41,6 +41,11 @@ class DefaultAuthorizedAPI implements AuthorizedAPI {
     }
 
     @Override
+    AccessInformation access() {
+        this.access
+    }
+
+    @Override
     String uri(Map data) {
         if (data.searchKey) {
             def (type, id) = data.searchKey.split(/:/)
