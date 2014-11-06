@@ -8,12 +8,14 @@ import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
 import org.cytoscape.work.util.ListSingleSelection
+import org.openbel.ws.api.WsAPI
 
 import static MechanismPaintField.fromField
 import static model.builder.core.Activator.CY
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
 import static model.builder.core.Util.createColumn
+import static model.builder.core.Util.inferOpenBELWsAPI
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
@@ -48,14 +50,10 @@ class PaintRcrScoresResource extends AbstractTask {
         Map rcrLoad = loadRcrToTable(api, id)
         if (rcrLoad) {
             tRcr = tunableRcrField()
-            rcr = new Expando(
-                    name:             rcrLoad.name,
-                    knowledgeNetwork: rcrLoad.knowledge_network,
-                    uri:              rcrLoad.uri ,
-                    toString: {
-                        "${rcrLoad.name} (${rcrLoad.uri})"
-                    }
-            )
+            rcr = new Expando(rcrLoad)
+            rcr.setProperty("toString", {
+                "${rcrLoad.name} (${rcrLoad.uri})"
+            })
             tRcr.selectedValue = rcr
         }
     }
@@ -63,7 +61,7 @@ class PaintRcrScoresResource extends AbstractTask {
     @Override
     void run(final TaskMonitor tm) throws Exception {
         tm.title = "Painting RCR Scores for \"${rcr.name}\""
-        Expando rcr = loadRcrScoresToTable(api, id)
+        Expando rcr = loadRcrScoresToTable(api, id, tm)
 
         CyTable scoresTable = rcr.table
         if (scoresTable.rowCount == 0) {
@@ -78,11 +76,15 @@ class PaintRcrScoresResource extends AbstractTask {
         RCRPaint painter = new SdpWebRCRPaint()
         Collection<CyNetwork> networkCol = network.networks
         if (networkCol) {
+            WsAPI wsAPI = inferOpenBELWsAPI(api.access().host)
             int increment = 1.0 / networkCol.size()
             networkCol.each { CyNetwork cyN ->
-                tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
-                copyColumns(scoresTable, scoresTable.primaryKey, cyN.defaultNodeTable,
-                        cyN.defaultNodeTable.getColumn(NAME), false)
+                tm.statusMessage = "Linking \"${cyN.getRow(cyN).get(NAME, String.class)}\""
+                wsAPI.linkNodes(cyN, this.rcr.knowledge_network)
+
+                // copy columns to network nodes based on kam id
+                copyColumns(scoresTable, scoresTable.getColumn('kam_id'), cyN.defaultNodeTable,
+                        cyN.defaultNodeTable.getColumn('kam.id'), false)
 
                 // create column if needed; clear fill values
                 if (cyN.defaultNodeTable.getColumn(SDP_RCR_FILL_COLOR_COLUMN)) {
@@ -131,6 +133,7 @@ class PaintRcrScoresResource extends AbstractTask {
 
                 tm.progress += increment
             }
+            tm.statusMessage = "Painting networks with RCR Scores for \"${rcr.name}\""
             painter.paintMechanisms(paintBy, networkCol)
         }
     }

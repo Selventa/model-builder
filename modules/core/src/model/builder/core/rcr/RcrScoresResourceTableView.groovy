@@ -41,6 +41,7 @@ class RcrScoresResourceTableView extends AbstractCyTableView<String, Map> {
             createColumn(table, 'sdp_observed',     Integer.class, true, null)
             createColumn(table, 'sdp_possible',     Integer.class, true, null)
             createColumn(table, 'sdp_richness',     Double.class,  true, null)
+            createColumn(table, 'kam_id',           String.class,  true, null)
         }
         table
     }
@@ -54,10 +55,11 @@ class RcrScoresResourceTableView extends AbstractCyTableView<String, Map> {
         row.set('sdp_concordance',  convertToDouble (obj.concordance ?: 0.0 ))
         row.set('sdp_contra',       convertToInteger(obj.contra      ?: 0   ))
         row.set('sdp_correct',      convertToInteger(obj.correct     ?: 0   ))
-        row.set('sdp_direction',    obj.direction   ?: ''                    )
+        row.set('sdp_direction',    obj.direction                    ?: ''   )
         row.set('sdp_observed',     convertToInteger(obj.observed    ?: 0   ))
         row.set('sdp_possible',     convertToInteger(obj.possible    ?: 0   ))
         row.set('sdp_richness',     convertToDouble (obj.richness    ?: 0.0 ))
+        row.set('kam_id',           obj.kam_id                       ?: ''   )
         row
     }
 
@@ -78,6 +80,7 @@ class RcrScoresResourceTableView extends AbstractCyTableView<String, Map> {
                 observed            : row.get('sdp_observed',      Integer.class ),
                 possible            : row.get('sdp_possible',      Integer.class ),
                 richness            : row.get('sdp_richness',      Double.class  ),
+                kam_id              : row.get('kam_id',            String.class  )
         ]
     }
 }

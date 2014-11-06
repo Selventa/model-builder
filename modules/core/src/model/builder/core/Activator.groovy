@@ -78,9 +78,9 @@ class Activator extends AbstractCyActivator {
         CY.continuousMapping = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)")
         CY.loadVizmapFileTaskFactory = getService(bc, LoadVizmapFileTaskFactory.class)
         CY.wsManager = getService(bc, WsManager.class)
+        CY.apiManager = getService(bc, APIManager.class)
 
         AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
-        APIManager apiManager = getService(bc, APIManager.class)
         registerAllServices(bc, new Listener(cyr), [:] as Properties)
 
         // Reader / Writer for Model Json format
@@ -91,8 +91,8 @@ class Activator extends AbstractCyActivator {
 
         // Cyto Panels
         AuthorizedAPI api = null
-        if (apiManager.default) {
-            api = apiManager.byAccess(apiManager.default)
+        if (CY.apiManager.default) {
+            api = CY.apiManager.byAccess(CY.apiManager.default)
         }
         RCRPanelComponent rcrPanel = new RCRPanelComponent(api,
                 {
@@ -115,7 +115,7 @@ class Activator extends AbstractCyActivator {
         // ... Add Comparison
         AbstractCyAction importComparison = new AbstractCyAction('Add Comparison') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
+                AuthorizedAPI currentAPI = CY.apiManager.byAccess(CY.apiManager.default);
                 if (!currentAPI) {
                     errorAccessNotSet()
                     return
@@ -138,7 +138,7 @@ class Activator extends AbstractCyActivator {
         // ... Import Model
         AbstractCyAction importModel = new AbstractCyAction('Import') {
             void actionPerformed(ActionEvent ev) {
-                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default);
+                AuthorizedAPI currentAPI = CY.apiManager.byAccess(CY.apiManager.default);
                 if (!currentAPI) {
                     errorAccessNotSet()
                     return
@@ -150,8 +150,8 @@ class Activator extends AbstractCyActivator {
                         models.collect {
                             def tasks = new TaskIterator()
                             def context = ['id': it.id]
-                            tasks.append(new RetrieveModel(context, apiManager))
-                            tasks.append(new RetrieveRevision(context, apiManager))
+                            tasks.append(new RetrieveModel(context, CY.apiManager))
+                            tasks.append(new RetrieveRevision(context, CY.apiManager))
                             tasks.append(new CreateCyNetworkForModelRevision(context, cyr))
                             tasks.append(addBelFac.createTaskIterator())
                             tasks.append(new AddRevisionsTable(context, cyr))
@@ -173,7 +173,7 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Import Model Revision
-        registerService(bc, new ImportRevisionFromMenuFactory(apiManager, cyr, addBelFac),
+        registerService(bc, new ImportRevisionFromMenuFactory(CY.apiManager, cyr, addBelFac),
                 NetworkTaskFactory.class, [
                 id: 'apps_sdp.models.import_revision',
                 preferredMenu: 'Apps.SDP.Models',
@@ -182,7 +182,7 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Save (New revision)
-        registerService(bc, new SaveModelFactory(cyr, apiManager),
+        registerService(bc, new SaveModelFactory(cyr, CY.apiManager),
                 NetworkViewTaskFactory.class, [
                 id: 'apps_sdp.models.save_revision',
                 preferredMenu: 'Apps.SDP.Models',
@@ -192,7 +192,7 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Save as (New model)
-        registerService(bc, new SaveAsNewModelFactory(cyr, apiManager),
+        registerService(bc, new SaveAsNewModelFactory(cyr, CY.apiManager),
                 NetworkViewTaskFactory.class, [
                 id: 'apps_sdp.models.save_as_new_model',
                 preferredMenu: 'Apps.SDP.Models',
@@ -204,16 +204,16 @@ class Activator extends AbstractCyActivator {
         // ... Add Configure
         AbstractCyAction configure = new AbstractCyAction('Configure') {
             void actionPerformed(ActionEvent e) {
-                UI.configuration(apiManager,
+                UI.configuration(CY.apiManager,
                     { host, email, pass ->
-                        def res = apiManager.openAPI(host).apiKeys(email)
+                        def res = CY.apiManager.openAPI(host).apiKeys(email)
                         if (res?.statusCode != 200) return null
 
                         String apiKey = res.data.find {String k -> k.startsWith('api:')}
                         if (!apiKey) return null
 
                         AccessInformation access = new AccessInformation(false, host, email, apiKey, pass)
-                        AuthorizedAPI authAPI = apiManager.byAccess(access)
+                        AuthorizedAPI authAPI = CY.apiManager.byAccess(access)
                         res = authAPI.user(email)
                         switch(res.statusCode) {
                             case 200:
@@ -223,7 +223,7 @@ class Activator extends AbstractCyActivator {
                                 return null
                         }
                     },
-                    apiManager.&saveConfiguration)
+                    CY.apiManager.&saveConfiguration)
             }
         }
         configure.menuGravity = 100.0
@@ -237,7 +237,7 @@ class Activator extends AbstractCyActivator {
         Dialogs dialogs = getService(bc, Dialogs.class)
         AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
-                AuthorizedAPI currentAPI = apiManager.byAccess(apiManager.default)
+                AuthorizedAPI currentAPI = CY.apiManager.byAccess(CY.apiManager.default)
                 if (!currentAPI) {
                     errorAccessNotSet()
                     return
@@ -260,7 +260,7 @@ class Activator extends AbstractCyActivator {
         // ... Add Manage Sets Action
         AbstractCyAction manageSets = new AbstractCyAction('Manage Sets') {
             void actionPerformed(ActionEvent e) {
-                UI.manageSets(apiManager)
+                UI.manageSets(CY.apiManager)
             }
         }
         manageSets.preferredMenu = 'Apps.SDP'
@@ -271,7 +271,7 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         registerService(bc,
-            new CreateSetFactory(apiManager),
+            new CreateSetFactory(CY.apiManager),
             NodeViewTaskFactory.class, [
                 preferredMenu: 'Apps.SDP',
                 menuGravity: 11.0,
