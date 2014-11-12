@@ -60,7 +60,7 @@ project('modules/common') {
     compile files(
       "$rootDir/libs/compile/antlr-runtime-3.3.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
-      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/provided/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
       "$rootDir/libs/compile/jackson-core-2.2.3.jar",
       "$rootDir/libs/compile/jackson-databind-2.2.3.jar",
@@ -131,7 +131,7 @@ project('modules/core') {
       "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-stream-0.6.jar",
-      "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
+      "$rootDir/libs/provided/slf4j-api-1.7.5.jar")
     testCompile fileTree(dir: "$System.env.DEV_CY3_LIBS_DIR", include: '**/*.jar')
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar",
@@ -216,7 +216,7 @@ project('modules/ui') {
     compile files(
       "$rootDir/libs/compile/glazedlists_java15-1.9.0.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
-      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/provided/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/swingx-all-1.6.5-1.jar")
     testCompile files(
       "$rootDir/libs/test/junit-4.11.jar")
@@ -299,7 +299,7 @@ project('modules/web') {
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-wslite-0.8.0.jar",
       "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
-      "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
+      "$rootDir/libs/provided/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
       "$rootDir/libs/compile/jackson-core-2.2.3.jar",
       "$rootDir/libs/compile/jackson-databind-2.2.3.jar",
