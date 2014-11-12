@@ -11,12 +11,13 @@ import org.cytoscape.work.util.ListSingleSelection
 import org.openbel.ws.api.WsAPI
 
 import static MechanismPaintField.fromField
-import static model.builder.core.Activator.CY
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
 import static model.builder.core.Util.createColumn
 import static model.builder.core.Util.inferOpenBELWsAPI
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
+import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
+import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
 import static model.builder.core.rcr.MechanismPaintField.*
@@ -33,8 +34,8 @@ class PaintRcrScoresResource extends AbstractTask {
     public double concordanceCutoff    = 0.1
     @Tunable(gravity = 9.0D,  groups = ['Significance Cutoffs'], description = 'Richness'              )
     public double richnessCutoff       = 0.1
-    @Tunable(gravity = 10.0D, groups = ['Significance Cutoffs'], description = 'Paint Not Significant' )
-    public boolean paintNotSignificant = false
+    @Tunable(gravity = 10.0D, groups = ['Significance Cutoffs'], description = 'Outline Not Significant Scores' )
+    public boolean outlineNotSignificant = false
 
     private Expando network
     private Expando rcr
@@ -86,11 +87,19 @@ class PaintRcrScoresResource extends AbstractTask {
                 copyColumns(scoresTable, scoresTable.getColumn('kam_id'), cyN.defaultNodeTable,
                         cyN.defaultNodeTable.getColumn('kam.id'), false)
 
-                // create column if needed; clear fill values
+                // create columns if needed; clear fill values
                 if (cyN.defaultNodeTable.getColumn(SDP_RCR_FILL_COLOR_COLUMN)) {
                     cyN.defaultNodeTable.deleteColumn(SDP_RCR_FILL_COLOR_COLUMN)
                 }
                 createColumn(cyN.defaultNodeTable, SDP_RCR_FILL_COLOR_COLUMN, String.class, false, null)
+                if (cyN.defaultNodeTable.getColumn(SDP_RCR_TEXT_COLOR_COLUMN)) {
+                    cyN.defaultNodeTable.deleteColumn(SDP_RCR_TEXT_COLOR_COLUMN)
+                }
+                createColumn(cyN.defaultNodeTable, SDP_RCR_TEXT_COLOR_COLUMN, String.class, false, null)
+                if (cyN.defaultNodeTable.getColumn(SDP_RCR_SIGNIFICANT_COLUMN)) {
+                    cyN.defaultNodeTable.deleteColumn(SDP_RCR_SIGNIFICANT_COLUMN)
+                }
+                createColumn(cyN.defaultNodeTable, SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, false, null)
 
                 Map significant = cyN.defaultNodeTable.allRows.groupBy {
                     CyRow row ->
@@ -108,22 +117,32 @@ class PaintRcrScoresResource extends AbstractTask {
                         if (paintBy == DIRECTION) {
                             String dir = row.get('sdp_direction', String.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
+                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, dir))
                         } else if (paintBy == CONCORDANCE) {
                             String dir = row.get('sdp_direction', String.class)
                             Double concordance = row.get('sdp_concordance', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
+                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, concordance))
                         } else if (paintBy == RICHNESS) {
                             String dir = row.get('sdp_direction', String.class)
                             Double richness = row.get('sdp_richness', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
+                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, richness))
                         }
                 }
 
-                // special color for not significant if desired; otherwise show as unmeasured
-                String notSignificantColor = paintNotSignificant ? '#FFC2C2' : '#AAAAAA'
                 significant[false].each {
                     CyRow row ->
-                        row.set(SDP_RCR_FILL_COLOR_COLUMN, notSignificantColor)
+                        row.set(SDP_RCR_FILL_COLOR_COLUMN,  '#FFFFFF')
+                }
+
+                if (outlineNotSignificant) {
+                    significant[true].each {
+                        CyRow row -> row.set(SDP_RCR_SIGNIFICANT_COLUMN, true)
+                    }
+                    significant[false].each {
+                        CyRow row -> row.set(SDP_RCR_SIGNIFICANT_COLUMN, false)
+                    }
                 }
 
                 // unmeasured

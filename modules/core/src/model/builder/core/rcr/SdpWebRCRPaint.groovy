@@ -9,7 +9,12 @@ import java.awt.*
 
 import static model.builder.core.Activator.CY
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
+import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
+import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT
 
 class SdpWebRCRPaint implements RCRPaint {
@@ -17,26 +22,18 @@ class SdpWebRCRPaint implements RCRPaint {
     @Override
     String paintColor(String dir, MechanismPaintField paintByField, Object value) {
         if (!paintByField) throw new NullPointerException('paintByField is null')
-
         if (paintByField == MechanismPaintField.DIRECTION) {
             // duck type on toString
-            String str = value ? value.toString() : null;
+            String str = value ? value.toString() : null
             switch(str) {
                 case 'Down':
                     return '#000666'
                 case 'Up':
                     return '#FFA000'
-                case 'None':
-                    return '#FFFFFF'
-                default:
-                    return '#AAAAAA'
             }
         } else {
             // null when value is not a double
-            if (!(value instanceof Double)) {
-                return null;
-            }
-
+            if (!(value instanceof Double)) return null
             switch(dir) {
                 case 'Down':
                     def down = [(0.0..0.001):  '#000666', (0.001..0.005): '#333399',
@@ -52,15 +49,29 @@ class SdpWebRCRPaint implements RCRPaint {
                     return up.find {
                         it.key.containsWithinBounds(value)
                     }?.value
-                case 'None':
-                    return '#FFFFFF'
-                default:
-                    return '#AAAAAA'
             }
         }
     }
 
-    /**
+    @Override
+    String textColor(String direction, MechanismPaintField paintByField, Object value) {
+        if (!paintByField) throw new NullPointerException('paintByField is null')
+        if (paintByField == MechanismPaintField.DIRECTION) {
+            // duck type on toString
+            String str = value ? value.toString() : null
+            return str.equals('Down') ? '#BBBBBB' : null
+        } else {
+            // null when value is not a double
+            if (!(value instanceof Double)) return null
+            if (direction.equals('Down')) {
+                def down = [(0.0..0.01):  '#BBBBBB']
+                return down.find {
+                    it.key.containsWithinBounds(value)
+                }?.value
+            }
+        }
+    }
+/**
      * FIXME This should apply visualization to multiple CyNetwork!
      */
     @Override
@@ -91,6 +102,20 @@ class SdpWebRCRPaint implements RCRPaint {
                             SDP_RCR_FILL_COLOR_COLUMN, String.class, NODE_FILL_COLOR
                     )
             )
+            rcrStyle.addVisualMappingFunction(
+                    CY.passthroughMapping.createVisualMappingFunction(
+                            SDP_RCR_TEXT_COLOR_COLUMN, String.class, NODE_LABEL_COLOR
+                    )
+            )
+            DiscreteMapping significanceBorder = CY.discreteMapping.createVisualMappingFunction(
+                    SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_PAINT) as DiscreteMapping
+            significanceBorder.putMapValue(Boolean.TRUE,  Color.black)
+            significanceBorder.putMapValue(Boolean.FALSE, Color.red)
+            rcrStyle.addVisualMappingFunction(significanceBorder)
+            DiscreteMapping significanceWidth = CY.discreteMapping.createVisualMappingFunction(
+                    SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_WIDTH) as DiscreteMapping
+            significanceWidth.putMapValue(Boolean.FALSE, 2.0)
+            rcrStyle.addVisualMappingFunction(significanceWidth)
 
             CY.visualMappingManager.addVisualStyle(rcrStyle);
             CY.cyEventHelper.flushPayloadEvents()
