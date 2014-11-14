@@ -7,6 +7,7 @@ import org.cytoscape.model.CyTable
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
+import org.cytoscape.work.util.BoundedDouble
 import org.cytoscape.work.util.ListSingleSelection
 import org.openbel.ws.api.WsAPI
 
@@ -30,11 +31,11 @@ class PaintRcrScoresResource extends AbstractTask {
     private ListSingleSelection<Expando> tRcr
     private ListSingleSelection<String> tPaintBy
 
-    @Tunable(gravity = 8.0D,  groups = ['Significance Cutoffs'], description = 'Concordance'           )
-    public double concordanceCutoff    = 0.1
-    @Tunable(gravity = 9.0D,  groups = ['Significance Cutoffs'], description = 'Richness'              )
-    public double richnessCutoff       = 0.1
-    @Tunable(gravity = 10.0D, groups = ['Significance Cutoffs'], description = 'Outline Not Significant Scores' )
+    @Tunable(gravity = 8.0D,  groups = ['Significance Cutoffs'], description = 'Concordance', params = 'slider=true' )
+    public BoundedDouble concordanceCutoff    = new BoundedDouble(0.0, 0.1, 1.0, true, true)
+    @Tunable(gravity = 9.0D,  groups = ['Significance Cutoffs'], description = 'Richness',    params = 'slider=true' )
+    public BoundedDouble richnessCutoff       = new BoundedDouble(0.0, 0.1, 1.0, true, true)
+    @Tunable(gravity = 10.0D, groups = ['Significance Cutoffs'], description = 'Outline Not Significant Scores'      )
     public boolean outlineNotSignificant = false
 
     private Expando network
@@ -74,6 +75,9 @@ class PaintRcrScoresResource extends AbstractTask {
             throw new IllegalStateException("The selected network(s) do not exist.")
         }
 
+        double richnessControl    = richnessCutoff.getValue()
+        double concordanceControl = concordanceCutoff.getValue()
+
         RCRPaint painter = new SdpWebRCRPaint()
         Collection<CyNetwork> networkCol = network.networks
         if (networkCol) {
@@ -108,7 +112,7 @@ class PaintRcrScoresResource extends AbstractTask {
                         if (!concordance && !richness) {
                             return null
                         }
-                        return (concordance <= concordanceCutoff) && (richness <= richnessCutoff)
+                        return (concordance <= concordanceControl) && (richness <= richnessControl)
                 }
 
                 // set significant color based on scales
