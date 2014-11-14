@@ -56,10 +56,11 @@ class SdpWebRCRPaint implements RCRPaint {
     @Override
     String textColor(String direction, MechanismPaintField paintByField, Object value) {
         if (!paintByField) throw new NullPointerException('paintByField is null')
+        if (!value) return null
+
         if (paintByField == MechanismPaintField.DIRECTION) {
             // duck type on toString
-            String str = value ? value.toString() : null
-            return str.equals('Down') ? '#BBBBBB' : null
+            return value.toString().equals('Down') ? '#BBBBBB' : null
         } else {
             // null when value is not a double
             if (!(value instanceof Double)) return null
