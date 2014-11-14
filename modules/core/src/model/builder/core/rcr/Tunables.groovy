@@ -8,7 +8,7 @@ class Tunables {
 
     static ListSingleSelection<String> tunableScorePaintField() {
         new ListSingleSelection<String>(
-                MechanismPaintField.values().collect { it.field.capitalize()})
+                MechanismPaintField.values().collect { it.toString()})
     }
 
     static ListSingleSelection<Expando> tunableRcrField() {

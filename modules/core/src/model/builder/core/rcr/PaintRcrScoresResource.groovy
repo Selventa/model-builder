@@ -124,12 +124,12 @@ class PaintRcrScoresResource extends AbstractTask {
                             String dir = row.get('sdp_direction', String.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
                             row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, dir))
-                        } else if (paintBy == CONCORDANCE) {
+                        } else if (paintBy == CONCORDANCE || paintBy == CONCORDANCE_AND_DIRECTION) {
                             String dir = row.get('sdp_direction', String.class)
                             Double concordance = row.get('sdp_concordance', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
                             row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, concordance))
-                        } else if (paintBy == RICHNESS) {
+                        } else if (paintBy == RICHNESS || paintBy == RICHNESS_AND_DIRECTION) {
                             String dir = row.get('sdp_direction', String.class)
                             Double richness = row.get('sdp_richness', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
@@ -201,6 +201,6 @@ class PaintRcrScoresResource extends AbstractTask {
     }
     // Called by cytoscape
     public void setTPaintBy(ListSingleSelection<String> sel) {
-        this.paintBy = fromField(sel.selectedValue.toLowerCase())
+        this.paintBy = fromField(sel.selectedValue)
     }
 }

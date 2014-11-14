@@ -11,6 +11,7 @@ import static model.builder.core.Activator.CY
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
+import static model.builder.core.rcr.MechanismPaintField.*
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
@@ -22,15 +23,22 @@ class SdpWebRCRPaint implements RCRPaint {
     @Override
     String paintColor(String dir, MechanismPaintField paintByField, Object value) {
         if (!paintByField) throw new NullPointerException('paintByField is null')
-        if (paintByField == MechanismPaintField.DIRECTION) {
+        if (paintByField == DIRECTION) {
             // duck type on toString
             String str = value ? value.toString() : null
-            switch(str) {
+            switch (str) {
                 case 'Down':
                     return '#000666'
                 case 'Up':
                     return '#FFA000'
             }
+        } else if (paintByField == CONCORDANCE || paintByField == RICHNESS) {
+            def down = [(0.0..0.001):  '#FF00FF', (0.001..0.005): '#FF2FFF',
+                        (0.005..0.01): '#FF5FFF', (0.01..0.05):   '#FF8FFF',
+                        (0.05..0.1):   '#FFBFFF', (0.1..1):       '#FFFFFF']
+            return down.find {
+                it.key.containsWithinBounds(value)
+            }?.value
         } else {
             // null when value is not a double
             if (!(value instanceof Double)) return null
@@ -58,7 +66,7 @@ class SdpWebRCRPaint implements RCRPaint {
         if (!paintByField) throw new NullPointerException('paintByField is null')
         if (!value) return null
 
-        if (paintByField == MechanismPaintField.DIRECTION) {
+        if (paintByField == DIRECTION) {
             // duck type on toString
             return value.toString().equals('Down') ? '#BBBBBB' : null
         } else {

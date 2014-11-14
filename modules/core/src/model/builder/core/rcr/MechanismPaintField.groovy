@@ -1,9 +1,11 @@
 package model.builder.core.rcr
 
 public enum MechanismPaintField {
-    DIRECTION  ("direction",   String.class),
-    CONCORDANCE("concordance", Double.class),
-    RICHNESS   ("richness",    Double.class);
+    DIRECTION                ("Direction",                 String.class),
+    CONCORDANCE              ("Concordance",               Double.class),
+    CONCORDANCE_AND_DIRECTION("Concordance and Direction", Double.class),
+    RICHNESS                 ("Richness",                  Double.class),
+    RICHNESS_AND_DIRECTION   ("Richness and Direction",    Double.class)
 
     String field
     Class<?> type
@@ -18,6 +20,6 @@ public enum MechanismPaintField {
     }
 
     String toString() {
-        this.field.capitalize()
+        field
     }
 }
