@@ -31,11 +31,13 @@ class PaintRcrScoresResource extends AbstractTask {
     private ListSingleSelection<Expando> tRcr
     private ListSingleSelection<String> tPaintBy
 
-    @Tunable(gravity = 8.0D,  groups = ['Significance Cutoffs'], description = 'Concordance', params = 'slider=true' )
+    @Tunable(gravity = 8.0D,  groups = ['Advanced Options'], description = 'Concordance', params = 'slider=true' )
     public BoundedDouble concordanceCutoff    = new BoundedDouble(0.0, 0.1, 1.0, true, true)
-    @Tunable(gravity = 9.0D,  groups = ['Significance Cutoffs'], description = 'Richness',    params = 'slider=true' )
+    @Tunable(gravity = 9.0D,  groups = ['Advanced Options'], description = 'Richness',    params = 'slider=true' )
     public BoundedDouble richnessCutoff       = new BoundedDouble(0.0, 0.1, 1.0, true, true)
-    @Tunable(gravity = 10.0D, groups = ['Significance Cutoffs'], description = 'Outline Not Significant Scores'      )
+    @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Paint Not Scored (Grey)'             )
+    public boolean paintNotScored = false
+    @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Outline Not Significant (Red)'      )
     public boolean outlineNotSignificant = false
 
     private Expando network
@@ -150,8 +152,10 @@ class PaintRcrScoresResource extends AbstractTask {
                 }
 
                 // unmeasured
-                significant[null].each {
-                    it.set(SDP_RCR_FILL_COLOR_COLUMN, '#AAAAAA')
+                if (paintNotScored) {
+                    significant[null].each {
+                        it.set(SDP_RCR_FILL_COLOR_COLUMN, '#AAAAAA')
+                    }
                 }
 
                 tm.progress += increment
