@@ -4,9 +4,9 @@ import org.cytoscape.model.CyNetwork
 
 public interface RCRPaint {
 
-    public String paintColor(String direction, MechanismPaintField paintByField, Object value)
+    public String paintColor(String direction, ScorePaintField paintByField, Object value)
 
-    public String textColor(String direction, MechanismPaintField paintByField, Object value)
+    public String textColor(String direction, ScorePaintField paintByField, Object value)
 
-    public void paintMechanisms(MechanismPaintField paintByField, Collection<CyNetwork> networks)
+    public void paintNetwork(ScorePaintField paintByField, CyNetwork cyN)
 }

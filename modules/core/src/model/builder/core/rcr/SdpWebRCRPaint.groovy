@@ -11,7 +11,8 @@ import static model.builder.core.Activator.CY
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
-import static model.builder.core.rcr.MechanismPaintField.*
+import static ScorePaintField.*
+import static org.cytoscape.model.CyNetwork.NAME;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
@@ -21,7 +22,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_S
 class SdpWebRCRPaint implements RCRPaint {
 
     @Override
-    String paintColor(String dir, MechanismPaintField paintByField, Object value) {
+    String paintColor(String dir, ScorePaintField paintByField, Object value) {
         if (!paintByField) throw new NullPointerException('paintByField is null')
         if (paintByField == DIRECTION) {
             // duck type on toString
@@ -62,7 +63,7 @@ class SdpWebRCRPaint implements RCRPaint {
     }
 
     @Override
-    String textColor(String direction, MechanismPaintField paintByField, Object value) {
+    String textColor(String direction, ScorePaintField paintByField, Object value) {
         if (!paintByField) throw new NullPointerException('paintByField is null')
         if (!value) return null
 
@@ -80,72 +81,101 @@ class SdpWebRCRPaint implements RCRPaint {
             }
         }
     }
-/**
-     * FIXME This should apply visualization to multiple CyNetwork!
-     */
+
     @Override
-    void paintMechanisms(MechanismPaintField paintByField, Collection<CyNetwork> networks) {
-        def minimumStyle = CY.visualMappingManager.allVisualStyles.find {
-            it.title == 'Minimal'
+    void paintNetwork(ScorePaintField paintByField, CyNetwork cyN) {
+        // 1. Find views for network. If none then return.
+        // 2. Iterate views
+        //    (a) retrieve visual style
+        //    (b) create derivative style, named "RCR style for [NETWORK NAME]"
+        //    (c) customize derivative style
+        //    (d) apply to view
+
+        def views = CY.cyNetworkViewManager.getNetworkViews(cyN)
+        if (views.empty) return;
+
+        views.each {
+            CyNetworkView view ->
+                removeStyle(view)
+                def rcrStyle = deriveRcrStyleFromView(view)
+                addStyle(rcrStyle, view)
+                CY.visualMappingManager.setVisualStyle(rcrStyle, view)
         }
 
-        VisualStyle rcrStyle = CY.visualMappingManager.allVisualStyles.find {
-            it.title == 'RCR'
-        }
-        if (!rcrStyle) {
-            rcrStyle = CY.visualStyleFactory.createVisualStyle(minimumStyle)
-            rcrStyle.title = 'RCR'
-            def lock = rcrStyle.allVisualPropertyDependencies.find {
-                it.idString == 'nodeSizeLocked'
-            }
-            if (lock) lock.setDependency(false)
+        views.each {
+            CyNetworkView view ->
+                def style = CY.visualMappingManager.getVisualStyle(view)
 
-            // change node selection color (teal); yellow conflicts with Up color
-            DiscreteMapping selected = CY.discreteMapping.createVisualMappingFunction(
-                    'selected', Boolean.class, NODE_SELECTED_PAINT) as DiscreteMapping
-            selected.putMapValue(Boolean.TRUE, new Color(0x00CCCC))
-            rcrStyle.addVisualMappingFunction(selected)
-
-            rcrStyle.addVisualMappingFunction(
-                    CY.passthroughMapping.createVisualMappingFunction(
-                            SDP_RCR_FILL_COLOR_COLUMN, String.class, NODE_FILL_COLOR
-                    )
-            )
-            rcrStyle.addVisualMappingFunction(
-                    CY.passthroughMapping.createVisualMappingFunction(
-                            SDP_RCR_TEXT_COLOR_COLUMN, String.class, NODE_LABEL_COLOR
-                    )
-            )
-            DiscreteMapping significanceBorder = CY.discreteMapping.createVisualMappingFunction(
-                    SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_PAINT) as DiscreteMapping
-            significanceBorder.putMapValue(Boolean.TRUE,  Color.black)
-            significanceBorder.putMapValue(Boolean.FALSE, Color.red)
-            rcrStyle.addVisualMappingFunction(significanceBorder)
-            DiscreteMapping significanceWidth = CY.discreteMapping.createVisualMappingFunction(
-                    SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_WIDTH) as DiscreteMapping
-            significanceWidth.putMapValue(Boolean.FALSE, 6.0)
-            rcrStyle.addVisualMappingFunction(significanceWidth)
-
-            CY.visualMappingManager.addVisualStyle(rcrStyle);
-            CY.cyEventHelper.flushPayloadEvents()
-        }
-
-        networks.each {
-            CyNetwork cyN ->
-                Collection<CyNetworkView> views = CY.cyNetworkViewManager.getNetworkViews(cyN)
-                views.each {
-                    CyNetworkView view ->
-                        synchronized (view) {
-                            try {
-                                CY.visualMappingManager.setVisualStyle(rcrStyle, view)
-                                rcrStyle.apply(view)
-                                view.updateView()
-                            } catch (ConcurrentModificationException e) {
-                                // cytoscape bug?
-                                // painting seems to apply correctly with the exception
-                            }
-                        }
+                try {
+                    applyStyle(style, view)
+                } catch (ConcurrentModificationException e) {
+                    // cytoscape stacktrace
                 }
         }
+        CY.cyEventHelper.flushPayloadEvents()
+    }
+
+    protected static void removeStyle(CyNetworkView view) {
+        CyNetwork cyN = view.model
+        String title = cyN.getRow(cyN).get(NAME, String.class)
+        String rcrStyleName = "RCR style - $title"
+
+        // remove rcr style for network if it exists
+        def rcrStyle = CY.visualMappingManager.allVisualStyles.find {
+            it.title == rcrStyleName
+        }
+        if (rcrStyle) {
+            CY.visualMappingManager.removeVisualStyle(rcrStyle)
+        }
+        CY.cyEventHelper.flushPayloadEvents()
+    }
+
+    protected static void addStyle(VisualStyle rcrStyle, CyNetworkView view) {
+        CyNetwork cyN = view.model
+        String title = cyN.getRow(cyN).get(NAME, String.class)
+        rcrStyle.title = "RCR style - $title"
+        CY.visualMappingManager.addVisualStyle(rcrStyle)
+        CY.cyEventHelper.flushPayloadEvents()
+    }
+
+    protected static VisualStyle deriveRcrStyleFromView(CyNetworkView view) {
+        def rcrStyle = CY.visualStyleFactory.createVisualStyle(CY.visualMappingManager.getVisualStyle(view))
+        def lock = rcrStyle.allVisualPropertyDependencies.find {
+            it.idString == 'nodeSizeLocked'
+        }
+        if (lock) lock.setDependency(false)
+
+        // change node selection color (teal); yellow conflicts with Up color
+        DiscreteMapping selected = CY.discreteMapping.createVisualMappingFunction(
+                'selected', Boolean.class, NODE_SELECTED_PAINT) as DiscreteMapping
+        selected.putMapValue(Boolean.TRUE, new Color(0x00CCCC))
+        rcrStyle.addVisualMappingFunction(selected)
+
+        rcrStyle.addVisualMappingFunction(
+                CY.passthroughMapping.createVisualMappingFunction(
+                        SDP_RCR_FILL_COLOR_COLUMN, String.class, NODE_FILL_COLOR
+                )
+        )
+        rcrStyle.addVisualMappingFunction(
+                CY.passthroughMapping.createVisualMappingFunction(
+                        SDP_RCR_TEXT_COLOR_COLUMN, String.class, NODE_LABEL_COLOR
+                )
+        )
+        DiscreteMapping significanceBorder = CY.discreteMapping.createVisualMappingFunction(
+                SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_PAINT) as DiscreteMapping
+        significanceBorder.putMapValue(Boolean.TRUE,  Color.black)
+        significanceBorder.putMapValue(Boolean.FALSE, Color.red)
+        rcrStyle.addVisualMappingFunction(significanceBorder)
+        DiscreteMapping significanceWidth = CY.discreteMapping.createVisualMappingFunction(
+                SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_WIDTH) as DiscreteMapping
+        significanceWidth.putMapValue(Boolean.FALSE, 6.0)
+        rcrStyle.addVisualMappingFunction(significanceWidth)
+
+        rcrStyle
+    }
+
+    protected static void applyStyle(VisualStyle style, CyNetworkView view) {
+        style.apply(view)
+        view.updateView()
     }
 }

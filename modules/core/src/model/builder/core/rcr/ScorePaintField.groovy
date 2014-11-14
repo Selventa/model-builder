@@ -1,6 +1,6 @@
 package model.builder.core.rcr
 
-public enum MechanismPaintField {
+public enum ScorePaintField {
     DIRECTION                ("Direction",                 String.class),
     CONCORDANCE              ("Concordance",               Double.class),
     CONCORDANCE_AND_DIRECTION("Concordance and Direction", Double.class),
@@ -10,12 +10,12 @@ public enum MechanismPaintField {
     String field
     Class<?> type
 
-    MechanismPaintField(String field, Class<?> type) {
+    ScorePaintField(String field, Class<?> type) {
         this.field = field
         this.type  = type
     }
 
-    static MechanismPaintField fromField(String field) {
+    static ScorePaintField fromField(String field) {
         values().find { field == it.field }
     }
 

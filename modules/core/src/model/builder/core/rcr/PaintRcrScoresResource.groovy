@@ -11,7 +11,7 @@ import org.cytoscape.work.util.BoundedDouble
 import org.cytoscape.work.util.ListSingleSelection
 import org.openbel.ws.api.WsAPI
 
-import static MechanismPaintField.fromField
+import static ScorePaintField.fromField
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
 import static model.builder.core.Util.createColumn
@@ -21,7 +21,7 @@ import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
-import static model.builder.core.rcr.MechanismPaintField.*
+import static ScorePaintField.*
 import static model.builder.core.rcr.Tunables.tunableRcrField
 import static org.cytoscape.model.CyNetwork.NAME
 
@@ -42,7 +42,7 @@ class PaintRcrScoresResource extends AbstractTask {
 
     private Expando network
     private Expando rcr
-    private MechanismPaintField paintBy
+    private ScorePaintField paintBy
 
     private final AuthorizedAPI api
     private final String        id
@@ -158,10 +158,10 @@ class PaintRcrScoresResource extends AbstractTask {
                     }
                 }
 
+                tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
+                painter.paintNetwork(paintBy, cyN)
                 tm.progress += increment
             }
-            tm.statusMessage = "Painting networks with RCR Scores for \"${rcr.name}\""
-            painter.paintMechanisms(paintBy, networkCol)
         }
     }
 
