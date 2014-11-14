@@ -116,7 +116,7 @@ class PaintRcrScoresResource extends AbstractTask {
                 }
 
                 // set significant color based on scales
-                significant[true].each {
+                cyN.defaultNodeTable.allRows.each {
                     CyRow row ->
                         if (paintBy == DIRECTION) {
                             String dir = row.get('sdp_direction', String.class)
@@ -135,17 +135,17 @@ class PaintRcrScoresResource extends AbstractTask {
                         }
                 }
 
-                significant[false].each {
-                    CyRow row ->
-                        row.set(SDP_RCR_FILL_COLOR_COLUMN,  '#FFFFFF')
-                }
-
                 if (outlineNotSignificant) {
                     significant[true].each {
                         CyRow row -> row.set(SDP_RCR_SIGNIFICANT_COLUMN, true)
                     }
                     significant[false].each {
                         CyRow row -> row.set(SDP_RCR_SIGNIFICANT_COLUMN, false)
+                    }
+                } else {
+                    significant[false].each {
+                        CyRow row ->
+                            row.set(SDP_RCR_FILL_COLOR_COLUMN,  '#FFFFFF')
                     }
                 }
 
