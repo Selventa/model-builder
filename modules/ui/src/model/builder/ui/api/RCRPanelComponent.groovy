@@ -28,6 +28,7 @@ import java.awt.Component
 import java.awt.FlowLayout
 
 import static CytoPanelName.WEST
+import static java.awt.GridBagConstraints.*
 import static model.builder.web.api.Constant.RCR_RESULT_TYPE
 
 public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessInformationListener {
@@ -37,13 +38,11 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
     private JPanel                panel
     private JList                 tags
     private SearchTableScrollable searchTable
-    private Closure               onViewDetail
     private Closure               onPaintScores
 
-    RCRPanelComponent(AuthorizedAPI api, Closure onViewDetail, Closure onPaintScores) {
+    RCRPanelComponent(AuthorizedAPI api, Closure onPaintScores) {
         this.swing = Activator.swing
         this.api = api
-        this.onViewDetail  = onViewDetail
         this.onPaintScores = onPaintScores
         this.panel = initUI()
     }
@@ -82,7 +81,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
     private JPanel initUI() {
         swing.panel() {
             def JTextField name
-            def JButton viewButton, paintButton
+            def JButton paintButton
 
             borderLayout()
             splitPane(orientation: JSplitPane.VERTICAL_SPLIT,
@@ -115,7 +114,6 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                     searchTable = searchTableScrollable(constraints: BorderLayout.CENTER)
                     searchTable.table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
                     searchTable.table.selectionModel.addListSelectionListener({ evt ->
-                        viewButton.enabled = true
                         paintButton.enabled = true
                     } as ListSelectionListener)
                     panel(constraints: BorderLayout.SOUTH) {
@@ -135,19 +133,6 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
                                     ]
                                     searchTable.searchProvider = new SearchProvider(api, search)
                                 }
-                            }
-                        })
-                        viewButton = button(text: 'View', enabled: false, actionPerformed: {
-                            JXTable table = (JXTable) searchTable.getTable()
-                            def data = ((AdvancedTableModel<Expando>) table.model)
-                            def selected = table.selectedRows.collect {
-                                int viewIndex ->
-                                    def modelIndex = table.convertRowIndexToModel(viewIndex)
-                                    data.getElementAt(modelIndex)
-                            }
-
-                            swing.doOutside {
-                                onViewDetail.call(api, selected.collect { it.id })
                             }
                         })
                         paintButton = button(text: 'Paint Scores', enabled: false, actionPerformed: {
