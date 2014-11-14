@@ -77,15 +77,15 @@ class SdpWebRCRPaint implements RCRPaint {
      */
     @Override
     void paintMechanisms(MechanismPaintField paintByField, Collection<CyNetwork> networks) {
-        def kamStyle = CY.visualMappingManager.allVisualStyles.find {
-            it.title == 'KAM Visualization'
+        def minimumStyle = CY.visualMappingManager.allVisualStyles.find {
+            it.title == 'Minimal'
         }
 
         VisualStyle rcrStyle = CY.visualMappingManager.allVisualStyles.find {
             it.title == 'RCR'
         }
         if (!rcrStyle) {
-            rcrStyle = CY.visualStyleFactory.createVisualStyle(kamStyle)
+            rcrStyle = CY.visualStyleFactory.createVisualStyle(minimumStyle)
             rcrStyle.title = 'RCR'
             def lock = rcrStyle.allVisualPropertyDependencies.find {
                 it.idString == 'nodeSizeLocked'
