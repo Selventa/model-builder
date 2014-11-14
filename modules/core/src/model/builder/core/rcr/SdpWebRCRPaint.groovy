@@ -115,7 +115,7 @@ class SdpWebRCRPaint implements RCRPaint {
             rcrStyle.addVisualMappingFunction(significanceBorder)
             DiscreteMapping significanceWidth = CY.discreteMapping.createVisualMappingFunction(
                     SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_WIDTH) as DiscreteMapping
-            significanceWidth.putMapValue(Boolean.FALSE, 2.0)
+            significanceWidth.putMapValue(Boolean.FALSE, 6.0)
             rcrStyle.addVisualMappingFunction(significanceWidth)
 
             CY.visualMappingManager.addVisualStyle(rcrStyle);
