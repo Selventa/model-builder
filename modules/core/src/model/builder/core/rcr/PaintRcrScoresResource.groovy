@@ -32,9 +32,9 @@ class PaintRcrScoresResource extends AbstractTask {
     private ListSingleSelection<String> tPaintBy
 
     @Tunable(gravity = 8.0D,  groups = ['Advanced Options'], description = 'Concordance', params = 'slider=true', tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.' )
-    public BoundedDouble concordanceCutoff    = new BoundedDouble(0.0, 0.1, 1.0, true, true)
+    public BoundedDouble concordanceCutoff    = new BoundedDouble(0.0, 0.1, 1.0, false, false)
     @Tunable(gravity = 9.0D,  groups = ['Advanced Options'], description = 'Richness',    params = 'slider=true', tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.' )
-    public BoundedDouble richnessCutoff       = new BoundedDouble(0.0, 0.1, 1.0, true, true)
+    public BoundedDouble richnessCutoff       = new BoundedDouble(0.0, 0.1, 1.0, false, false)
     @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Paint Not Scored (Grey)',       tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.'             )
     public boolean paintNotScored = false
     @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Outline Not Significant (Red)', tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.'     )
