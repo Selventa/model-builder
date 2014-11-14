@@ -159,7 +159,7 @@ public class RCRPanelComponent implements CytoPanelComponent, SetDefaultAccessIn
     private void loadTags() {
         // load tags outside EDT
         if (api) {
-            swing.doOutside {
+            Thread.start {
                 WebResponse res = api.tags([RCR_RESULT_TYPE])
 
                 def facetTags = res.data.facet_counts.facet_fields.tags
