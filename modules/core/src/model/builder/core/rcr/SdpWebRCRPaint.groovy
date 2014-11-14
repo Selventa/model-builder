@@ -126,9 +126,11 @@ class SdpWebRCRPaint implements RCRPaint {
             CyNetwork cyN ->
                 Collection<CyNetworkView> views = CY.cyNetworkViewManager.getNetworkViews(cyN)
                 views.each {
-                    CY.visualMappingManager.setVisualStyle(rcrStyle, it)
-                    rcrStyle.apply(it)
-                    it.updateView()
+                    synchronized (it) {
+                        CY.visualMappingManager.setVisualStyle(rcrStyle, it)
+                        rcrStyle.apply(it)
+                        it.updateView()
+                    }
                 }
         }
     }
