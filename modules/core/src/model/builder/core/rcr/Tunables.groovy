@@ -6,7 +6,7 @@ import static model.builder.core.rcr.Constant.SDP_URI_COLUMN
 
 class Tunables {
 
-    static ListSingleSelection<String> tunableMechanismPaintField() {
+    static ListSingleSelection<String> tunableScorePaintField() {
         new ListSingleSelection<String>(
                 MechanismPaintField.values().collect { it.field.capitalize()})
     }

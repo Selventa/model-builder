@@ -188,10 +188,10 @@ class PaintRcrScoresResource extends AbstractTask {
         this.rcr = sel.selectedValue
     }
     // Called by cytoscape
-    @Tunable(gravity = 2.0D, description = "Paint Mechanism By")
+    @Tunable(gravity = 2.0D, description = "Paint Score By")
     public ListSingleSelection<String> getTPaintBy() {
         if (!tPaintBy) {
-            tPaintBy = Tunables.tunableMechanismPaintField()
+            tPaintBy = Tunables.tunableScorePaintField()
         }
         tPaintBy
     }
