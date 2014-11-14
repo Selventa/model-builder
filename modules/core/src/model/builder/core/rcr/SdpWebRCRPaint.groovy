@@ -126,11 +126,17 @@ class SdpWebRCRPaint implements RCRPaint {
             CyNetwork cyN ->
                 Collection<CyNetworkView> views = CY.cyNetworkViewManager.getNetworkViews(cyN)
                 views.each {
-                    synchronized (it) {
-                        CY.visualMappingManager.setVisualStyle(rcrStyle, it)
-                        rcrStyle.apply(it)
-                        it.updateView()
-                    }
+                    CyNetworkView view ->
+                        synchronized (view) {
+                            try {
+                                CY.visualMappingManager.setVisualStyle(rcrStyle, view)
+                                rcrStyle.apply(view)
+                                view.updateView()
+                            } catch (ConcurrentModificationException e) {
+                                // cytoscape bug?
+                                // painting seems to apply correctly with the exception
+                            }
+                        }
                 }
         }
     }
