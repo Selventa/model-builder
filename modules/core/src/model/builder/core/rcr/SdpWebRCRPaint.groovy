@@ -190,5 +190,9 @@ class SdpWebRCRPaint implements RCRPaint {
     protected static void applyStyle(VisualStyle style, CyNetworkView view) {
         style.apply(view)
         view.updateView()
+        Thread.start {
+            sleep(500)
+            view.updateView()
+        }
     }
 }
