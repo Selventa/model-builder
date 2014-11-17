@@ -96,9 +96,7 @@ class SdpWebRCRPaint implements RCRPaint {
 
         views.each {
             CyNetworkView view ->
-                removeStyle(view)
-                def rcrStyle = deriveRcrStyleFromView(view)
-                addStyle(rcrStyle, view)
+                def rcrStyle = getStyle(view)
                 CY.visualMappingManager.setVisualStyle(rcrStyle, view)
         }
 
@@ -115,31 +113,39 @@ class SdpWebRCRPaint implements RCRPaint {
         CY.cyEventHelper.flushPayloadEvents()
     }
 
-    protected static void removeStyle(CyNetworkView view) {
+    protected static VisualStyle getStyle(CyNetworkView view) {
         CyNetwork cyN = view.model
         String title = cyN.getRow(cyN).get(NAME, String.class)
         String rcrStyleName = "RCR style - $title"
 
-        // remove rcr style for network if it exists
+        def viewStyle = CY.visualMappingManager.getVisualStyle(view)
         def rcrStyle = CY.visualMappingManager.allVisualStyles.find {
             it.title == rcrStyleName
         }
+
         if (rcrStyle) {
-            CY.visualMappingManager.removeVisualStyle(rcrStyle)
+            // View style changed, reapply RCR style
+            if (viewStyle.title != rcrStyle.title) {
+                CY.visualMappingManager.removeVisualStyle(rcrStyle)
+                rcrStyle = deriveStyle(viewStyle, rcrStyleName)
+            }
+        } else {
+            // create new RCR style
+            rcrStyle = deriveStyle(viewStyle, rcrStyleName)
         }
         CY.cyEventHelper.flushPayloadEvents()
+        rcrStyle
     }
 
-    protected static void addStyle(VisualStyle rcrStyle, CyNetworkView view) {
-        CyNetwork cyN = view.model
-        String title = cyN.getRow(cyN).get(NAME, String.class)
-        rcrStyle.title = "RCR style - $title"
-        CY.visualMappingManager.addVisualStyle(rcrStyle)
-        CY.cyEventHelper.flushPayloadEvents()
+    protected static VisualStyle deriveStyle(VisualStyle style, String newStyleTitle) {
+        def derivedStyle = CY.visualStyleFactory.createVisualStyle(style)
+        derivedStyle.title = newStyleTitle
+        addVisualFunctions(derivedStyle)
+        CY.visualMappingManager.addVisualStyle(derivedStyle)
+        derivedStyle
     }
 
-    protected static VisualStyle deriveRcrStyleFromView(CyNetworkView view) {
-        def rcrStyle = CY.visualStyleFactory.createVisualStyle(CY.visualMappingManager.getVisualStyle(view))
+    protected static void addVisualFunctions(VisualStyle rcrStyle) {
         def lock = rcrStyle.allVisualPropertyDependencies.find {
             it.idString == 'nodeSizeLocked'
         }
