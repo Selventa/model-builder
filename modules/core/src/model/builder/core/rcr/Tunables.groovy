@@ -20,7 +20,7 @@ class Tunables {
                         name    : rcr.name,
                         uri     : rcr[SDP_URI_COLUMN] ,
                         toString: {
-                            "${rcr.name} (${rcr[SDP_URI_COLUMN]})"
+                            "${rcr.name}"
                         }
                 )
         }.sort {
