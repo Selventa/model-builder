@@ -75,7 +75,7 @@ class PaintRcrScoresResource extends AbstractTask {
 
     @Override
     void run(final TaskMonitor tm) throws Exception {
-        tm.title = "Painting RCR Scores for \"${rcr.name}\""
+        tm.title = "Painting RCR Scores"
         Expando rcr = loadRcrScoresToTable(api, id, tm)
 
         CyTable scoresTable = rcr.table

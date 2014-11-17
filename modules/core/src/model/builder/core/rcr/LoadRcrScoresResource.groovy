@@ -34,6 +34,7 @@ class LoadRcrScoresResource extends AbstractTask {
 
     static Expando loadRcrScoresToTable(AuthorizedAPI api, String id, TaskMonitor tm) {
         // load rcr
+        tm.statusMessage = 'Retrieving RCR Result'
         def rcr = loadRcrToTable(api, id)
 
         // check if rcr scores were loaded/resolved
@@ -42,6 +43,7 @@ class LoadRcrScoresResource extends AbstractTask {
         List<Map> scores = rstv.getAll()
         if (scores.empty) {
             //...need to fetch rcr scores
+            tm.statusMessage = 'Retrieving RCR Scores'
             WebResponse res = api.rcrResultScores(id)
             if (res.statusCode != 200) {
                 throw new RuntimeException('Error loading SDP RCR scores')
@@ -49,6 +51,7 @@ class LoadRcrScoresResource extends AbstractTask {
             scores = (List<Map>) res.data
 
             //...resolve score nodes to rcr knowledge network
+            tm.statusMessage = "Linking RCR Scores to \"${rcr.knowledge_network}\" (Knowledge Network)"
             List<String> mechanisms = scores.collect {
                 it.get('mechanism').toString() ?: ''
             }
