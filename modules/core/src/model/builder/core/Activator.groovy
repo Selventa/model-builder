@@ -1,7 +1,6 @@
 package model.builder.core
 
 import model.builder.core.event.SessionLoadListener
-import model.builder.core.rcr.LoadRcrResourceFactory
 import model.builder.core.rcr.PaintRcrScoresResourceFactory
 import model.builder.ui.UI
 import model.builder.ui.api.Dialogs

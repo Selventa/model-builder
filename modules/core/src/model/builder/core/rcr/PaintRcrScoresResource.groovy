@@ -13,6 +13,7 @@ import org.openbel.ws.api.WsAPI
 
 import java.text.DecimalFormat
 
+import static ScorePaintField.*
 import static ScorePaintField.fromField
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
@@ -24,13 +25,16 @@ import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TOOLTIP_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
-import static ScorePaintField.*
 import static model.builder.core.rcr.Tunables.tunableRcrField
 import static org.cytoscape.model.CyNetwork.NAME
 
+/**
+ * TODO Separate tunable state from class for functional reuse.
+ */
 class PaintRcrScoresResource extends AbstractTask {
 
     private static DecimalFormat decimalFormat = new DecimalFormat('0.##E0')
+    private static Map tunableState = null
 
     private ListSingleSelection<Expando> tNetwork
     private ListSingleSelection<Expando> tRcr
@@ -65,6 +69,8 @@ class PaintRcrScoresResource extends AbstractTask {
             })
             tRcr.selectedValue = rcr
         }
+
+        loadTunableState()
     }
 
     @Override
@@ -78,19 +84,15 @@ class PaintRcrScoresResource extends AbstractTask {
             return
         }
 
-        if (!network?.networks) {
-            throw new IllegalStateException("The selected network(s) do not exist.")
-        }
-
         double richnessControl    = richnessCutoff.getValue()
         double concordanceControl = concordanceCutoff.getValue()
 
         RCRPaint painter = new SdpWebRCRPaint()
-        Collection<CyNetwork> networkCol = network.networks
-        if (networkCol) {
+        Collection<CyNetwork> networkColl = network.networks.call()
+        if (networkColl) {
             WsAPI wsAPI = inferOpenBELWsAPI(api.access().host)
-            int increment = 1.0 / networkCol.size()
-            networkCol.each { CyNetwork cyN ->
+            int increment = 1.0 / networkColl.size()
+            networkColl.each { CyNetwork cyN ->
                 tm.statusMessage = "Linking \"${cyN.getRow(cyN).get(NAME, String.class)}\""
                 wsAPI.linkNodes(cyN, this.rcr.knowledge_network)
 
@@ -180,6 +182,38 @@ class PaintRcrScoresResource extends AbstractTask {
                 tm.statusMessage = "Painting \"${cyN.getRow(cyN).get(NAME, String.class)}\""
                 painter.paintNetwork(paintBy, cyN)
                 tm.progress += increment
+            }
+        }
+
+        // save tunable state
+        synchronized (getClass()) {
+            tunableState = [
+                    TRcr                 : tRcr.selectedValue,
+                    TNetwork             : tNetwork.selectedValue,
+                    TPaintBy             : tPaintBy.selectedValue,
+                    concordanceCutoff    : concordanceCutoff.getValue(),
+                    richnessCutoff       : richnessCutoff.getValue(),
+                    paintNotScored       : paintNotScored,
+                    outlineNotSignificant: outlineNotSignificant
+            ]
+        }
+    }
+
+    private void loadTunableState() {
+        if (tunableState) {
+            synchronized (getClass()) {
+                tunableState.findAll {
+                    this.hasProperty(it.key.toString())
+                }.each {
+                    def prop = this.getProperty(it.key.toString())
+                    if (prop instanceof ListSingleSelection) {
+                        ((ListSingleSelection) prop).selectedValue = it.value
+                    } else if (prop instanceof BoundedDouble) {
+                        ((BoundedDouble) prop).setValue((Double) it.value)
+                    } else {
+                        setProperty(it.key.toString(), it.value)
+                    }
+                }
             }
         }
     }

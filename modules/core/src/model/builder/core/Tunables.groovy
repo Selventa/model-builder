@@ -15,7 +15,9 @@ class Tunables {
                 it.getRow(it).get(NAME, String.class)
             }.collect { CyNetwork network ->
                 new Expando(
-                        networks: [network],
+                        networks: {
+                            [network]
+                        },
                         toString: {
                             network.getRow(network).get(NAME, String.class)
                         }
@@ -30,16 +32,20 @@ class Tunables {
 
         choices.add(0,
             new Expando(
-                    networks: CY.cyNetworkManager.networkSet.findAll {
-                        CyNetwork network ->
-                        network.getRow(network).get(SELECTED, Boolean.class)
+                    networks: {
+                        CY.cyNetworkManager.networkSet.findAll {
+                            CyNetwork network ->
+                            network.getRow(network).get(SELECTED, Boolean.class)
+                        }
                     },
                     toString: { "Selected Networks" }
             )
         )
         choices.add(0,
             new Expando(
-                    networks: CY.cyNetworkManager.networkSet,
+                    networks: {
+                        CY.cyNetworkManager.networkSet
+                    },
                     toString: { "All Networks" }
             )
         )
@@ -51,7 +57,9 @@ class Tunables {
             if (selNetworks.size() == 1) {
                 CyNetwork cyN = selNetworks.first()
                 networkTunable.selectedValue = new Expando(
-                        networks: [cyN],
+                        networks: {
+                            [cyN]
+                        },
                         toString: {
                             cyN.getRow(cyN).get(NAME, String.class)
                         }
