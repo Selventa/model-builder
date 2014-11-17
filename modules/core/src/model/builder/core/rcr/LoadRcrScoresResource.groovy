@@ -56,6 +56,12 @@ class LoadRcrScoresResource extends AbstractTask {
                 it.get('mechanism').toString() ?: ''
             }
             WsAPI wsAPI = inferOpenBELWsAPI(api.access().host)
+            if (!wsAPI) {
+                throw new RuntimeException("No access configured in KamNav for ${api.access().host}.")
+            }
+            if (!wsAPI.knowledgeNetworks().containsKey(rcr.knowledge_network.toString())) {
+                throw new RuntimeException("Knowledge network \"${rcr.knowledge_network}\" is not available in KamNav for ${api.access().host}.")
+            }
             Map<String, Map> mechanismIds = [:]
             Iterator<Map> resolvedMechanisms = wsAPI.resolveNodes(mechanisms, rcr.knowledge_network).iterator()
             if (resolvedMechanisms && resolvedMechanisms.hasNext()) {
