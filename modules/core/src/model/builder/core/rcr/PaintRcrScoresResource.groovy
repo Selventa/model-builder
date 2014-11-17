@@ -7,7 +7,6 @@ import org.cytoscape.model.CyTable
 import org.cytoscape.work.AbstractTask
 import org.cytoscape.work.TaskMonitor
 import org.cytoscape.work.Tunable
-import org.cytoscape.work.util.BoundedDouble
 import org.cytoscape.work.util.ListSingleSelection
 import org.openbel.ws.api.WsAPI
 
@@ -40,13 +39,33 @@ class PaintRcrScoresResource extends AbstractTask {
     private ListSingleSelection<Expando> tRcr
     private ListSingleSelection<String> tPaintBy
 
-    @Tunable(gravity = 8.0D,  groups = ['Advanced Options'], description = 'Concordance', params = 'slider=true', tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.' )
-    public BoundedDouble concordanceCutoff    = new BoundedDouble(0.0, 0.1, 1.0, false, false)
-    @Tunable(gravity = 9.0D,  groups = ['Advanced Options'], description = 'Richness',    params = 'slider=true', tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.' )
-    public BoundedDouble richnessCutoff       = new BoundedDouble(0.0, 0.1, 1.0, false, false)
-    @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Paint Not Scored (Grey)',       tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.'             )
-    public boolean paintNotScored = false
-    @Tunable(gravity = 10.0D, groups = ['Advanced Options'], description = 'Outline Not Significant (Red)', tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.'     )
+    @Tunable(
+            gravity = 8.0D,
+            groups = ['Advanced Options'],
+            description = 'Concordance',
+            tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.'
+    )
+    public Double concordanceCutoff      = 0.1D
+    @Tunable(
+            gravity = 9.0D,
+            groups = ['Advanced Options'],
+            description = 'Richness',
+            tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.'
+    )
+    public Double richnessCutoff         = 0.1D
+    @Tunable(
+            gravity = 10.0D,
+            groups = ['Advanced Options'],
+            description = 'Paint Not Scored (Grey)',
+            tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.'
+    )
+    public boolean paintNotScored        = false
+    @Tunable(
+            gravity = 10.0D,
+            groups = ['Advanced Options'],
+            description = 'Outline Not Significant (Red)',
+            tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.'
+    )
     public boolean outlineNotSignificant = false
 
     private Expando network
@@ -83,9 +102,6 @@ class PaintRcrScoresResource extends AbstractTask {
             // TODO Report no scores.
             return
         }
-
-        double richnessControl    = richnessCutoff.getValue()
-        double concordanceControl = concordanceCutoff.getValue()
 
         RCRPaint painter = new SdpWebRCRPaint()
         Collection<CyNetwork> networkColl = network.networks.call()
@@ -125,7 +141,7 @@ class PaintRcrScoresResource extends AbstractTask {
                         if (!concordance && !richness) {
                             return null
                         }
-                        return (concordance <= concordanceControl) && (richness <= richnessControl)
+                        return (concordance <= concordanceCutoff) && (richness <= richnessCutoff)
                 }
 
                 // set significant color based on scales
@@ -191,8 +207,8 @@ class PaintRcrScoresResource extends AbstractTask {
                     TRcr                 : tRcr.selectedValue,
                     TNetwork             : tNetwork.selectedValue,
                     TPaintBy             : tPaintBy.selectedValue,
-                    concordanceCutoff    : concordanceCutoff.getValue(),
-                    richnessCutoff       : richnessCutoff.getValue(),
+                    concordanceCutoff    : concordanceCutoff,
+                    richnessCutoff       : richnessCutoff,
                     paintNotScored       : paintNotScored,
                     outlineNotSignificant: outlineNotSignificant
             ]
@@ -208,8 +224,6 @@ class PaintRcrScoresResource extends AbstractTask {
                     def prop = this.getProperty(it.key.toString())
                     if (prop instanceof ListSingleSelection) {
                         ((ListSingleSelection) prop).selectedValue = it.value
-                    } else if (prop instanceof BoundedDouble) {
-                        ((BoundedDouble) prop).setValue((Double) it.value)
                     } else {
                         setProperty(it.key.toString(), it.value)
                     }
