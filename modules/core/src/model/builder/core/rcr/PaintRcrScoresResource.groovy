@@ -11,6 +11,8 @@ import org.cytoscape.work.util.BoundedDouble
 import org.cytoscape.work.util.ListSingleSelection
 import org.openbel.ws.api.WsAPI
 
+import java.text.DecimalFormat
+
 import static ScorePaintField.fromField
 import static model.builder.core.Tunables.tunableNetworkCategory
 import static model.builder.core.Util.copyColumns
@@ -19,6 +21,7 @@ import static model.builder.core.Util.inferOpenBELWsAPI
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
+import static model.builder.core.rcr.Constant.SDP_RCR_TOOLTIP_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
 import static ScorePaintField.*
@@ -26,6 +29,8 @@ import static model.builder.core.rcr.Tunables.tunableRcrField
 import static org.cytoscape.model.CyNetwork.NAME
 
 class PaintRcrScoresResource extends AbstractTask {
+
+    private static DecimalFormat decimalFormat = new DecimalFormat('0.##E0')
 
     private ListSingleSelection<Expando> tNetwork
     private ListSingleSelection<Expando> tRcr
@@ -106,6 +111,10 @@ class PaintRcrScoresResource extends AbstractTask {
                     cyN.defaultNodeTable.deleteColumn(SDP_RCR_SIGNIFICANT_COLUMN)
                 }
                 createColumn(cyN.defaultNodeTable, SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, false, null)
+                if (cyN.defaultNodeTable.getColumn(SDP_RCR_TOOLTIP_COLUMN)) {
+                    cyN.defaultNodeTable.deleteColumn(SDP_RCR_TOOLTIP_COLUMN)
+                }
+                createColumn(cyN.defaultNodeTable, SDP_RCR_TOOLTIP_COLUMN, String.class, false, null)
 
                 Map significant = cyN.defaultNodeTable.allRows.groupBy {
                     CyRow row ->
@@ -120,20 +129,30 @@ class PaintRcrScoresResource extends AbstractTask {
                 // set significant color based on scales
                 cyN.defaultNodeTable.allRows.each {
                     CyRow row ->
+                        String dir = row.get('sdp_direction', String.class)
+                        Double concordance = row.get('sdp_concordance', Double.class)
+                        Double richness = row.get('sdp_richness', Double.class)
+
                         if (paintBy == DIRECTION) {
-                            String dir = row.get('sdp_direction', String.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
                             row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, dir))
                         } else if (paintBy == CONCORDANCE || paintBy == CONCORDANCE_AND_DIRECTION) {
-                            String dir = row.get('sdp_direction', String.class)
-                            Double concordance = row.get('sdp_concordance', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
                             row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, concordance))
                         } else if (paintBy == RICHNESS || paintBy == RICHNESS_AND_DIRECTION) {
-                            String dir = row.get('sdp_direction', String.class)
-                            Double richness = row.get('sdp_richness', Double.class)
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
                             row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, richness))
+                        }
+
+                        String tooltip = ['sdp_concordance', 'sdp_richness'].collect {
+                            String key ->
+                                Double value = row.get(key, Double.class)
+                                value != null ?
+                                        "${key.substring(4)}: ${decimalFormat.format(value)}" :
+                                        null
+                        }.findAll().join(', ')
+                        if (tooltip) {
+                            row.set(SDP_RCR_TOOLTIP_COLUMN, tooltip)
                         }
                 }
 

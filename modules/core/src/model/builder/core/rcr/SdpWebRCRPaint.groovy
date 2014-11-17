@@ -4,6 +4,7 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.view.model.CyNetworkView
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping
 
 import java.awt.*
 
@@ -12,12 +13,14 @@ import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
 import static ScorePaintField.*
+import static model.builder.core.rcr.Constant.SDP_RCR_TOOLTIP_COLUMN
 import static org.cytoscape.model.CyNetwork.NAME;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP
 
 class SdpWebRCRPaint implements RCRPaint {
 
@@ -176,6 +179,10 @@ class SdpWebRCRPaint implements RCRPaint {
                 SDP_RCR_SIGNIFICANT_COLUMN, Boolean.class, NODE_BORDER_WIDTH) as DiscreteMapping
         significanceWidth.putMapValue(Boolean.FALSE, 6.0)
         rcrStyle.addVisualMappingFunction(significanceWidth)
+
+        PassthroughMapping tooltip = CY.passthroughMapping.createVisualMappingFunction(
+                SDP_RCR_TOOLTIP_COLUMN, String.class, NODE_TOOLTIP) as PassthroughMapping
+        rcrStyle.addVisualMappingFunction(tooltip)
 
         rcrStyle
     }
