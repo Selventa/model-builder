@@ -43,7 +43,8 @@ class PaintRcrScoresResource extends AbstractTask {
             groups = ['Advanced Options'],
             description = 'Concordance',
             tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.',
-            params="displayState=collapsed"
+            params = 'displayState=collapsed',
+            format=''
     )
     public Double concordanceCutoff      = 0.1D
     @Tunable(
@@ -51,7 +52,8 @@ class PaintRcrScoresResource extends AbstractTask {
             groups = ['Advanced Options'],
             description = 'Richness',
             tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.',
-            params="displayState=collapsed"
+            params = 'displayState=collapsed',
+            format=''
     )
     public Double richnessCutoff         = 0.1D
     @Tunable(
@@ -59,7 +61,7 @@ class PaintRcrScoresResource extends AbstractTask {
             groups = ['Advanced Options'],
             description = 'Paint Not Scored (Grey)',
             tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.',
-            params="displayState=collapsed"
+            params = 'displayState=collapsed'
     )
     public boolean paintNotScored        = false
     @Tunable(
@@ -67,7 +69,7 @@ class PaintRcrScoresResource extends AbstractTask {
             groups = ['Advanced Options'],
             description = 'Outline Not Significant (Red)',
             tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.',
-            params="displayState=collapsed"
+            params = 'displayState=collapsed'
     )
     public boolean outlineNotSignificant = false
 
@@ -231,7 +233,11 @@ class PaintRcrScoresResource extends AbstractTask {
     /* Tunables */
 
     // Called by cytoscape
-    @Tunable(gravity = 3.0D, description = "Network(s) to Paint", tooltip = 'This controls which networks will be painted with RCR data.')
+    @Tunable(
+            gravity = 3.0D,
+            description = "Network(s) to Paint",
+            tooltip = 'This controls which networks will be painted with RCR data.'
+    )
     public ListSingleSelection<Expando> getTNetwork() {
         if (!tNetwork) {
             tNetwork = tunableNetworkCategory()
@@ -243,7 +249,11 @@ class PaintRcrScoresResource extends AbstractTask {
         this.network = sel.selectedValue
     }
     // Called by cytoscape
-    @Tunable(gravity = 1.0D, description = "RCR to Paint", tooltip = 'This controls which RCR will be painted.')
+    @Tunable(
+            gravity = 1.0D,
+            description = 'RCR to Paint',
+            tooltip = 'This controls which RCR will be painted.'
+    )
     public ListSingleSelection<Expando> getTRcr() {
         if (!tRcr) {
             tRcr = tunableRcrField()
@@ -258,9 +268,9 @@ class PaintRcrScoresResource extends AbstractTask {
     @Tunable(
             gravity = 7.0D,
             groups = ['Advanced Options'],
-            description = "Paint Score By",
+            description = 'Paint Score By',
             tooltip = 'This controls which RCR score value to paint (e.g. Direction, Concordance, Richness)',
-            params="displayState=collapsed"
+            params = 'displayState=collapsed'
     )
     public ListSingleSelection<String> getTPaintBy() {
         if (!tPaintBy) {
