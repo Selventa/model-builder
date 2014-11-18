@@ -32,9 +32,9 @@ class SdpWebRCRPaint implements RCRPaint {
             String str = value ? value.toString() : null
             switch (str) {
                 case 'Down':
-                    return '#000666'
+                    return '#6666CC'
                 case 'Up':
-                    return '#FFA000'
+                    return '#FFE800'
             }
         } else if (paintByField == CONCORDANCE || paintByField == RICHNESS) {
             def down = [(0.0..0.001):  '#FF00FF', (0.001..0.005): '#FF2FFF',
@@ -61,26 +61,6 @@ class SdpWebRCRPaint implements RCRPaint {
                     return up.find {
                         it.key.containsWithinBounds(value)
                     }?.value
-            }
-        }
-    }
-
-    @Override
-    String textColor(String direction, ScorePaintField paintByField, Object value) {
-        if (!paintByField) throw new NullPointerException('paintByField is null')
-        if (!value) return null
-
-        if (paintByField == DIRECTION) {
-            // duck type on toString
-            return value.toString().equals('Down') ? '#BBBBBB' : null
-        } else {
-            // null when value is not a double
-            if (!(value instanceof Double)) return null
-            if (direction.equals('Down')) {
-                def down = [(0.0..0.01):  '#BBBBBB']
-                return down.find {
-                    it.key.containsWithinBounds(value)
-                }?.value
             }
         }
     }

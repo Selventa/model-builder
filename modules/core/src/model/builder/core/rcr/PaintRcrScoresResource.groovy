@@ -20,7 +20,6 @@ import static model.builder.core.Util.createColumn
 import static model.builder.core.Util.inferOpenBELWsAPI
 import static model.builder.core.rcr.Constant.SDP_RCR_FILL_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_SIGNIFICANT_COLUMN
-import static model.builder.core.rcr.Constant.SDP_RCR_TEXT_COLOR_COLUMN
 import static model.builder.core.rcr.Constant.SDP_RCR_TOOLTIP_COLUMN
 import static model.builder.core.rcr.LoadRcrResource.loadRcrToTable
 import static model.builder.core.rcr.LoadRcrScoresResource.loadRcrScoresToTable
@@ -121,10 +120,6 @@ class PaintRcrScoresResource extends AbstractTask {
                     cyN.defaultNodeTable.deleteColumn(SDP_RCR_FILL_COLOR_COLUMN)
                 }
                 createColumn(cyN.defaultNodeTable, SDP_RCR_FILL_COLOR_COLUMN, String.class, false, null)
-                if (cyN.defaultNodeTable.getColumn(SDP_RCR_TEXT_COLOR_COLUMN)) {
-                    cyN.defaultNodeTable.deleteColumn(SDP_RCR_TEXT_COLOR_COLUMN)
-                }
-                createColumn(cyN.defaultNodeTable, SDP_RCR_TEXT_COLOR_COLUMN, String.class, false, null)
                 if (cyN.defaultNodeTable.getColumn(SDP_RCR_SIGNIFICANT_COLUMN)) {
                     cyN.defaultNodeTable.deleteColumn(SDP_RCR_SIGNIFICANT_COLUMN)
                 }
@@ -153,13 +148,10 @@ class PaintRcrScoresResource extends AbstractTask {
 
                         if (paintBy == DIRECTION) {
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, dir))
-                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, dir))
                         } else if (paintBy == CONCORDANCE || paintBy == CONCORDANCE_AND_DIRECTION) {
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, concordance))
-                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, concordance))
                         } else if (paintBy == RICHNESS || paintBy == RICHNESS_AND_DIRECTION) {
                             row.set(SDP_RCR_FILL_COLOR_COLUMN, painter.paintColor(dir, paintBy, richness))
-                            row.set(SDP_RCR_TEXT_COLOR_COLUMN, painter.textColor(dir, paintBy, richness))
                         }
 
                         String tooltip = ['sdp_concordance', 'sdp_richness'].collect {

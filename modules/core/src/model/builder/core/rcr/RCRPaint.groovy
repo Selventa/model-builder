@@ -6,7 +6,5 @@ public interface RCRPaint {
 
     public String paintColor(String direction, ScorePaintField paintByField, Object value)
 
-    public String textColor(String direction, ScorePaintField paintByField, Object value)
-
     public void paintNetwork(ScorePaintField paintByField, CyNetwork cyN)
 }
