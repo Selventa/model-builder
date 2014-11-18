@@ -42,28 +42,32 @@ class PaintRcrScoresResource extends AbstractTask {
             gravity = 8.0D,
             groups = ['Advanced Options'],
             description = 'Concordance',
-            tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.'
+            tooltip = 'Compares the consistency of the downstream state changes predicted by a mechanism with the actual measured changes.',
+            params="displayState=collapsed"
     )
     public Double concordanceCutoff      = 0.1D
     @Tunable(
             gravity = 9.0D,
             groups = ['Advanced Options'],
             description = 'Richness',
-            tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.'
+            tooltip = 'Determines if there is a high amount of signal in this mechanism relative to the amount of signal in general.',
+            params="displayState=collapsed"
     )
     public Double richnessCutoff         = 0.1D
     @Tunable(
             gravity = 10.0D,
             groups = ['Advanced Options'],
             description = 'Paint Not Scored (Grey)',
-            tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.'
+            tooltip = 'If selected the Not Scored nodes will be painted grey. If deselected the Not Scored nodes will be white.',
+            params="displayState=collapsed"
     )
     public boolean paintNotScored        = false
     @Tunable(
             gravity = 10.0D,
             groups = ['Advanced Options'],
             description = 'Outline Not Significant (Red)',
-            tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.'
+            tooltip = 'If selected a node will be outlined in red if it greater than the richness or concordance cutoff. If deselected the Not Significant nodes will be painted white and will not have an outline.',
+            params="displayState=collapsed"
     )
     public boolean outlineNotSignificant = false
 
@@ -251,7 +255,13 @@ class PaintRcrScoresResource extends AbstractTask {
         this.rcr = sel.selectedValue
     }
     // Called by cytoscape
-    @Tunable(gravity = 2.0D, description = "Paint Score By", tooltip = 'This controls which RCR score value to paint (e.g. Direction, Concordance, Richness)')
+    @Tunable(
+            gravity = 7.0D,
+            groups = ['Advanced Options'],
+            description = "Paint Score By",
+            tooltip = 'This controls which RCR score value to paint (e.g. Direction, Concordance, Richness)',
+            params="displayState=collapsed"
+    )
     public ListSingleSelection<String> getTPaintBy() {
         if (!tPaintBy) {
             tPaintBy = Tunables.tunableScorePaintField()
