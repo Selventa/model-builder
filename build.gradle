@@ -124,9 +124,7 @@ project('modules/core') {
     compile project(':modules/ui')
     compile project(':modules/web')
     compile files(
-      "$rootDir/libs/compile/kamnav-core-1.0.0.jar",
-      "$rootDir/libs/compile/kamnav-common-1.0.0.jar",
-      "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
+      "$rootDir/libs/compile/belnav-1.1.0.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-stream-0.6.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar")
@@ -183,7 +181,7 @@ project('modules/core') {
         org.cytoscape.work.util;version="[3,4)",
         org.openbel.framework.common.enums;version="[3,4)",
         org.openbel.framework.ws.model;version="[3,4)",
-        org.openbel.kamnav.core;version="[1,2)",
+        org.openbel.belnav.core;version="[1,2)",
         model.builder.common,
         model.builder.ui,
         model.builder.web.api,
@@ -293,7 +291,7 @@ project('modules/web') {
       "$rootDir/libs/compile/commons-codec-1.8.jar",
       "$rootDir/libs/compile/groovy-all-2.1.7-indy.jar",
       "$rootDir/libs/compile/groovy-wslite-0.8.0.jar",
-      "$rootDir/libs/compile/kamnav-ws-1.0.0.jar",
+      "$rootDir/libs/compile/belnav-1.1.0.jar",
       "$rootDir/libs/compile/slf4j-api-1.7.5.jar",
       "$rootDir/libs/compile/jackson-annotations-2.2.3.jar",
       "$rootDir/libs/compile/jackson-core-2.2.3.jar",

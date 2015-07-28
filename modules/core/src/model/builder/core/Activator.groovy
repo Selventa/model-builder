@@ -33,8 +33,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager
 import org.cytoscape.view.vizmap.VisualStyleFactory
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
-import org.openbel.kamnav.core.AddBelColumnsToCurrentFactory
-import org.openbel.ws.api.WsManager
+import org.openbel.belnav.core.AddBelColumnsToCurrentFactory
 import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
