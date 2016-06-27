@@ -5,6 +5,7 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventTableModel
 import groovy.swing.SwingBuilder
+import model.builder.core.Activator
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.APIManager

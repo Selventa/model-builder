@@ -1,11 +1,18 @@
 package model.builder.core
 
+import groovy.swing.SwingBuilder
+import model.builder.common.JsonStream
+import model.builder.core.task.AddBelColumnsToCurrentFactoryImpl
+import model.builder.ui.SearchTableScrollable
 import model.builder.ui.UI
 import model.builder.ui.api.Dialogs
+import model.builder.ui.internal.DialogsImpl
 import model.builder.web.api.APIManager
 import model.builder.web.api.AccessInformation
 import model.builder.web.api.AuthorizedAPI
 import model.builder.web.api.WebResponse
+import model.builder.web.internal.DefaultAPIManager
+import org.cytoscape.application.CyApplicationConfiguration
 import org.cytoscape.application.CyApplicationManager
 import org.cytoscape.application.swing.AbstractCyAction
 import org.cytoscape.application.swing.CyAction
@@ -23,6 +30,7 @@ import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.task.NetworkViewTaskFactory
 import org.cytoscape.task.NodeViewTaskFactory
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory
 import org.cytoscape.util.swing.OpenBrowser
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager
@@ -33,7 +41,10 @@ import org.cytoscape.view.vizmap.VisualMappingManager
 import org.cytoscape.view.vizmap.VisualStyleFactory
 import org.cytoscape.work.TaskIterator
 import org.cytoscape.work.swing.DialogTaskManager
-import org.openbel.belnav.core.AddBelColumnsToCurrentFactory
+import org.jdesktop.swingx.JXList
+import org.jdesktop.swingx.JXTable
+import org.jdesktop.swingx.JXTaskPane
+import org.jdesktop.swingx.JXTaskPaneContainer
 import org.osgi.framework.BundleContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,6 +59,8 @@ import static model.builder.ui.MessagePopups.errorAccessNotSet;
 
 class Activator extends AbstractCyActivator {
 
+    public static SwingBuilder swing
+
     private static final Logger msg = LoggerFactory.getLogger("CyUserMessages")
 
     /**
@@ -57,28 +70,35 @@ class Activator extends AbstractCyActivator {
     void start(BundleContext bc) {
         def cyr = cyReference(bc, this.&getService,
             [
-                CySwingApplication.class, DialogTaskManager.class,
-                CyApplicationManager.class, CyNetworkFactory.class,
-                CyNetworkManager.class, CyNetworkViewFactory.class,
-                CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
-                VisualMappingManager.class, CyEventHelper.class,
-                CyTableFactory.class, CyTableManager.class,
-                CyNetworkTableManager.class, ApplyPreferredLayoutTaskFactory.class,
-                OpenBrowser.class, MapTableToNetworkTablesTaskFactory.class,
-                VisualMappingManager.class, VisualStyleFactory.class
+                    CySwingApplication.class, DialogTaskManager.class,
+                    CyApplicationManager.class, CyNetworkFactory.class,
+                    CyNetworkManager.class, CyNetworkViewFactory.class,
+                    CyNetworkViewManager.class, CyLayoutAlgorithmManager.class,
+                    VisualMappingManager.class, CyEventHelper.class,
+                    CyTableFactory.class, CyTableManager.class,
+                    CyNetworkTableManager.class, ApplyPreferredLayoutTaskFactory.class,
+                    OpenBrowser.class, MapTableToNetworkTablesTaskFactory.class,
+                    VisualMappingManager.class, VisualStyleFactory.class,
+                    CyApplicationConfiguration.class, LoadVizmapFileTaskFactory.class
             ] as Class<?>[])
 
         VisualMappingFunctionFactory dMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         VisualMappingFunctionFactory pMapFac = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        AddBelColumnsToCurrentFactory addBelFac = getService(bc, AddBelColumnsToCurrentFactory.class)
-        APIManager apiManager = getService(bc, APIManager.class)
-        registerAllServices(bc, new Listener(cyr), [:] as Properties)
+        AddBelColumnsToCurrentFactory addBelFac = new AddBelColumnsToCurrentFactoryImpl(cyr)
+
+        File cfg = cyr.cyApplicationConfiguration.getAppConfigurationDirectoryLocation(Activator.class)
+        JsonStream.instance.initializeFactory()
+
+        APIManager apiManager = new DefaultAPIManager(cfg, null)
 
         // Reader / Writer for Model Json format
         StreamUtil util = new StreamUtilImpl()
         registerService(bc, JsonNetworkReaderFactory.create(cyr, util), InputStreamTaskFactory.class,
             [readerId: 'modelJSONReader', readerDescription: 'Model JSON reader'] as Properties)
         registerAllServices(bc, JsonNetworkWriterFactory.create(util), [:] as Properties)
+
+        // Styles
+        org.openbel.belnav.core.Util.contributeVisualStyles(cyr.visualMappingManager, cyr.loadVizmapFileTaskFactory)
 
         // ... Apps > SDP Menu Actions ...
 
@@ -194,6 +214,15 @@ class Activator extends AbstractCyActivator {
                 accelerator: 'control alt shift S'
         ] as Properties)
 
+        // Dialogs
+        swing = new SwingBuilder()
+        swing.registerBeanFactory('taskPaneContainer', JXTaskPaneContainer.class)
+        swing.registerBeanFactory('taskPane', JXTaskPane.class)
+        swing.registerBeanFactory('jxList', JXList.class)
+        swing.registerBeanFactory('jxTable', JXTable.class)
+        swing.registerBeanFactory('searchTableScrollable', SearchTableScrollable.class)
+        Dialogs dialogs = new DialogsImpl(swing)
+
         // ... Add Configure
         AbstractCyAction configure = new AbstractCyAction('Configure') {
             void actionPerformed(ActionEvent e) {
@@ -227,7 +256,6 @@ class Activator extends AbstractCyActivator {
         ] as Properties)
 
         // ... Add Find Paths
-        Dialogs dialogs = getService(bc, Dialogs.class)
         AbstractCyAction findPaths = new AbstractCyAction('Find Paths') {
             void actionPerformed(ActionEvent e) {
                 AuthorizedAPI api = apiManager.byAccess(apiManager.default)

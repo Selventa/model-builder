@@ -5,7 +5,6 @@ import model.builder.web.api.APIManager
 import org.cytoscape.model.CyNetwork
 import org.cytoscape.task.NetworkTaskFactory
 import org.cytoscape.work.TaskIterator
-import org.openbel.belnav.core.AddBelColumnsToCurrentFactory
 
 @TupleConstructor
 class ImportRevisionFromMenuFactory implements NetworkTaskFactory {
