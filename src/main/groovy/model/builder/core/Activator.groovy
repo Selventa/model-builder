@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent
 import static javax.swing.KeyStroke.getKeyStroke
 import static model.builder.common.Constant.setLoggingExceptionHandler
 import static model.builder.core.Util.cyReference
+import static model.builder.core.Util.contributeVisualStyles
 import static model.builder.ui.MessagePopups.errorAccessNotSet;
 
 class Activator extends AbstractCyActivator {
@@ -89,7 +90,7 @@ class Activator extends AbstractCyActivator {
         File cfg = cyr.cyApplicationConfiguration.getAppConfigurationDirectoryLocation(Activator.class)
         JsonStream.instance.initializeFactory()
 
-        APIManager apiManager = new DefaultAPIManager(cfg, null)
+        APIManager apiManager = new DefaultAPIManager(cfg)
 
         // Reader / Writer for Model Json format
         StreamUtil util = new StreamUtilImpl()
@@ -98,7 +99,7 @@ class Activator extends AbstractCyActivator {
         registerAllServices(bc, JsonNetworkWriterFactory.create(util), [:] as Properties)
 
         // Styles
-        org.openbel.belnav.core.Util.contributeVisualStyles(cyr.visualMappingManager, cyr.loadVizmapFileTaskFactory)
+        contributeVisualStyles(cyr.visualMappingManager, cyr.loadVizmapFileTaskFactory)
 
         // ... Apps > SDP Menu Actions ...
 

@@ -8,7 +8,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager
 import org.cytoscape.view.vizmap.VisualStyle
 import org.cytoscape.work.TaskMonitor
 
-import static org.openbel.belnav.core.Constant.NAV_VIS
+import static model.builder.core.Constant.NAV_VIS
 
 @TupleConstructor
 public class ApplyPreferredStyleToCurrent extends BaseTask {

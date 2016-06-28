@@ -6,11 +6,15 @@ import org.cytoscape.model.CyNetwork
 import org.cytoscape.model.CyNode
 import org.cytoscape.model.CyRow
 import org.cytoscape.model.CyTable
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory
+import org.cytoscape.view.vizmap.VisualMappingManager
 import org.openbel.framework.common.InvalidArgument
 import org.openbel.framework.common.enums.RelationshipType
 import org.openbel.framework.common.model.Term
 import org.osgi.framework.BundleContext
 
+import static model.builder.core.Constant.STYLE_PATH
+import static model.builder.core.Constant.STYLE_NAMES
 import static org.cytoscape.model.CyNetwork.NAME
 import static org.cytoscape.model.CyEdge.INTERACTION
 import static org.cytoscape.model.CyEdge.Type.DIRECTED
@@ -18,6 +22,19 @@ import static org.openbel.framework.common.bel.parser.BELParser.parseTerm
 import static org.openbel.framework.common.enums.RelationshipType.*
 
 class Util {
+
+    /**
+     * Contributes visual styles provide by the model builder app. The styles
+     * are defined in a classpath resource: {@value Constant#STYLE_PATH}
+     *
+     * @param visMgr VisualMappingManager the manager for cytoscape visual styles
+     * @param vf LoadVizmapFileTaskFactory a factory for loading styles from a file
+     */
+    def static contributeVisualStyles(VisualMappingManager visMgr,
+                                      LoadVizmapFileTaskFactory vf) {
+        visMgr.allVisualStyles.findAll { it.title in STYLE_NAMES }.each(visMgr.&removeVisualStyle)
+        vf.loadStyles((InputStream) Util.class.getResourceAsStream(STYLE_PATH))
+    }
 
     static CyColumn createColumn(table, name, type, immutable, defaultValue) {
         name = "$name"
