@@ -8,3 +8,4 @@ tools/gradle-wrapper/*-bin
 tools/cytoscape/framework/instances/instance.properties
 tools/cytoscape/framework/data/*
 tools/cytoscape/work/*
+/target

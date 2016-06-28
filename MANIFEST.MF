@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Cytoscape-API-Compatibility: 3.0
+Cytoscape-App: SDP Model Builder
+Cytoscape-App-Name: SDP Model Builder
+Cytoscape-App-Version: 1.0.0
