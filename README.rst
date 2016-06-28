@@ -18,10 +18,12 @@ Build process
 This app is built using Maven and produces a single JAR (OSGi-enabled).
 
 Requirements:
+
 - Java 8
 - Maven 3+
 
 Installation steps:
+
 - git clone https://github.com/Selventa/model-builder.git
 - cd model-builder
 - mvn clean package -DskipTests
@@ -31,18 +33,24 @@ Install process
 
 Install from the AppStore.
 
-- Open Cytoscape and then Apps → App Manager and search for BEL Navigator.
+- Open Cytoscape then Apps → App Manager and search for BEL Navigator.
 - Install BEL Navigator App.
 
 Install from source.
+
 - Follow "Build process" section above.
-- Open Cytoscape and open Apps → App Manager → Install from File...
+- Open Cytoscape then Apps → App Manager → Install from File...
 - Locate target/modelbuilder-VERSION.jar and click Open.
 
 Development branches
 --------------------
 
-*experimental* branch: New development.
+*experimental* branch
 
-*master* branch: Stable development for release. Releases are tagged here.
+- New/Unstable development
+
+*master* branch
+
+- Stable development for release.
+- Releases are tagged here.
 
