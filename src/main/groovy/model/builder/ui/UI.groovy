@@ -598,9 +598,9 @@ class UI {
 
             // load tags outside EDT
             swing.doOutside {
-                def tagData = tagsClosure.call()
+                List<String> tagData = tagsClosure.call()
                 swing.edt {
-                    tags.listData = tagData
+                    tags.listData = tagData.toArray(new String[tagData.size()])
                 }
             }
         }
