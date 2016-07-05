@@ -613,7 +613,7 @@ class UI {
             def JCheckBox human
             def JCheckBox mouse
             def JCheckBox rat
-            def JList tags
+            def JList<String> tags
             def SearchTableScrollable searchTable
             def JButton addButton
 
@@ -718,9 +718,9 @@ class UI {
 
             // load tags outside EDT
             swing.doOutside {
-                def tagData = tagsClosure.call()
+                List<String> tagData = tagsClosure.call()
                 swing.edt {
-                    tags.listData = tagData
+                    tags.listData = tagData.toArray(new String[tagData.size()])
                 }
             }
         }
