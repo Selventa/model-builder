@@ -50,6 +50,12 @@ Install from source.
 - Stable development for release.
 - Releases are tagged here.
 
+Unstable work:
+
+- *rcr_custom_painting* branch
+
+  - Contains work to build a custom painting interface for RCR scores. It is a work-in-progress, but about 90% complete.
+
 ### Releases
 
 To create a release of *SDP Model Builder* follow these steps:
