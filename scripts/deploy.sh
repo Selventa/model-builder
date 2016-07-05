@@ -15,10 +15,6 @@ if [ ! -d "$DEV_CY3_BUNDLE_DIR" ]; then
 fi
 
 # copy plugin dependencies
-for lib in `find "$DEV_LIBS_DIR" -name "*.jar" -not -path "*/test/*" -not -path "*/provided/*"`; do
-    cp "$lib" "$DEV_CY3_BUNDLE_DIR"
-done
-# copy plugin
-for lib in `find "$DEV_MODULES_DIR" -path "*/build/libs/*.jar"`; do
-    cp "$lib" "$DEV_CY3_BUNDLE_DIR"
+for jar in `find target/ -name *.jar`; do
+    cp "$jar" "$DEV_CY3_BUNDLE_DIR"
 done
